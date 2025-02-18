@@ -1168,6 +1168,18 @@ export enum EelvlBlockId {
   NPC_SNOWMAN = 1577,
   NPC_WALRUS = 1578,
   NPC_CRAB = 1579,
+
+  // EBE
+
+  // Counters
+  EBE_COUNTER_DOOR = 3011,
+  EBE_COUNTER_GATE = 3012,
+  EBE_COUNTER_CONSUMABLE = 3013,
+  EBE_COUNTER_REUSABLE = 3014,
+
+  // HEX
+  EBE_HEX_BG_SOLID = 3001,
+  EBE_HEX_BG_CHECKER = 3002,
 }
 
 export function hasEelvlBlockOneIntParameter(eelvlBlockId: number): Boolean {
