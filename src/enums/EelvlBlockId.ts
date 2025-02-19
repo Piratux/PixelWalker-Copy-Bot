@@ -1338,6 +1338,23 @@ export function hasEelvlBlockOneIntParameter(eelvlBlockId: number): Boolean {
   ].includes(eelvlBlockId)
 }
 
+export function hasEelvlBlockTwoIntParameter(eelvlBlockId: number): Boolean {
+  return [
+    EelvlBlockId.EBE_COUNTER_DOOR,
+    EelvlBlockId.EBE_COUNTER_GATE,
+    EelvlBlockId.EBE_COUNTER_CONSUMABLE,
+    EelvlBlockId.EBE_COUNTER_REUSABLE,
+  ].includes(eelvlBlockId);
+}
+
+
+export function hasEelvlBlockOneUIntParameter(eelvlBlockId: number): Boolean {
+  return [
+    EelvlBlockId.EBE_HEX_BG_SOLID,
+    EelvlBlockId.EBE_HEX_BG_CHECKER,
+  ].includes(eelvlBlockId);
+}
+
 export function isEelvlNpc(eelvlBlockId: number): Boolean {
   return [
     EelvlBlockId.NPC_SMILE,

@@ -1,5 +1,5 @@
 import { ByteArray } from '@/classes/ByteArray.ts'
-import { EelvlBlockId, hasEelvlBlockOneIntParameter, isEelvlNpc } from '@/enums/EelvlBlockId.ts'
+import { EelvlBlockId, hasEelvlBlockOneIntParameter, hasEelvlBlockOneUIntParameter, hasEelvlBlockTwoIntParameter, isEelvlNpc } from '@/enums/EelvlBlockId.ts'
 import type { BlockArg } from 'pw-js-world'
 import { Block, LayerType } from 'pw-js-world'
 import { EelvlBlock } from '@/types/EelvlBlock.ts'
@@ -46,10 +46,27 @@ export async function importFromEelvl(fileData: ArrayBuffer) {
     }
   }
 
+  console.debug("gonna start getting shit nwo")
   while (bytes.hashposition < bytes.length) {
     const eelvlBlockId = bytes.readInt()
     const eelvlLayer = bytes.readInt()
     const blockPositions = readPositionsByteArrays(bytes)
+
+    // Skip the EBE Tri-BG and Vision Layers for now.
+    if (eelvlLayer === 2) {
+      // Vision
+      bytes.readInt();
+      console.debug("vision")
+      continue;
+    }
+    else if (eelvlLayer === 3) {
+      // Tri-Bg
+      console.debug("tribg");
+      bytes.readInt()
+      continue;
+    }
+    console.debug("new block!")
+
     const eelvlBlock = readEelvlBlock(bytes, eelvlBlockId)
     eelvlBlock.blockId = eelvlBlockId
 
@@ -61,6 +78,7 @@ export async function importFromEelvl(fileData: ArrayBuffer) {
       }
     }
   }
+  console.debug("hit!!");
 
   let pwBlocks = [] as WorldBlock[]
   for (let l = 0; l < 2; l++) {
@@ -113,6 +131,11 @@ function readEelvlBlock(bytes: ByteArray, eelvlBlockId: number) {
     default:
       if (hasEelvlBlockOneIntParameter(eelvlBlockId)) {
         eelvlBlock.intParameter = bytes.readInt()
+      } else if (hasEelvlBlockTwoIntParameter(eelvlBlockId)) {
+        eelvlBlock.intParameter = bytes.readInt()
+        eelvlBlock.intParameterTwo = bytes.readInt()
+      } else if (hasEelvlBlockOneUIntParameter(eelvlBlockId)) {
+        eelvlBlock.uintParameter = bytes.readUnsignedInt()
       } else if (isEelvlNpc(eelvlBlockId)) {
         eelvlBlock.npcName = bytes.readUTF()
         eelvlBlock.npcMessage1 = bytes.readUTF()
@@ -1562,6 +1585,99 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock): Block {
         default:
           return createBlock(PwBlockName.EMPTY)
       }
+
+      // EBE LOGIC
+
+      // Counters
+    case EelvlBlockId.EBE_COUNTER_CONSUMABLE:
+        switch (eelvlBlock.intParameter) {
+          case 0:
+            return createBlock(PwBlockName.COUNTER_WHITE_CONSUMABLE, [eelvlBlock.intParameterTwo!])
+          case 1:
+            return createBlock(PwBlockName.COUNTER_BLACK_CONSUMABLE, [eelvlBlock.intParameterTwo!])
+          case 2:
+            return createBlock(PwBlockName.COUNTER_RED_CONSUMABLE, [eelvlBlock.intParameterTwo!])
+          case 3:
+            return createBlock(PwBlockName.COUNTER_GREEN_CONSUMABLE, [eelvlBlock.intParameterTwo!])
+          case 4:
+            return createBlock(PwBlockName.COUNTER_BLUE_CONSUMABLE, [eelvlBlock.intParameterTwo!])
+          case 5:
+            return createBlock(PwBlockName.COUNTER_CYAN_CONSUMABLE, [eelvlBlock.intParameterTwo!])
+          case 6:
+            return createBlock(PwBlockName.COUNTER_MAGENTA_CONSUMABLE, [eelvlBlock.intParameterTwo!])
+          case 7:
+            return createBlock(PwBlockName.COUNTER_YELLOW_CONSUMABLE, [eelvlBlock.intParameterTwo!])
+          default:
+            return createBlock(PwBlockName.EMPTY)
+        }
+
+    case EelvlBlockId.EBE_COUNTER_REUSABLE:
+      switch (eelvlBlock.intParameter) {
+        case 0:
+          return createBlock(PwBlockName.COUNTER_WHITE_REUSABLE, [eelvlBlock.intParameterTwo!])
+        case 1:
+          return createBlock(PwBlockName.COUNTER_BLACK_REUSABLE, [eelvlBlock.intParameterTwo!])
+        case 2:
+          return createBlock(PwBlockName.COUNTER_RED_REUSABLE, [eelvlBlock.intParameterTwo!])
+        case 3:
+          return createBlock(PwBlockName.COUNTER_GREEN_REUSABLE, [eelvlBlock.intParameterTwo!])
+        case 4:
+          return createBlock(PwBlockName.COUNTER_BLUE_REUSABLE, [eelvlBlock.intParameterTwo!])
+        case 5:
+          return createBlock(PwBlockName.COUNTER_CYAN_REUSABLE, [eelvlBlock.intParameterTwo!])
+        case 6:
+          return createBlock(PwBlockName.COUNTER_MAGENTA_REUSABLE, [eelvlBlock.intParameterTwo!])
+        case 7:
+          return createBlock(PwBlockName.COUNTER_YELLOW_REUSABLE, [eelvlBlock.intParameterTwo!])
+        default:
+          return createBlock(PwBlockName.EMPTY)
+      }
+    case EelvlBlockId.EBE_COUNTER_DOOR:
+      switch (eelvlBlock.intParameter) {
+        case 0:
+          return createBlock(PwBlockName.COUNTER_WHITE_DOOR, [eelvlBlock.intParameterTwo!])
+        case 1:
+          return createBlock(PwBlockName.COUNTER_BLACK_DOOR, [eelvlBlock.intParameterTwo!])
+        case 2:
+          return createBlock(PwBlockName.COUNTER_RED_DOOR, [eelvlBlock.intParameterTwo!])
+        case 3:
+          return createBlock(PwBlockName.COUNTER_GREEN_DOOR, [eelvlBlock.intParameterTwo!])
+        case 4:
+          return createBlock(PwBlockName.COUNTER_BLUE_DOOR, [eelvlBlock.intParameterTwo!])
+        case 5:
+          return createBlock(PwBlockName.COUNTER_CYAN_DOOR, [eelvlBlock.intParameterTwo!])
+        case 6:
+          return createBlock(PwBlockName.COUNTER_MAGENTA_DOOR, [eelvlBlock.intParameterTwo!])
+        case 7:
+          return createBlock(PwBlockName.COUNTER_YELLOW_DOOR, [eelvlBlock.intParameterTwo!])
+        default:
+          return createBlock(PwBlockName.EMPTY)
+      }
+    case EelvlBlockId.EBE_COUNTER_GATE:
+      switch (eelvlBlock.intParameter) {
+        case 0:
+          return createBlock(PwBlockName.COUNTER_WHITE_GATE, [eelvlBlock.intParameterTwo!])
+        case 1:
+          return createBlock(PwBlockName.COUNTER_BLACK_GATE, [eelvlBlock.intParameterTwo!])
+        case 2:
+          return createBlock(PwBlockName.COUNTER_RED_GATE, [eelvlBlock.intParameterTwo!])
+        case 3:
+          return createBlock(PwBlockName.COUNTER_GREEN_GATE, [eelvlBlock.intParameterTwo!])
+        case 4:
+          return createBlock(PwBlockName.COUNTER_BLUE_GATE, [eelvlBlock.intParameterTwo!])
+        case 5:
+          return createBlock(PwBlockName.COUNTER_CYAN_GATE, [eelvlBlock.intParameterTwo!])
+        case 6:
+          return createBlock(PwBlockName.COUNTER_MAGENTA_GATE, [eelvlBlock.intParameterTwo!])
+        case 7:
+          return createBlock(PwBlockName.COUNTER_YELLOW_GATE, [eelvlBlock.intParameterTwo!])
+        default:
+          return createBlock(PwBlockName.EMPTY)
+      }
+    case EelvlBlockId.EBE_HEX_BG_SOLID:
+      return createBlock(PwBlockName.CUSTOM_SOLID_BG, [eelvlBlock.uintParameter!])
+    case EelvlBlockId.EBE_HEX_BG_CHECKER:
+      return createBlock(PwBlockName.CUSTOM_CHECKER_BG, [eelvlBlock.uintParameter!])
     default:
       const eelvlBlockName = EelvlBlockId[eelvlBlock.blockId]
       if (eelvlBlockName === undefined) {
