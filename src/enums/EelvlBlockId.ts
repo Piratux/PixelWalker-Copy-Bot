@@ -1178,11 +1178,27 @@ export enum EelvlBlockId {
   EBE_COUNTER_REUSABLE = 3014,
 
   // HEX
-  EBE_HEX_BG_SOLID = 3001,
-  EBE_HEX_BG_CHECKER = 3002,
+  EBE_HEX_FG_BASIC = 1200,
+  EBE_HEX_FG_TILE = 1201,
+  EBE_HEX_BG_BASIC = 636,
+  EBE_HEX_BG_SOLID= 3001,
+  EBE_HEX_BG_CANVAS = 632,
+  EBE_HEX_BG_CHECKER = 633,
+  EBE_HEX_BG_CAVE = 634,
+  EBE_HEX_BG_TILE = 635,
+  EBE_HEX_FG_SPIKE_CENTER = 1646,
+
+  // Vision
+
+  EBE_VISION_PASSIVE = 1644,
+  EBE_VISION_ACTIVE = 1643
 }
 
-export function hasEelvlBlockOneIntParameter(eelvlBlockId: number): Boolean {
+export function hasEelvlBlockOneIntParameter(eelvlBlockId: number, eelvlLayer: number): Boolean {
+  if (eelvlLayer === 3) {
+    return !hasEelvlBlockTwoIntParameter(eelvlBlockId, eelvlLayer);
+  }
+
   return [
     EelvlBlockId.SCIFI_LASER_BLUE_CORNER_BOTTOMRIGHT,
     EelvlBlockId.SCIFI_LASER_BLUE_STRAIGHT_VERTICAL,
@@ -1338,7 +1354,20 @@ export function hasEelvlBlockOneIntParameter(eelvlBlockId: number): Boolean {
   ].includes(eelvlBlockId)
 }
 
-export function hasEelvlBlockTwoIntParameter(eelvlBlockId: number): Boolean {
+export function hasEelvlBlockTwoIntParameter(eelvlBlockId: number, layer: number): Boolean {
+  if (layer === 3) {
+    return [
+      EelvlBlockId.EBE_HEX_FG_BASIC,
+      EelvlBlockId.EBE_HEX_FG_TILE,
+      EelvlBlockId.EBE_HEX_BG_BASIC,
+      EelvlBlockId.EBE_HEX_BG_SOLID,
+      EelvlBlockId.EBE_HEX_BG_CANVAS,
+      EelvlBlockId.EBE_HEX_BG_CHECKER,
+      EelvlBlockId.EBE_HEX_BG_CAVE,
+      EelvlBlockId.EBE_HEX_BG_TILE,
+      EelvlBlockId.EBE_HEX_FG_SPIKE_CENTER,
+    ].includes(eelvlBlockId);
+  }
   return [
     EelvlBlockId.EBE_COUNTER_DOOR,
     EelvlBlockId.EBE_COUNTER_GATE,

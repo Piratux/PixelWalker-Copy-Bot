@@ -46,32 +46,18 @@ export async function importFromEelvl(fileData: ArrayBuffer) {
     }
   }
 
-  console.debug("gonna start getting shit nwo")
   while (bytes.hashposition < bytes.length) {
     const eelvlBlockId = bytes.readInt()
     const eelvlLayer = bytes.readInt()
     const blockPositions = readPositionsByteArrays(bytes)
 
-    // Skip the EBE Tri-BG and Vision Layers for now.
-    if (eelvlLayer === 2) {
-      // Vision
-      bytes.readInt();
-      console.debug("vision")
-      continue;
-    }
-    else if (eelvlLayer === 3) {
-      // Tri-Bg
-      console.debug("tribg");
-      bytes.readInt()
-      continue;
-    }
-    console.debug("new block!")
-
-    const eelvlBlock = readEelvlBlock(bytes, eelvlBlockId)
+    const eelvlBlock = readEelvlBlock(bytes, eelvlBlockId, eelvlLayer)
     eelvlBlock.blockId = eelvlBlockId
 
     const pwBlock: Block = mapBlockIdEelvlToPw(eelvlBlock)
     const pwLayer = mapLayerEelvlToPw(eelvlLayer)
+    if (pwLayer == null)
+      continue;
     for (const pos of blockPositions) {
       if (pos.x >= 0 && pos.y >= 0 && pos.x < pwMapWidth && pos.y < pwMapHeight) {
         pwBlock3DArray[pwLayer][pos.x][pos.y] = pwBlock
@@ -100,13 +86,21 @@ function mapLayerEelvlToPw(eelvlLayer: number) {
       return LayerType.Background
     case EelvlLayer.FOREGROUND:
       return LayerType.Foreground
+    case EelvlLayer.EBE_VISION:
+      return null
+    case EelvlLayer.EBE_TRIBG:
+      return null
     default:
       throw Error(`Unknown layer type: ${eelvlLayer}`)
   }
 }
 
-function readEelvlBlock(bytes: ByteArray, eelvlBlockId: number) {
+function readEelvlBlock(bytes: ByteArray, eelvlBlockId: number, eelvlLayer: number) {
   const eelvlBlock = {} as EelvlBlock
+
+  if (eelvlLayer === 2) {
+    bytes.readInt();
+  }
 
   switch (eelvlBlockId) {
     case EelvlBlockId.PORTAL:
@@ -129,9 +123,12 @@ function readEelvlBlock(bytes: ByteArray, eelvlBlockId: number) {
       eelvlBlock.labelWrapLength = bytes.readInt()
       break
     default:
-      if (hasEelvlBlockOneIntParameter(eelvlBlockId)) {
+      if (eelvlLayer === 3) {
+        console.log(eelvlLayer + " is the layer, here is the id " + eelvlBlockId)
+      }
+      if (hasEelvlBlockOneIntParameter(eelvlBlockId, eelvlLayer)) {
         eelvlBlock.intParameter = bytes.readInt()
-      } else if (hasEelvlBlockTwoIntParameter(eelvlBlockId)) {
+      } else if (hasEelvlBlockTwoIntParameter(eelvlBlockId, eelvlLayer)) {
         eelvlBlock.intParameter = bytes.readInt()
         eelvlBlock.intParameterTwo = bytes.readInt()
       } else if (hasEelvlBlockOneUIntParameter(eelvlBlockId)) {
