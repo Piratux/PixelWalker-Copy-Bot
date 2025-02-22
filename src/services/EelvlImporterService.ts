@@ -123,9 +123,6 @@ function readEelvlBlock(bytes: ByteArray, eelvlBlockId: number, eelvlLayer: numb
       eelvlBlock.labelWrapLength = bytes.readInt()
       break
     default:
-      if (eelvlLayer === 3) {
-        console.log(eelvlLayer + " is the layer, here is the id " + eelvlBlockId)
-      }
       if (hasEelvlBlockOneIntParameter(eelvlBlockId, eelvlLayer)) {
         eelvlBlock.intParameter = bytes.readInt()
       } else if (hasEelvlBlockTwoIntParameter(eelvlBlockId, eelvlLayer)) {
