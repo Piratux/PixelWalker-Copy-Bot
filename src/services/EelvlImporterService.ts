@@ -51,7 +51,7 @@ export async function importFromEelvl(fileData: ArrayBuffer) {
       const eelvlBlockId = bytes.readInt()
       const eelvlLayer = bytes.readInt()
       const blockPositions = readPositionsByteArrays(bytes)
-      const eelvlBlock = readEelvlBlock(bytes, eelvlBlockId)
+      const eelvlBlock = readEelvlBlock(bytes, eelvlBlockId, eelvlLayer)
       eelvlBlock.blockId = eelvlBlockId
 
       const pwBlock: Block = mapBlockIdEelvlToPw(eelvlBlock)
