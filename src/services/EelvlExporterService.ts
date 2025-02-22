@@ -110,10 +110,10 @@ function mapLayerPwToEelvl(pwLayer: number) {
 }
 
 function getBlockEntryKey(eelvlBlockId: number, eelvlBlock: EelvlBlock, eelvlLayer: number) {
-  return [eelvlBlockId, eelvlLayer, ...getBlockArgs(eelvlBlockId, eelvlBlock)]
+  return [eelvlBlockId, eelvlLayer, ...getBlockArgs(eelvlBlockId, eelvlBlock, eelvlLayer)]
 }
 
-function getBlockArgs(eelvlBlockId: number, eelvlBlock: EelvlBlock) {
+function getBlockArgs(eelvlBlockId: number, eelvlBlock: EelvlBlock, eelvlLayer: number) {
   switch (eelvlBlockId) {
     case EelvlBlockId.PORTAL:
     case EelvlBlockId.PORTAL_INVISIBLE:
@@ -125,9 +125,9 @@ function getBlockArgs(eelvlBlockId: number, eelvlBlock: EelvlBlock) {
     case EelvlBlockId.LABEL:
       return [eelvlBlock.labelText, eelvlBlock.labelTextColor, eelvlBlock.labelWrapLength]
     default:
-      if (hasEelvlBlockOneIntParameter(eelvlBlockId)) {
+      if (hasEelvlBlockOneIntParameter(eelvlBlockId, eelvlLayer)) {
         return [eelvlBlock.intParameter]
-      } else if (hasEelvlBlockTwoIntParameter(eelvlBlockId)) {
+      } else if (hasEelvlBlockTwoIntParameter(eelvlBlockId, eelvlLayer)) {
           return [eelvlBlock.intParameter, eelvlBlock.intParameterTwo]
       } else if (hasEelvlBlockOneUIntParameter(eelvlBlockId)) {
         return [eelvlBlock.uintParameter]

@@ -1583,9 +1583,9 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock): Block {
           return createBlock(PwBlockName.EMPTY)
       }
 
-      // EBE LOGIC
+    // EBE LOGIC
 
-      // Counters
+    // Counters
     case EelvlBlockId.EBE_COUNTER_CONSUMABLE:
         switch (eelvlBlock.intParameter) {
           case 0:
