@@ -54,10 +54,11 @@ export async function importFromEelvl(fileData: ArrayBuffer) {
       const eelvlBlock = readEelvlBlock(bytes, eelvlBlockId, eelvlLayer)
       eelvlBlock.blockId = eelvlBlockId
 
-      const pwBlock: Block = mapBlockIdEelvlToPw(eelvlBlock)
       const pwLayer = mapLayerEelvlToPw(eelvlLayer)
-      if (pwLayer == null)
+      if (pwLayer === null) {
         continue;
+      }
+      const pwBlock: Block = mapBlockIdEelvlToPw(eelvlBlock)
       for (const pos of blockPositions) {
         if (pos.x >= 0 && pos.y >= 0 && pos.x < pwMapWidth && pos.y < pwMapHeight) {
           pwBlock3DArray[pwLayer][pos.x][pos.y] = pwBlock
