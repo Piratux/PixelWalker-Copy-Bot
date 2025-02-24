@@ -1,5 +1,5 @@
 import { ByteArray } from '@/classes/ByteArray.ts'
-import { EelvlBlockId, hasEelvlBlockOneIntParameter, hasEelvlBlockOneUIntParameter, hasEelvlBlockTwoIntParameter, isEelvlNpc } from '@/enums/EelvlBlockId.ts'
+import { EelvlBlockId, hasEelvlBlockOneIntParameter, hasEelvlBlockOneUIntParameter, hasEelvlBlockTwoIntParameters, isEelvlNpc } from '@/enums/EelvlBlockId.ts'
 import type { BlockArg } from 'pw-js-world'
 import { Block, LayerType } from 'pw-js-world'
 import { EelvlBlock } from '@/types/EelvlBlock.ts'
@@ -128,7 +128,7 @@ function readEelvlBlock(bytes: ByteArray, eelvlBlockId: number, eelvlLayer: numb
     default:
       if (hasEelvlBlockOneIntParameter(eelvlBlockId, eelvlLayer)) {
         eelvlBlock.intParameter = bytes.readInt()
-      } else if (hasEelvlBlockTwoIntParameter(eelvlBlockId, eelvlLayer)) {
+      } else if (hasEelvlBlockTwoIntParameters(eelvlBlockId, eelvlLayer)) {
         eelvlBlock.intParameter = bytes.readInt()
         eelvlBlock.intParameterTwo = bytes.readInt()
       } else if (hasEelvlBlockOneUIntParameter(eelvlBlockId)) {

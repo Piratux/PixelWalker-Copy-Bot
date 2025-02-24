@@ -1202,7 +1202,7 @@ export enum EelvlBlockId {
 
 export function hasEelvlBlockOneIntParameter(eelvlBlockId: number, eelvlLayer: number): Boolean {
   if (eelvlLayer === EelvlLayer.EBE_TRIBG) {
-    return !hasEelvlBlockTwoIntParameter(eelvlBlockId, eelvlLayer);
+    return !hasEelvlBlockTwoIntParameters(eelvlBlockId, eelvlLayer);
   }
 
   return [
@@ -1360,7 +1360,7 @@ export function hasEelvlBlockOneIntParameter(eelvlBlockId: number, eelvlLayer: n
   ].includes(eelvlBlockId)
 }
 
-export function hasEelvlBlockTwoIntParameter(eelvlBlockId: number, layer: number): Boolean {
+export function hasEelvlBlockTwoIntParameters(eelvlBlockId: number, layer: number): Boolean {
   if (layer === 3) {
     return [
       EelvlBlockId.EBE_HEX_FG_BASIC,

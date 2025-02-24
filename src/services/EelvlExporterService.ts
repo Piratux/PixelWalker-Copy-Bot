@@ -1,5 +1,5 @@
 import { ByteArray } from '@/classes/ByteArray.ts'
-import { EelvlBlockId, hasEelvlBlockOneIntParameter, hasEelvlBlockOneUIntParameter, hasEelvlBlockTwoIntParameter, isEelvlNpc } from '@/enums/EelvlBlockId.ts'
+import { EelvlBlockId, hasEelvlBlockOneIntParameter, hasEelvlBlockOneUIntParameter, hasEelvlBlockTwoIntParameters, isEelvlNpc } from '@/enums/EelvlBlockId.ts'
 import { getPwGameWorldHelper, usePWClientStore } from '@/stores/PWClientStore.ts'
 import { Block, LayerType } from 'pw-js-world'
 import { EelvlBlock } from '@/types/EelvlBlock.ts'
@@ -127,7 +127,7 @@ function getBlockArgs(eelvlBlockId: number, eelvlBlock: EelvlBlock, eelvlLayer: 
     default:
       if (hasEelvlBlockOneIntParameter(eelvlBlockId, eelvlLayer)) {
         return [eelvlBlock.intParameter]
-      } else if (hasEelvlBlockTwoIntParameter(eelvlBlockId, eelvlLayer)) {
+      } else if (hasEelvlBlockTwoIntParameters(eelvlBlockId, eelvlLayer)) {
           return [eelvlBlock.intParameter, eelvlBlock.intParameterTwo]
       } else if (hasEelvlBlockOneUIntParameter(eelvlBlockId)) {
         return [eelvlBlock.uintParameter]
