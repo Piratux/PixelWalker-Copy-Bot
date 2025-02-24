@@ -1,3 +1,5 @@
+import { EelvlLayer } from "./EelvlLayer";
+
 export enum EelvlBlockId {
   BASIC_WHITE = 1088,
   BASIC_GRAY = 9,
@@ -1199,7 +1201,7 @@ export enum EelvlBlockId {
 }
 
 export function hasEelvlBlockOneIntParameter(eelvlBlockId: number, eelvlLayer: number): Boolean {
-  if (eelvlLayer === 3) {
+  if (eelvlLayer === EelvlLayer.EBE_TRIBG) {
     return !hasEelvlBlockTwoIntParameter(eelvlBlockId, eelvlLayer);
   }
 

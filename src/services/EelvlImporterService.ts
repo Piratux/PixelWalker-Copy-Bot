@@ -101,7 +101,7 @@ function mapLayerEelvlToPw(eelvlLayer: number) {
 function readEelvlBlock(bytes: ByteArray, eelvlBlockId: number, eelvlLayer: number) {
   const eelvlBlock = {} as EelvlBlock
 
-  if (eelvlLayer === 2) {
+  if (eelvlLayer === EelvlLayer.EBE_VISION) {
     bytes.readInt();
   }
 
