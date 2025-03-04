@@ -1590,20 +1590,36 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock): Block {
     case EelvlBlockId.EBE_COUNTER_CONSUMABLE:
         switch (eelvlBlock.intParameterTwo) {
           case 0:
+            if (eelvlBlock.intParameter === 0)
+              return createBlock(PwBlockName.COUNTER_WHITE_CONSUMABLE_SET, [eelvlBlock.intParameter]);
             return createBlock(PwBlockName.COUNTER_WHITE_CONSUMABLE, [eelvlBlock.intParameter!])
           case 1:
+            if (eelvlBlock.intParameter === 0)
+              return createBlock(PwBlockName.COUNTER_BLACK_CONSUMABLE_SET, [eelvlBlock.intParameter]);
             return createBlock(PwBlockName.COUNTER_BLACK_CONSUMABLE, [eelvlBlock.intParameter!])
           case 2:
+            if (eelvlBlock.intParameter === 0)
+              return createBlock(PwBlockName.COUNTER_RED_CONSUMABLE_SET, [eelvlBlock.intParameter]);
             return createBlock(PwBlockName.COUNTER_RED_CONSUMABLE, [eelvlBlock.intParameter!])
           case 3:
+            if (eelvlBlock.intParameter === 0)
+              return createBlock(PwBlockName.COUNTER_GREEN_CONSUMABLE_SET, [eelvlBlock.intParameter]);
             return createBlock(PwBlockName.COUNTER_GREEN_CONSUMABLE, [eelvlBlock.intParameter!])
           case 4:
+            if (eelvlBlock.intParameter === 0)
+              return createBlock(PwBlockName.COUNTER_BLUE_CONSUMABLE_SET, [eelvlBlock.intParameter]);
             return createBlock(PwBlockName.COUNTER_BLUE_CONSUMABLE, [eelvlBlock.intParameter!])
           case 5:
+            if (eelvlBlock.intParameter === 0)
+              return createBlock(PwBlockName.COUNTER_CYAN_CONSUMABLE_SET, [eelvlBlock.intParameter]);
             return createBlock(PwBlockName.COUNTER_CYAN_CONSUMABLE, [eelvlBlock.intParameter!])
           case 6:
+            if (eelvlBlock.intParameter === 0)
+              return createBlock(PwBlockName.COUNTER_MAGENTA_CONSUMABLE_SET, [eelvlBlock.intParameter]);
             return createBlock(PwBlockName.COUNTER_MAGENTA_CONSUMABLE, [eelvlBlock.intParameter!])
           case 7:
+            if (eelvlBlock.intParameter === 0)
+              return createBlock(PwBlockName.COUNTER_YELLOW_CONSUMABLE_SET, [eelvlBlock.intParameter]);
             return createBlock(PwBlockName.COUNTER_YELLOW_CONSUMABLE, [eelvlBlock.intParameter!])
           default:
             return createBlock(PwBlockName.EMPTY)
@@ -1612,20 +1628,36 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock): Block {
     case EelvlBlockId.EBE_COUNTER_REUSABLE:
       switch (eelvlBlock.intParameterTwo) {
         case 0:
+          if (eelvlBlock.intParameter === 0)
+            return createBlock(PwBlockName.COUNTER_WHITE_REUSABLE_SET, [eelvlBlock.intParameter]);
           return createBlock(PwBlockName.COUNTER_WHITE_REUSABLE, [eelvlBlock.intParameter!])
         case 1:
+          if (eelvlBlock.intParameter === 0)
+            return createBlock(PwBlockName.COUNTER_BLACK_REUSABLE_SET, [eelvlBlock.intParameter]);
           return createBlock(PwBlockName.COUNTER_BLACK_REUSABLE, [eelvlBlock.intParameter!])
         case 2:
+          if (eelvlBlock.intParameter === 0)
+            return createBlock(PwBlockName.COUNTER_RED_REUSABLE_SET, [eelvlBlock.intParameter]);
           return createBlock(PwBlockName.COUNTER_RED_REUSABLE, [eelvlBlock.intParameter!])
         case 3:
+          if (eelvlBlock.intParameter === 0)
+            return createBlock(PwBlockName.COUNTER_GREEN_REUSABLE_SET, [eelvlBlock.intParameter]);
           return createBlock(PwBlockName.COUNTER_GREEN_REUSABLE, [eelvlBlock.intParameter!])
         case 4:
+          if (eelvlBlock.intParameter === 0)
+            return createBlock(PwBlockName.COUNTER_BLUE_REUSABLE_SET, [eelvlBlock.intParameter]);
           return createBlock(PwBlockName.COUNTER_BLUE_REUSABLE, [eelvlBlock.intParameter!])
         case 5:
+          if (eelvlBlock.intParameter === 0)
+            return createBlock(PwBlockName.COUNTER_CYAN_REUSABLE_SET, [eelvlBlock.intParameter]);
           return createBlock(PwBlockName.COUNTER_CYAN_REUSABLE, [eelvlBlock.intParameter!])
         case 6:
+          if (eelvlBlock.intParameter === 0)
+            return createBlock(PwBlockName.COUNTER_MAGENTA_REUSABLE_SET, [eelvlBlock.intParameter]);
           return createBlock(PwBlockName.COUNTER_MAGENTA_REUSABLE, [eelvlBlock.intParameter!])
         case 7:
+          if (eelvlBlock.intParameter === 0)
+            return createBlock(PwBlockName.COUNTER_YELLOW_REUSABLE_SET, [eelvlBlock.intParameter]);
           return createBlock(PwBlockName.COUNTER_YELLOW_REUSABLE, [eelvlBlock.intParameter!])
         default:
           return createBlock(PwBlockName.EMPTY)
