@@ -335,9 +335,9 @@ function mapBlockIdPwToEelvl(pwBlock: Block, eelvlLayer: EelvlLayer): EelvlBlock
     case PwBlockName.TEAM_EFFECT_RED:
       return { blockId: EelvlBlockId.TEAM_EFFECT_NONE, intParameter: 1 }
     case PwBlockName.TEAM_EFFECT_GREEN:
-      return { blockId: EelvlBlockId.TEAM_EFFECT_NONE, intParameter: 2 }
-    case PwBlockName.TEAM_EFFECT_BLUE:
       return { blockId: EelvlBlockId.TEAM_EFFECT_NONE, intParameter: 3 }
+    case PwBlockName.TEAM_EFFECT_BLUE:
+      return { blockId: EelvlBlockId.TEAM_EFFECT_NONE, intParameter: 2 }
     case PwBlockName.TEAM_EFFECT_CYAN:
       return { blockId: EelvlBlockId.TEAM_EFFECT_NONE, intParameter: 4 }
     case PwBlockName.TEAM_EFFECT_MAGENTA:
@@ -349,9 +349,9 @@ function mapBlockIdPwToEelvl(pwBlock: Block, eelvlLayer: EelvlLayer): EelvlBlock
     case PwBlockName.TEAM_RED_DOOR:
       return { blockId: EelvlBlockId.TEAM_NONE_DOOR, intParameter: 1 }
     case PwBlockName.TEAM_GREEN_DOOR:
-      return { blockId: EelvlBlockId.TEAM_NONE_DOOR, intParameter: 2 }
-    case PwBlockName.TEAM_BLUE_DOOR:
       return { blockId: EelvlBlockId.TEAM_NONE_DOOR, intParameter: 3 }
+    case PwBlockName.TEAM_BLUE_DOOR:
+      return { blockId: EelvlBlockId.TEAM_NONE_DOOR, intParameter: 2 }
     case PwBlockName.TEAM_CYAN_DOOR:
       return { blockId: EelvlBlockId.TEAM_NONE_DOOR, intParameter: 4 }
     case PwBlockName.TEAM_MAGENTA_DOOR:
@@ -363,9 +363,9 @@ function mapBlockIdPwToEelvl(pwBlock: Block, eelvlLayer: EelvlLayer): EelvlBlock
     case PwBlockName.TEAM_RED_GATE:
       return { blockId: EelvlBlockId.TEAM_NONE_GATE, intParameter: 1 }
     case PwBlockName.TEAM_GREEN_GATE:
-      return { blockId: EelvlBlockId.TEAM_NONE_GATE, intParameter: 2 }
-    case PwBlockName.TEAM_BLUE_GATE:
       return { blockId: EelvlBlockId.TEAM_NONE_GATE, intParameter: 3 }
+    case PwBlockName.TEAM_BLUE_GATE:
+      return { blockId: EelvlBlockId.TEAM_NONE_GATE, intParameter: 2 }
     case PwBlockName.TEAM_CYAN_GATE:
       return { blockId: EelvlBlockId.TEAM_NONE_GATE, intParameter: 4 }
     case PwBlockName.TEAM_MAGENTA_GATE:
@@ -1129,12 +1129,21 @@ function mapBlockIdPwToEelvl(pwBlock: Block, eelvlLayer: EelvlLayer): EelvlBlock
     case PwBlockName.TOXIC_SEWER_DRAIN_MUD:
       return { blockId: EelvlBlockId.TOXIC_SEWER_DRAIN_EMPTY, intParameter: 4 }
     default: {
-      if (pwBlockName === undefined && eelvlLayer !== EelvlLayer.BACKGROUND) {
-        return createMissingBlockSign(`Unknown Block ID: ${pwBlock.bId}`)
+      if (pwBlockName === undefined) {
+        if (eelvlLayer === EelvlLayer.FOREGROUND) {
+          return createMissingBlockSign(`Unknown Block ID: ${pwBlock.bId}`)
+        } else {
+          return { blockId: EelvlBlockId.EMPTY }
+        }
       }
+
       const eelvlBlockId: EelvlBlockId = EelvlBlockId[pwBlockName as keyof typeof EelvlBlockId]
-      if (eelvlBlockId === undefined && eelvlLayer !== EelvlLayer.BACKGROUND) {
-        return createMissingBlockSign(`Missing EELVL block: ${pwBlockName}`)
+      if (eelvlBlockId === undefined) {
+        if (eelvlLayer === EelvlLayer.FOREGROUND) {
+          return createMissingBlockSign(`Missing EELVL block: ${pwBlockName}`)
+        } else {
+          return { blockId: EelvlBlockId.EMPTY }
+        }
       }
 
       return { blockId: eelvlBlockId }
