@@ -1588,87 +1588,87 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock): Block {
 
     // Counters
     case EelvlBlockId.EBE_COUNTER_CONSUMABLE:
-        switch (eelvlBlock.intParameter) {
+        switch (eelvlBlock.intParameterTwo) {
           case 0:
-            return createBlock(PwBlockName.COUNTER_WHITE_CONSUMABLE, [eelvlBlock.intParameterTwo!])
+            return createBlock(PwBlockName.COUNTER_WHITE_CONSUMABLE, [eelvlBlock.intParameter!])
           case 1:
-            return createBlock(PwBlockName.COUNTER_BLACK_CONSUMABLE, [eelvlBlock.intParameterTwo!])
+            return createBlock(PwBlockName.COUNTER_BLACK_CONSUMABLE, [eelvlBlock.intParameter!])
           case 2:
-            return createBlock(PwBlockName.COUNTER_RED_CONSUMABLE, [eelvlBlock.intParameterTwo!])
+            return createBlock(PwBlockName.COUNTER_RED_CONSUMABLE, [eelvlBlock.intParameter!])
           case 3:
-            return createBlock(PwBlockName.COUNTER_GREEN_CONSUMABLE, [eelvlBlock.intParameterTwo!])
+            return createBlock(PwBlockName.COUNTER_GREEN_CONSUMABLE, [eelvlBlock.intParameter!])
           case 4:
-            return createBlock(PwBlockName.COUNTER_BLUE_CONSUMABLE, [eelvlBlock.intParameterTwo!])
+            return createBlock(PwBlockName.COUNTER_BLUE_CONSUMABLE, [eelvlBlock.intParameter!])
           case 5:
-            return createBlock(PwBlockName.COUNTER_CYAN_CONSUMABLE, [eelvlBlock.intParameterTwo!])
+            return createBlock(PwBlockName.COUNTER_CYAN_CONSUMABLE, [eelvlBlock.intParameter!])
           case 6:
-            return createBlock(PwBlockName.COUNTER_MAGENTA_CONSUMABLE, [eelvlBlock.intParameterTwo!])
+            return createBlock(PwBlockName.COUNTER_MAGENTA_CONSUMABLE, [eelvlBlock.intParameter!])
           case 7:
-            return createBlock(PwBlockName.COUNTER_YELLOW_CONSUMABLE, [eelvlBlock.intParameterTwo!])
+            return createBlock(PwBlockName.COUNTER_YELLOW_CONSUMABLE, [eelvlBlock.intParameter!])
           default:
             return createBlock(PwBlockName.EMPTY)
         }
 
     case EelvlBlockId.EBE_COUNTER_REUSABLE:
-      switch (eelvlBlock.intParameter) {
+      switch (eelvlBlock.intParameterTwo) {
         case 0:
-          return createBlock(PwBlockName.COUNTER_WHITE_REUSABLE, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_WHITE_REUSABLE, [eelvlBlock.intParameter!])
         case 1:
-          return createBlock(PwBlockName.COUNTER_BLACK_REUSABLE, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_BLACK_REUSABLE, [eelvlBlock.intParameter!])
         case 2:
-          return createBlock(PwBlockName.COUNTER_RED_REUSABLE, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_RED_REUSABLE, [eelvlBlock.intParameter!])
         case 3:
-          return createBlock(PwBlockName.COUNTER_GREEN_REUSABLE, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_GREEN_REUSABLE, [eelvlBlock.intParameter!])
         case 4:
-          return createBlock(PwBlockName.COUNTER_BLUE_REUSABLE, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_BLUE_REUSABLE, [eelvlBlock.intParameter!])
         case 5:
-          return createBlock(PwBlockName.COUNTER_CYAN_REUSABLE, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_CYAN_REUSABLE, [eelvlBlock.intParameter!])
         case 6:
-          return createBlock(PwBlockName.COUNTER_MAGENTA_REUSABLE, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_MAGENTA_REUSABLE, [eelvlBlock.intParameter!])
         case 7:
-          return createBlock(PwBlockName.COUNTER_YELLOW_REUSABLE, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_YELLOW_REUSABLE, [eelvlBlock.intParameter!])
         default:
           return createBlock(PwBlockName.EMPTY)
       }
     case EelvlBlockId.EBE_COUNTER_DOOR:
-      switch (eelvlBlock.intParameter) {
+      switch (eelvlBlock.intParameterTwo) {
         case 0:
-          return createBlock(PwBlockName.COUNTER_WHITE_DOOR, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_WHITE_DOOR, [eelvlBlock.intParameter!])
         case 1:
-          return createBlock(PwBlockName.COUNTER_BLACK_DOOR, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_BLACK_DOOR, [eelvlBlock.intParameter!])
         case 2:
-          return createBlock(PwBlockName.COUNTER_RED_DOOR, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_RED_DOOR, [eelvlBlock.intParameter!])
         case 3:
-          return createBlock(PwBlockName.COUNTER_GREEN_DOOR, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_GREEN_DOOR, [eelvlBlock.intParameter!])
         case 4:
-          return createBlock(PwBlockName.COUNTER_BLUE_DOOR, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_BLUE_DOOR, [eelvlBlock.intParameter!])
         case 5:
-          return createBlock(PwBlockName.COUNTER_CYAN_DOOR, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_CYAN_DOOR, [eelvlBlock.intParameter!])
         case 6:
-          return createBlock(PwBlockName.COUNTER_MAGENTA_DOOR, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_MAGENTA_DOOR, [eelvlBlock.intParameter!])
         case 7:
-          return createBlock(PwBlockName.COUNTER_YELLOW_DOOR, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_YELLOW_DOOR, [eelvlBlock.intParameter!])
         default:
           return createBlock(PwBlockName.EMPTY)
       }
     case EelvlBlockId.EBE_COUNTER_GATE:
-      switch (eelvlBlock.intParameter) {
+      switch (eelvlBlock.intParameterTwo) {
         case 0:
-          return createBlock(PwBlockName.COUNTER_WHITE_GATE, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_WHITE_GATE, [eelvlBlock.intParameter!])
         case 1:
-          return createBlock(PwBlockName.COUNTER_BLACK_GATE, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_BLACK_GATE, [eelvlBlock.intParameter!])
         case 2:
-          return createBlock(PwBlockName.COUNTER_RED_GATE, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_RED_GATE, [eelvlBlock.intParameter!])
         case 3:
-          return createBlock(PwBlockName.COUNTER_GREEN_GATE, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_GREEN_GATE, [eelvlBlock.intParameter!])
         case 4:
-          return createBlock(PwBlockName.COUNTER_BLUE_GATE, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_BLUE_GATE, [eelvlBlock.intParameter!])
         case 5:
-          return createBlock(PwBlockName.COUNTER_CYAN_GATE, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_CYAN_GATE, [eelvlBlock.intParameter!])
         case 6:
-          return createBlock(PwBlockName.COUNTER_MAGENTA_GATE, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_MAGENTA_GATE, [eelvlBlock.intParameter!])
         case 7:
-          return createBlock(PwBlockName.COUNTER_YELLOW_GATE, [eelvlBlock.intParameterTwo!])
+          return createBlock(PwBlockName.COUNTER_YELLOW_GATE, [eelvlBlock.intParameter!])
         default:
           return createBlock(PwBlockName.EMPTY)
       }
