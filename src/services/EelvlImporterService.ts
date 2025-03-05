@@ -1656,7 +1656,16 @@ function getEelvlToPwPortalBlock(eelvlBlock: EelvlBlock, pwBlockName: PwBlockNam
 
 function getEelvlToPwNoteBlock(eelvlBlock: EelvlBlock, pwBlockName: PwBlockName): Block {
   const noteArray = new Uint8Array(1)
-  noteArray[0] = eelvlBlock.intParameter as number
+  let oldNoteId = eelvlBlock.intParameter as number;
+  noteArray[0] = oldNoteId;
+
+  // Convert the Note Ids for just Piano.
+  if (pwBlockName === PwBlockName.NOTE_PIANO)
+  {
+    let newNoteId = oldNoteId >= 0 ? oldNoteId += 27 : 27 - Math.abs(oldNoteId);
+    noteArray[0] = newNoteId
+  }
+
   return createBlock(pwBlockName, [noteArray as Buffer])
 }
 
