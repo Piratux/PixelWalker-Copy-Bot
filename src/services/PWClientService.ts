@@ -60,7 +60,7 @@ export async function pwEnterEditKey(pwGameClient: PWGameClient, secretEditKey: 
     return
   }
   if (!getPwGameWorldHelper().meta!.hasSecretEditKey) {
-    sendGlobalChatMessage("Tried to enter an edit key, but this world has no active edit key!")
+    sendGlobalChatMessage("ERROR! This world has no secret edit key")
     return
   }
 
@@ -71,7 +71,7 @@ export async function pwEnterEditKey(pwGameClient: PWGameClient, secretEditKey: 
     await waitUntil(() => pwUserHasEditAccess(getPwGameWorldHelper(), getPwGameWorldHelper().botPlayerId), { timeout: 5000, intervalBetweenAttempts: 1000 })
   } catch (error) {
     if (error instanceof TimeoutError) {
-      sendGlobalChatMessage("Failed to enter the secret edit key!")
+      sendGlobalChatMessage("ERROR! Entered secret edit key is incorrect")
     } else {
       console.error('Unexpected error:', error);
     }
