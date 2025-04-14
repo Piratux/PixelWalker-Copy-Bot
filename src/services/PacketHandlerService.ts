@@ -35,6 +35,7 @@ import { ProtoGen, PWApiClient, PWGameClient } from 'pw-js-api'
 import {
   getAllWorldBlocks,
   pwAuthenticate,
+  pwEnterEditKey,
   pwCheckEdit,
   pwClearWorld,
   pwJoinWorld,
@@ -423,6 +424,7 @@ function pasteCommandReceived(args: string[], playerId: number, smartPaste: bool
 
 function playerInitPacketReceived() {
   getPwGameClient().send('playerInitReceived')
+  pwEnterEditKey(getPwGameClient(), usePWClientStore().secretEditKey)
 }
 
 function applySmartTransformForBlocks(

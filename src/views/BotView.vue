@@ -37,6 +37,7 @@ async function onDisconnectButtonClick() {
     PWClientStore.worldId = ''
     PWClientStore.email = ''
     PWClientStore.password = ''
+    PWClientStore.secretEditKey = ''
     await router.push({ name: LoginViewRoute.name })
   })
 }

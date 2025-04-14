@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-04-14 Version 1.0.10
+- Bot: Added support for secret edit keys
+
 2025-04-13 Version 1.0.9
 - Bot: Made export to EELVL only convert blocks that are identical in PixelWalker and EE: Offline. Other blocks that don't have corresponding blocks in EE: Offline are placed as sign.
 

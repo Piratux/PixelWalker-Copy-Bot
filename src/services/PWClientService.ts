@@ -54,6 +54,16 @@ export function pwUserHasEditAccess(pwGameWorldHelper: PWGameWorldHelper, player
   return pwGameWorldHelper.getPlayer(playerId)?.rights.canEdit === true
 }
 
+export function pwEnterEditKey(pwGameClient: PWGameClient, secretEditKey: string|null): boolean {
+  if (secretEditKey === null) {
+    return false
+  }
+  pwGameClient.send('playerEnterSecretEditKeyPacket', {
+    secretEditKey: secretEditKey,
+  })
+  return true
+}
+
 export function pwCheckEdit(pwGameWorldHelper: PWGameWorldHelper, playerId: number): boolean {
   if (!pwUserHasEditAccess(pwGameWorldHelper, playerId)) {
     sendPrivateChatMessage('ERROR! You do not have edit access.', playerId)

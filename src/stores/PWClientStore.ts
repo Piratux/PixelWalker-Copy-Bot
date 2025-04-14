@@ -11,6 +11,7 @@ export const usePWClientStore = defineStore('PWClientStore', () => {
   const worldId = ref<string>('')
   const email = ref<string>('')
   const password = ref<string>('')
+  const secretEditKey = ref<string>('')
   const totalBlocksLeftToReceiveFromWorldImport = ref<number>(0)
   const blocksById: Record<number, ListBlockResult> = {}
   const blocksByName: Record<string, ListBlockResult> = {}
@@ -58,6 +59,7 @@ export const usePWClientStore = defineStore('PWClientStore', () => {
     worldId,
     email,
     password,
+    secretEditKey,
     totalBlocksLeftToReceiveFromWorldImport,
     _blocks,
     blocksById,

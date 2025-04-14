@@ -18,6 +18,7 @@ const loadingOverlay = ref(false)
 const email = ref('')
 const password = ref('')
 const worldId = ref('')
+const secretEditKey = ref('')
 const form = ref<VForm>()
 
 const router = useRouter()
@@ -34,6 +35,7 @@ async function onConnectButtonClick() {
     PWClientStore.worldId = worldId.value
     PWClientStore.email = email.value
     PWClientStore.password = password.value
+    PWClientStore.secretEditKey = secretEditKey.value
     if (!(await form.value!.validate()).valid) {
       return
     }
@@ -72,6 +74,9 @@ function setDefaultWorldIdButtonClicked() {
         </v-row>
         <v-row>
           <PiTextField v-model="worldId" :required="true" hint="World ID or World URL" label="World ID"></PiTextField>
+        </v-row>
+        <v-row>
+          <PiTextField v-model="secretEditKey" label="Secret Edit Key (Optional)"></PiTextField>
         </v-row>
         <v-row> To use this bot, you need to use PixelWalker login credentials.</v-row>
         <v-row>
