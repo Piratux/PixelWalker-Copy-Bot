@@ -8,6 +8,7 @@ import { exportToPwlvl } from '@/service/PwlvlExporterService.ts'
 import { FileImportAsArrayBufferResult, getFileAsArrayBuffer } from '@/service/FileService.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
 import { importFromEelvl } from '@/service/EelvlImporterService.ts'
+import { importFromPng } from '@/service/PngImporterService.ts'
 import { importFromPwlvl } from '@/service/PwlvlImporterService.ts'
 import { withLoading } from '@/service/LoaderProxyService.ts'
 import PiCardContainer from '@/component/PiCardContainer.vue'
@@ -21,12 +22,15 @@ const loadingOverlay = ref(false)
 const router = useRouter()
 
 const importEelvlFileInput = ref<HTMLInputElement>()
+const importPngFileInput = ref<HTMLInputElement>()
 const importPwlvlFileInput = ref<HTMLInputElement>()
 
 const devViewEnabled = computed(() => import.meta.env.VITE_DEV_VIEW === 'TRUE')
 
 const worldId = ref<string>(usePWClientStore().worldId)
 const worldName = ref<string>(getPwGameWorldHelper().meta?.title ?? '')
+
+const quantizePng = ref(true)
 
 async function onDisconnectButtonClick() {
   await withLoading(loadingOverlay, async () => {
@@ -51,6 +55,10 @@ function onImportEelvlButtonClick() {
   importEelvlFileInput.value!.click()
 }
 
+function onImportPngButtonClick() {
+  importPngFileInput.value!.click()
+}
+
 async function onExportPwlvlButtonClick() {
   await withLoading(
     loadingOverlay,
@@ -72,6 +80,17 @@ async function onEelvlFileChange(event: Event) {
     }
     sendGlobalChatMessage(`Importing world from ${result.file.name}`)
     await importFromEelvl(result.data)
+  })
+}
+
+async function onPngFileChange(event: Event) {
+  await withLoading(loadingOverlay, async () => {
+    const result: FileImportAsArrayBufferResult | null = await getFileAsArrayBuffer(event)
+    if (!result) {
+      return
+    }
+    sendGlobalChatMessage(`Importing background from ${result.file.name}`)
+    await importFromPng(result.data, quantizePng.value) // Pass quantize option
   })
 }
 
@@ -124,6 +143,22 @@ async function onPwlvlFileChange(event: Event) {
           @change="onEelvlFileChange"
         />
         <PiButton color="blue" @click="onImportEelvlButtonClick">Import from EELVL</PiButton>
+      </v-row>
+      <v-row>
+        <input
+          ref="importPngFileInput"
+          accept=".png"
+          style="display: none"
+          type="file"
+          @change="onPngFileChange"
+        />
+        <PiButton color="green" @click="onImportPngButtonClick">Import hexcode background from PNG</PiButton>
+      </v-row>
+      <v-row>
+        <label>
+          <input v-model="quantizePng" type="checkbox" />
+          Smooth image colors (speed up image placement)
+        </label>
       </v-row>
       <v-row>
         <PiButton v-if="devViewEnabled" color="blue" @click="onExportPwlvlButtonClick">Export to PWLVL</PiButton>
