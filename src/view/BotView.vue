@@ -89,7 +89,11 @@ async function onPngFileChange(event: Event) {
     if (!result) {
       return
     }
-    sendGlobalChatMessage(`Importing background from ${result.file.name}`)
+    if (quantizePng.value) {
+      sendGlobalChatMessage(`Importing optimized background from ${result.file.name}`)
+    } else {
+      sendGlobalChatMessage(`Importing background from ${result.file.name}`)
+    }
     await importFromPng(result.data, quantizePng.value) // Pass quantize option
   })
 }
@@ -144,7 +148,7 @@ async function onPwlvlFileChange(event: Event) {
         />
         <PiButton color="blue" @click="onImportEelvlButtonClick">Import from EELVL</PiButton>
       </v-row>
-      <v-row>
+      <v-row class="align-center" style="gap: 0.5rem; flex-wrap: nowrap; white-space: nowrap;">
         <input
           ref="importPngFileInput"
           accept=".png"
@@ -152,13 +156,22 @@ async function onPwlvlFileChange(event: Event) {
           type="file"
           @change="onPngFileChange"
         />
-        <PiButton color="green" @click="onImportPngButtonClick">Import hexcode background from PNG</PiButton>
-      </v-row>
-      <v-row>
-        <label>
-          <input v-model="quantizePng" type="checkbox" />
-          Smooth image colors (speed up image placement)
-        </label>
+        <PiButton
+          color="green"
+          style="flex: 1 1 0; min-width: 0; display: inline-flex; padding: 0 12px;"
+          @click="onImportPngButtonClick"
+        >
+          Import PNG Background
+        </PiButton>
+        <PiButton
+          :color="quantizePng ? 'green' : 'grey'"
+          :outlined="!quantizePng"
+          :title="'Quantize image colors (speed up image placement)'"
+          style="flex: 0 0 auto; min-width: 0; width: auto; display: inline-flex; padding: 0 8px;"
+          @click="quantizePng = !quantizePng"
+        >
+          Optimize
+        </PiButton>
       </v-row>
       <v-row>
         <PiButton v-if="devViewEnabled" color="blue" @click="onExportPwlvlButtonClick">Export to PWLVL</PiButton>
