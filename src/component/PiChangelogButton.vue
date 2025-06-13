@@ -1,16 +1,8 @@
 <template>
-  <PiCardContainer>
-    <v-col>
-      <v-row>
-        {{ 'Last updated ' + changelogLatestVersionLine }}
-        <PiButton color="yellow" @click="openChangelog">Changelog</PiButton>
-      </v-row>
-    </v-col>
-  </PiCardContainer>
+  <PiButton color="yellow" @click="openChangelog">Changelog {{ changelogLatestVersionLine }}</PiButton>
 </template>
 
 <script lang="ts" setup>
-import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'
 import { onMounted, ref } from 'vue'
 
@@ -20,7 +12,7 @@ const changelogLatestVersionLine = ref('')
 onMounted(async () => {
   const response = await fetch(changelogLocation)
   const text = await response.text()
-  changelogLatestVersionLine.value = text.split('\n')[2]
+  changelogLatestVersionLine.value = "v" +text.split('\n')[2].split(" ")[2]
 })
 
 const openChangelog = () => {

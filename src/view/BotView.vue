@@ -16,6 +16,7 @@ import PiButton from '@/component/PiButton.vue'
 import { createAsyncCallback } from '@/util/Promise.ts'
 import PiOverlay from '@/component/PiOverlay.vue'
 import { resetAllStores } from '@/plugin/ResetStore.ts'
+import PiChangelogButton from '@/component/PiChangelogButton.vue'
 
 const loadingOverlay = ref(false)
 
@@ -113,6 +114,7 @@ async function onPwlvlFileChange(event: Event) {
 <template>
   <PiOverlay :loading="loadingOverlay"></PiOverlay>
   <PiCardContainer>
+    <PiChangelogButton />
     <v-col>
       <v-row>
         <h3>Connected to {{ `'${worldName}'` }}</h3>

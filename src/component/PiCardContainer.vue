@@ -5,6 +5,3 @@
     </v-container>
   </v-sheet>
 </template>
-
-<script setup lang="ts">
-</script>

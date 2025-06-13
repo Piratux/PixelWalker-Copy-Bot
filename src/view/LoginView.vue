@@ -11,6 +11,7 @@ import { initPwClasses } from '@/service/PWClientService.ts'
 import { BotViewRoute } from '@/router/Routes.ts'
 import { withLoading } from '@/service/LoaderProxyService.ts'
 import PiOverlay from '@/component/PiOverlay.vue'
+import PiChangelogButton from '@/component/PiChangelogButton.vue'
 
 const loadingOverlay = ref(false)
 const email = ref('')
@@ -81,6 +82,7 @@ function setDefaultWorldIdButtonClicked() {
         </v-row>
       </v-col>
     </v-form>
+    <PiChangelogButton />
   </PiCardContainer>
 </template>
 
