@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
-import PiCardContainer from '@/component/PiCardContainer.vue'
+import PiCardContainerLogin from '@/component/PiCardContainerLogin.vue'
 import PiTextField from '@/component/PiTextField.vue'
 import PiButton from '@/component/PiButton.vue'
 import { VForm } from 'vuetify/components'
@@ -52,7 +52,7 @@ function setDefaultWorldIdButtonClicked() {
 
 <template>
   <PiOverlay :loading="loadingOverlay"></PiOverlay>
-  <PiCardContainer>
+  <PiCardContainerLogin>
     <v-form ref="form" autocomplete="on" validate-on="submit lazy" @submit.prevent="onConnectButtonClick">
       <v-col>
         <v-row>
@@ -83,7 +83,7 @@ function setDefaultWorldIdButtonClicked() {
       </v-col>
     </v-form>
     <PiChangelogButton />
-  </PiCardContainer>
+  </PiCardContainerLogin>
 </template>
 
 <style scoped></style>
