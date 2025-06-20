@@ -24,6 +24,18 @@ export const ExportEelvlViewRoute = {
   component: () => import('@/view/EelvlExportView.vue'),
 }
 
+export const PngImportViewRoute = {
+  path: `${basePath}/import-png`,
+  name: 'import-png',
+  component: () => import('@/view/PngImportView.vue'),
+}
+
+export const MidiImportViewRoute = {
+  path: `${basePath}/import-midi`,
+  name: 'import-midi',
+  component: () => import('@/view/MidiImportView.vue'),
+}
+
 export const DevViewRoute = {
   path: `${basePath}/dev`,
   name: 'dev',

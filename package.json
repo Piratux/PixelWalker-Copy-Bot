@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@basementuniverse/vec": "^2.2.2",
+    "@tonejs/midi": "^2.0.28",
     "@mdi/font": "^7.4.47",
     "async-wait-until": "^2.0.27",
     "iconv-lite": "^0.6.3",
@@ -24,6 +25,7 @@
     "lodash-es": "^4.17.21",
     "many-keys-map": "^2.0.1",
     "pinia": "^3.0.1",
+    "pngjs": "^7.0.0",
     "pw-js-api": "github:Piratux/pw-js-api#6def7872b77848363ba32a50087ec3f00a04177d",
     "pw-js-world": "^0.4.1-dev.766d8c6",
     "vue": "^3.5.13",
@@ -38,6 +40,7 @@
     "@eslint/js": "^9.24.0",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^22.14.0",
+    "@types/pngjs": "^6.0.5",
     "@vitejs/plugin-vue": "^5.2.3",
     "@vue/eslint-config-typescript": "^14.5.0",
     "eslint": "^9.24.0",

@@ -1,4 +1,4 @@
-import { Block, BufferReader, createBlockPackets, DeserialisedStructure, Point, SendableBlockPacket } from 'pw-js-world'
+import { Block, BufferReader, createBlockPackets, DeserialisedStructure, Point, SendableBlockPacket, LayerType } from 'pw-js-world'
 import {
   getPwBlocksByPwId,
   getPwBlocksByPwName,
@@ -35,6 +35,12 @@ export async function placeWorldDataBlocks(worldData: DeserialisedStructure, pos
   const packets: SendableBlockPacket[] = worldData.toPackets(pos.x, pos.y)
 
   return await placePackets(packets, worldData.width * worldData.height * TOTAL_PW_LAYERS)
+}
+
+export async function placeLayerDataBlocks(worldData: DeserialisedStructure, pos: Point, layer: LayerType): Promise<boolean> {
+  const packets: SendableBlockPacket[] = worldData.toPackets(pos.x, pos.y).filter(packet => (packet.layer as LayerType) === layer)
+
+  return await placePackets(packets, worldData.width * worldData.height * 1)
 }
 
 async function placePackets(packets: SendableBlockPacket[], blockCount: number): Promise<boolean> {
