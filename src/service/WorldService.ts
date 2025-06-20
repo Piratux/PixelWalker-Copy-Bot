@@ -106,7 +106,10 @@ export function getBlockId(pwBlockName: PwBlockName): number {
   return getPwBlocksByPwName()[pwBlockName].Id
 }
 
-export function convertDeserializedStructureToWorldBlocks(blocks: DeserialisedStructure, pos: vec2): WorldBlock[] {
+export function convertDeserializedStructureToWorldBlocks(
+  blocks: DeserialisedStructure,
+  pos: vec2 = vec2(0, 0),
+): WorldBlock[] {
   const resultBlocks: WorldBlock[] = []
   for (let layer = 0; layer < TOTAL_PW_LAYERS; layer++) {
     for (let y = 0; y < blocks.height; y++) {

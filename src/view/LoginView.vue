@@ -8,10 +8,10 @@ import { useRouter } from 'vue-router'
 import { usePWClientStore } from '@/store/PWClientStore.ts'
 import { getWorldIdIfUrl } from '@/service/WorldIdExtractorService.ts'
 import { initPwClasses } from '@/service/PWClientService.ts'
-import { BotViewRoute } from '@/router/Routes.ts'
+import { HomeViewRoute } from '@/router/Routes.ts'
 import { withLoading } from '@/service/LoaderProxyService.ts'
 import PiOverlay from '@/component/PiOverlay.vue'
-import PiChangelogButton from '@/component/PiChangelogButton.vue'
+import { getEnvDefaultWorldId } from '@/util/Environment.ts'
 
 const loadingOverlay = ref(false)
 const email = ref('')
@@ -41,12 +41,13 @@ async function onConnectButtonClick() {
 
     await initPwClasses()
 
-    await router.push({ name: BotViewRoute.name })
+    await router.push({ name: HomeViewRoute.name })
+    usePWClientStore().isConnected = true
   })
 }
 
 function setDefaultWorldIdButtonClicked() {
-  worldId.value = import.meta.env.VITE_DEFAULT_WORLD_ID
+  worldId.value = getEnvDefaultWorldId()
 }
 </script>
 

@@ -9,7 +9,7 @@ import checker from 'vite-plugin-checker'
 // https://vitejs.dev/config/
 export default defineConfig(() => {
   return {
-    base: '/Pixel-Walker-Copy-Bot/',
+    base: '/PixelWalker-Copy-Bot/',
     plugins: [
       vue(),
       tsconfigPaths(),

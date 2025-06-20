@@ -1,9 +1,9 @@
-# Pixel-Walker-Copy-Bot
+# PixelWalker-Copy-Bot
 
 PixelWalker bot allowing to build worlds quicker.
 
 Hosted on GitHub pages at:\
-http://piratux.github.io/Pixel-Walker-Copy-Bot/
+http://piratux.github.io/PixelWalker-Copy-Bot/
 
 ## Feature overview
 
@@ -34,7 +34,7 @@ npm run dev
 ```
 
 Then open up this:\
-http://localhost:3000/Pixel-Walker-Copy-Bot/
+http://localhost:3000/PixelWalker-Copy-Bot/
 
 Vite supports HMR (Hot Module Replacement) out of box, which means you can make code changes, and changes will be
 reflected live.
@@ -70,7 +70,7 @@ npm run preview
 ```
 
 Then open up this:\
-http://localhost:4173/Pixel-Walker-Copy-Bot/
+http://localhost:4173/PixelWalker-Copy-Bot/
 
 Vite's HMR won't work for production build, so you need to run build and preview commands when you make code changes.
 
