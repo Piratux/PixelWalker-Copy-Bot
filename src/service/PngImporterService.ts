@@ -43,7 +43,7 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
   const pwMapWidth = getPwGameWorldHelper().width;
   const pwMapHeight = getPwGameWorldHelper().height;
 
-  
+  // optimizing the color-palette here could be improved a LOT, but it works.
   let quantize_amt = 1;
   if (quantize) {
     const MAX_COLORS = 1024;

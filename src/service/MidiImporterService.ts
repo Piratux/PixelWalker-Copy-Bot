@@ -71,70 +71,61 @@ export function getImportedFromMidiData(fileData: ArrayBuffer): DeserialisedStru
   pwBlock3DArray[LayerType.Foreground][0][2] = new Block(getBlockId(PwBlockName.TOOL_GOD_MODE_ACTIVATOR));
 
   const midi = new Midi(fileData)
-  if (midi.header.tempos.length === 1) {
-    const notes = processMidiFile(midi)
-    const columnHeight = pwMapHeight - 2 - portal_height; // Leave 1 block at top and bottom
-    let last_x = 0;
+  const notes = processMidiFile(midi)
+  const columnHeight = pwMapHeight - 2 - portal_height; // Leave 1 block at top and bottom
+  let last_x = 0;
 
-    // Object.entries(notes).forEach(([key]) => {
-    Object.entries(notes).forEach(([key, value]) => {
-      const spot = Number(key) + 100; // This is the distance along the music track
+  // its worth noting that this doesnt account for time taken to travel between portals, but otherwise its pretty seamless.
+  Object.entries(notes).forEach(([key, value]) => {
+    const spot = Number(key) + 100; // This is the distance along the music track
 
-      // Determine which column (x) and row (y) the block should go in
-      const x = Math.floor(spot / columnHeight); // column index
-      const y = (spot % columnHeight) + 1; // vertical position, +1 to avoid top portal
+    // Determine which column (x) and row (y) the block should go in
+    const x = Math.floor(spot / columnHeight); // column index
+    const y = (spot % columnHeight) + 1; // vertical position, +1 to avoid top portal
 
-      if (
-        x >= 0 && x < pwMapWidth &&
-        y >= 0 && y < pwMapHeight
-      ) {
-        const blockId = getBlockId((value.type === "piano") ? PwBlockName.NOTE_PIANO : PwBlockName.NOTE_GUITAR);
+    if (
+      x >= 0 && x < pwMapWidth &&
+      y >= 0 && y < pwMapHeight
+    ) {
+      const blockId = getBlockId((value.type === "piano") ? PwBlockName.NOTE_PIANO : PwBlockName.NOTE_GUITAR);
 
-        // Split notes into groups of 5
-        for (let i = 0; i < value.notes.length; i += 5) {
-          const noteGroup = value.notes.slice(i, i + 5);
-          const targetY = y + Math.floor(i / 5);
+      // Split notes into groups of 5
+      for (let i = 0; i < value.notes.length; i += 5) {
+        const noteGroup = value.notes.slice(i, i + 5);
+        const targetY = y + Math.floor(i / 5);
 
-          // Only place if the spot is empty
-          if (
-            targetY < pwMapHeight &&
-            pwBlock3DArray[LayerType.Foreground][x][targetY].bId === 0
-          ) {
-            pwBlock3DArray[LayerType.Foreground][x][targetY] = new Block(blockId, [Buffer.from(noteGroup)]);
-            // Place background color blocks for each note in the group
-          }
+        // Only place if the spot is empty
+        if (
+          targetY < pwMapHeight &&
+          pwBlock3DArray[LayerType.Foreground][x][targetY].bId === 0
+        ) {
+          pwBlock3DArray[LayerType.Foreground][x][targetY] = new Block(blockId, [Buffer.from(noteGroup)]);
+          // Place background color blocks for each note in the group
         }
-        value.notes.forEach((note, idx) => {
-          const [r, g, b] = getRGBfromNote(note);
-          if (y + idx < pwMapHeight) {
-            pwBlock3DArray[LayerType.Background][x][y + idx] = new Block(getBlockId(PwBlockName.CUSTOM_SOLID_BG), [(b + (g << 8) + (r << 16))]);
-          }
-        });
-        last_x = Math.max(last_x, x)
-      } else {
-        // Optionally log or handle out-of-bounds notes
-        console.warn(`Note at x=${x}, y=${y} is out of bounds and will be skipped.`);
       }
-    });
-    for (let x = 0; x <= last_x; x++) {
-      // pwBlock3DArray[LayerType.Background][x][0] = new Block(getBlockId(PwBlockName.BRICK_RED_BG));
-      // pwBlock3DArray[LayerType.Background][x][199 - portal_height] = new Block(getBlockId(PwBlockName.BRICK_RED_BG));
-      if (x < (pwMapWidth-1)) {
-        if (x !== 0) {
-          pwBlock3DArray[LayerType.Foreground][x][0] = new Block(getBlockId(PwBlockName.PORTAL), [3, x, x]);
-        }
-        if (x < (pwMapWidth-1)) {
-          pwBlock3DArray[LayerType.Foreground][x][199 - portal_height] = new Block(getBlockId(PwBlockName.PORTAL), [3, 0, x+1]);
-        }      
-      }
+      // value.notes.forEach((note, idx) => {
+      //   const [r, g, b] = getRGBfromNote(note);
+      //   if (y + idx < pwMapHeight) {
+      //     pwBlock3DArray[LayerType.Background][x][y + idx] = new Block(getBlockId(PwBlockName.CUSTOM_SOLID_BG), [(b + (g << 8) + (r << 16))]);
+      //   }
+      // });
+      last_x = Math.max(last_x, x)
+    } else {
+      // Optionally log or handle out-of-bounds notes
+      console.warn(`Note at x=${x}, y=${y} is out of bounds and will be skipped.`);
     }
-    
-  }
-  else {
-    const message = "Theres more than one tempo, this bot is not advanced enough for that yet."
-    sendGlobalChatMessage(message)
-    MessageService.error(message)
-    return null
+  });
+  for (let x = 0; x <= last_x; x++) {
+    // pwBlock3DArray[LayerType.Background][x][0] = new Block(getBlockId(PwBlockName.BRICK_RED_BG));
+    // pwBlock3DArray[LayerType.Background][x][199 - portal_height] = new Block(getBlockId(PwBlockName.BRICK_RED_BG));
+    if (x < (pwMapWidth-1)) {
+      if (x !== 0) {
+        pwBlock3DArray[LayerType.Foreground][x][0] = new Block(getBlockId(PwBlockName.PORTAL), [3, x, x]);
+      }
+      if (x < (pwMapWidth-1)) {
+        pwBlock3DArray[LayerType.Foreground][x][199 - portal_height] = new Block(getBlockId(PwBlockName.PORTAL), [3, 0, x+1]);
+      }      
+    }
   }
   return new DeserialisedStructure(pwBlock3DArray, { width: pwMapWidth, height: pwMapHeight });
 }
@@ -193,7 +184,7 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
   let r, g, b;
 
   if (s === 0) {
-    r = g = b = l; // achromatic
+    r = g = b = l;
   } else {
     const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
     const p = 2 * l - q;
