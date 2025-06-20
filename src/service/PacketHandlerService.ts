@@ -49,7 +49,7 @@ function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
   if (!getPlayerBotData()[playerId]) {
     getPlayerBotData()[playerId] = createBotData()
   }
-  // sendPrivateChatMessage('Copy Bot is here! Type .help to show usage!', playerId)
+  sendPrivateChatMessage('Copy Bot is here! Type .help to show usage!', playerId)
 }
 
 async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {

@@ -54,11 +54,6 @@ export function getImportedFromMidiData(fileData: ArrayBuffer): DeserialisedStru
     for (let x = 0; x < pwMapWidth; x++) {
       pwBlock3DArray[layer][x] = [];
       for (let y = 0; y < pwMapHeight; y++) {
-        // if (x === 0 || y === 0 || x === (pwMapWidth-1) || y === (pwMapHeight-1)) {
-        //   // pwBlock3DArray[layer][x][y] = new Block(getBlockId(PwBlockName.BASIC_GREEN));
-        // } else {
-        //   pwBlock3DArray[layer][x][y] = new Block(0);
-        // }
         pwBlock3DArray[layer][x][y] = new Block(0);
       }
     }
@@ -103,6 +98,7 @@ export function getImportedFromMidiData(fileData: ArrayBuffer): DeserialisedStru
           // Place background color blocks for each note in the group
         }
       }
+      // -- Shows each note's colors, disabled for production --
       // value.notes.forEach((note, idx) => {
       //   const [r, g, b] = getRGBfromNote(note);
       //   if (y + idx < pwMapHeight) {
@@ -116,8 +112,6 @@ export function getImportedFromMidiData(fileData: ArrayBuffer): DeserialisedStru
     }
   });
   for (let x = 0; x <= last_x; x++) {
-    // pwBlock3DArray[LayerType.Background][x][0] = new Block(getBlockId(PwBlockName.BRICK_RED_BG));
-    // pwBlock3DArray[LayerType.Background][x][199 - portal_height] = new Block(getBlockId(PwBlockName.BRICK_RED_BG));
     if (x < (pwMapWidth-1)) {
       if (x !== 0) {
         pwBlock3DArray[LayerType.Foreground][x][0] = new Block(getBlockId(PwBlockName.PORTAL), [3, x, x]);
@@ -140,7 +134,7 @@ export function processMidiFile(midi: Midi): { [distance: number]: { type: strin
     const notes = track.notes;
     const family = track.instrument.family;
 
-    // guitars are supported because it requires strange note mappings.
+    // guitars are not supported (yet) because it requires strange note mappings.
     if (family === "piano") {
       notes.forEach(note => {
         if (highest_time <= note.time) {
