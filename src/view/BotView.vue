@@ -9,6 +9,7 @@ import { FileImportAsArrayBufferResult, getFileAsArrayBuffer } from '@/service/F
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
 import { importFromEelvl } from '@/service/EelvlImporterService.ts'
 import { importFromPng } from '@/service/PngImporterService.ts'
+import { importFromMidi } from '@/service/MidiImporterService.ts'
 import { importFromPwlvl } from '@/service/PwlvlImporterService.ts'
 import { withLoading } from '@/service/LoaderProxyService.ts'
 import PiCardContainer from '@/component/PiCardContainer.vue'
@@ -23,6 +24,7 @@ const router = useRouter()
 
 const importEelvlFileInput = ref<HTMLInputElement>()
 const importPngFileInput = ref<HTMLInputElement>()
+const importMidiFileInput = ref<HTMLInputElement>()
 const importPwlvlFileInput = ref<HTMLInputElement>()
 
 const devViewEnabled = computed(() => import.meta.env.VITE_DEV_VIEW === 'TRUE')
@@ -61,6 +63,10 @@ function onImportPngButtonClick() {
   importPngFileInput.value!.click()
 }
 
+function onImportMidiButtonClick() {
+  importMidiFileInput.value!.click()
+}
+
 async function onExportPwlvlButtonClick() {
   await withLoading(
     loadingOverlay,
@@ -96,7 +102,19 @@ async function onPngFileChange(event: Event) {
     } else {
       sendGlobalChatMessage(`Importing background from ${result.file.name}`)
     }
-    await importFromPng(result.data, quantizePng.value) // Pass quantize option
+    await importFromPng(result.data, quantizePng.value)
+  })
+}
+
+async function onMidiFileChange(event: Event) {
+  await withLoading(loadingOverlay, async () => {
+    const result: FileImportAsArrayBufferResult | null = await getFileAsArrayBuffer(event)
+    if (!result) {
+      return
+    }
+    // sendGlobalChatMessage(`Importing midi from ${result.file.name}`)
+    sendGlobalChatMessage(`Importing test midi.`)
+    await importFromMidi(result.data)
   })
 }
 
@@ -145,6 +163,7 @@ async function onPwlvlFileChange(event: Event) {
         <v-tab>Export EELVL</v-tab>
         <v-tab>Import EELVL</v-tab>
         <v-tab>Import Image</v-tab>
+        <v-tab>Import Midi</v-tab>
         <v-tab v-if="devViewEnabled">Export PWLVL</v-tab>
         <v-tab v-if="devViewEnabled">Import PWLVL</v-tab>
       </v-tabs>
@@ -291,6 +310,43 @@ async function onPwlvlFileChange(event: Event) {
             </v-col>
           </PiCardContainer>
         </v-tabs-window-item>
+        <!-- Import Midi Tab -->
+        <v-tabs-window-item>
+          <PiCardContainer>
+            <v-col>
+              <v-row class="align-center" style="gap: 0.5rem; flex-wrap: nowrap; white-space: nowrap;">
+                <input
+                  ref="importMidiFileInput"
+                  accept=".mid"
+                  style="display: none"
+                  type="file"
+                  @change="onMidiFileChange"
+                />
+                <PiButton
+                  color="green"
+                  style="flex: 1 1 0; min-width: 0; display: inline-flex; padding: 0 12px;"
+                  @click="onImportMidiButtonClick"
+                >
+                  Import Midi
+                </PiButton>
+                <!-- <PiButton
+                  :color="quantizePng ? 'green' : 'grey'"
+                  :outlined="!quantizePng"
+                  :title="'Quantize image colors (speed up image placement)'"
+                  style="flex: 0 0 auto; min-width: 0; width: auto; display: inline-flex; padding: 0 8px;"
+                  @click="quantizePng = !quantizePng"
+                >
+                  Optimize
+                </PiButton> -->
+              </v-row>
+              <v-row>
+                <v-col>
+                  Import a PNG image as the world background. "Optimize" will quantize colors for faster placement.
+                </v-col>
+              </v-row>
+            </v-col>
+          </PiCardContainer>
+        </v-tabs-window-item>
         <!-- Export PWLVL Tab (dev only) -->
         <v-tabs-window-item v-if="devViewEnabled">
           <PiCardContainer>
@@ -376,7 +432,6 @@ async function onPwlvlFileChange(event: Event) {
   display: flex;
   /* height: calc(100vh - 70px); */
   min-height: 0;
-  background:rgb(222, 222, 222);
 }
 .main-tabs {
   /* Optional: style your tabs */

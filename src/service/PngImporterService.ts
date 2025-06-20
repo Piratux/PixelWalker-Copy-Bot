@@ -1,6 +1,6 @@
 import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
-import { getBlockId, placeBackgroundDataBlocks } from '@/service/WorldService.ts'
+import { getBlockId, placeLayerDataBlocks } from '@/service/WorldService.ts'
 import { getPwGameWorldHelper } from '@/store/PWClientStore.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
 import { pwCheckEditWhenImporting } from '@/service/PWClientService.ts'
@@ -16,7 +16,7 @@ export async function importFromPng(fileData: ArrayBuffer, quantize = true) {
 
   const worldData = getImportedFromPngData(fileData, quantize)
 
-  const success = await placeBackgroundDataBlocks(worldData, vec2(0, 0))
+  const success = await placeLayerDataBlocks(worldData, vec2(0, 0), LayerType.Background)
 
   let message: string
   if (success) {
@@ -48,7 +48,6 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
   if (quantize) {
     const MAX_COLORS = 1024;
     const uniqueColors = new Set<number>();
-    // Try increasing quantize_amt until unique colors <= MAX_COLORS
     while (quantize_amt <= 64) {
       uniqueColors.clear();
       for (let x = 0; x < png.width; x++) {
@@ -71,7 +70,6 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
       quantize_amt *= 2;
     }
   }
-  // --- End quantize amount calculation ---
 
   // 1. Group locations by color
   const colorMap: Record<string, Array<[number, number]>> = {};
@@ -101,7 +99,6 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
     }
   }
 
-  // 2. Build the block array using the grouped colors
   const pwBlock3DArray: [Block[][], Block[][], Block[][]] = [[], [], []];
   for (let layer = 0; layer < TOTAL_PW_LAYERS; layer++) {
     pwBlock3DArray[layer] = [];
@@ -113,7 +110,6 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
     }
   }
 
-  // 3. Place blocks for each color group
   for (const [hex, locations] of Object.entries(colorMap)) {
     const block = new Block(getBlockId(PwBlockName.CUSTOM_SOLID_BG), [hex]);
     for (const [x, y] of locations) {

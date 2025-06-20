@@ -37,8 +37,8 @@ export async function placeWorldDataBlocks(worldData: DeserialisedStructure, pos
   return await placePackets(packets, worldData.width * worldData.height * TOTAL_PW_LAYERS)
 }
 
-export async function placeBackgroundDataBlocks(worldData: DeserialisedStructure, pos: Point): Promise<boolean> {
-  const packets: SendableBlockPacket[] = worldData.toPackets(pos.x, pos.y).filter(packet => (packet.layer as LayerType) === LayerType.Background)
+export async function placeLayerDataBlocks(worldData: DeserialisedStructure, pos: Point, layer: LayerType): Promise<boolean> {
+  const packets: SendableBlockPacket[] = worldData.toPackets(pos.x, pos.y).filter(packet => (packet.layer as LayerType) === layer)
 
   return await placePackets(packets, worldData.width * worldData.height * 1)
 }
