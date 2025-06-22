@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-06-22 Version 1.2.2
+- Website: Dev mode tools are properly hidden when dev mode is disabled
+
 2025-06-20 Version 1.2.1
 - Bot: .import now works with .mask
 - Bot: .import is now undoable
