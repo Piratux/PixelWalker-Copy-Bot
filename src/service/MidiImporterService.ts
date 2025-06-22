@@ -1,11 +1,9 @@
 import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
-// import { getBlockId, placeLayerDataBlocks } from '@/service/WorldService.ts'
 import { getBlockId, placeWorldDataBlocks } from '@/service/WorldService.ts'
 import { getPwGameWorldHelper } from '@/store/PWClientStore.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
-import { pwCheckEditWhenImporting } from '@/service/PWClientService.ts'
-import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
+import { pwCheckEditWhenImporting, pwCreateEmptyBlocks } from '@/service/PWClientService.ts'
 import { MessageService } from '@/service/MessageService.ts'
 import { Midi } from '@tonejs/midi'
 import { PwBlockName } from '@/gen/PwBlockName'
@@ -15,8 +13,6 @@ export async function importFromMidi(fileData: ArrayBuffer) {
     return
   }
 
-  // getImportedFromMidiData(fileData)
-  // return  
   const worldData = getImportedFromMidiData(fileData)
 
   let message: string
@@ -28,7 +24,6 @@ export async function importFromMidi(fileData: ArrayBuffer) {
   }
 
   const success = await placeWorldDataBlocks(worldData, vec2(0, 0))
-  // const success = await placeLayerDataBlocks(worldData, vec2(0, 0), LayerType.Foreground)
 
   if (success) {
     message = 'Finished importing midi.'
@@ -42,28 +37,20 @@ export async function importFromMidi(fileData: ArrayBuffer) {
 }
 
 // Main PNG importer function
-export function getImportedFromMidiData(fileData: ArrayBuffer): DeserialisedStructure|null {
+export function getImportedFromMidiData(fileData: ArrayBuffer): DeserialisedStructure {
   const pwMapWidth = getPwGameWorldHelper().width;
   const pwMapHeight = getPwGameWorldHelper().height;
 
   const portal_height = 1
 
-  const pwBlock3DArray: [Block[][], Block[][], Block[][]] = [[], [], []];
-  for (let layer = 0; layer < TOTAL_PW_LAYERS; layer++) {
-    pwBlock3DArray[layer] = [];
-    for (let x = 0; x < pwMapWidth; x++) {
-      pwBlock3DArray[layer][x] = [];
-      for (let y = 0; y < pwMapHeight; y++) {
-        pwBlock3DArray[layer][x][y] = new Block(0);
-      }
-    }
-  }
+  const blocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
 
-  pwBlock3DArray[LayerType.Foreground][0][0] = new Block(getBlockId(PwBlockName.TOOL_SPAWN_LOBBY));
-  pwBlock3DArray[LayerType.Foreground][0][1] = new Block(getBlockId(PwBlockName.BOOST_DOWN));
-  pwBlock3DArray[LayerType.Overlay][0][1] = new Block(getBlockId(PwBlockName.LIQUID_MUD));
-  pwBlock3DArray[LayerType.Overlay][0][2] = new Block(getBlockId(PwBlockName.LIQUID_WATER));
-  pwBlock3DArray[LayerType.Foreground][0][2] = new Block(getBlockId(PwBlockName.TOOL_GOD_MODE_ACTIVATOR));
+  // These blocks create a spawner, and a set of boosts that get you to the max falling speed pretty fast
+  blocks.blocks[LayerType.Foreground][0][0] = new Block(getBlockId(PwBlockName.TOOL_SPAWN_LOBBY));
+  blocks.blocks[LayerType.Foreground][0][1] = new Block(getBlockId(PwBlockName.BOOST_DOWN));
+  blocks.blocks[LayerType.Overlay][0][1] = new Block(getBlockId(PwBlockName.LIQUID_MUD));
+  blocks.blocks[LayerType.Overlay][0][2] = new Block(getBlockId(PwBlockName.LIQUID_WATER));
+  blocks.blocks[LayerType.Foreground][0][2] = new Block(getBlockId(PwBlockName.TOOL_GOD_MODE_ACTIVATOR));
 
   const midi = new Midi(fileData)
   const notes = processMidiFile(midi)
@@ -82,7 +69,7 @@ export function getImportedFromMidiData(fileData: ArrayBuffer): DeserialisedStru
       x >= 0 && x < pwMapWidth &&
       y >= 0 && y < pwMapHeight
     ) {
-      const blockId = getBlockId((value.type === "piano") ? PwBlockName.NOTE_PIANO : PwBlockName.NOTE_GUITAR);
+      // const blockId = getBlockId((value.type === "piano") ? PwBlockName.NOTE_PIANO : PwBlockName.NOTE_GUITAR);
 
       // Split notes into groups of 5
       for (let i = 0; i < value.notes.length; i += 5) {
@@ -92,9 +79,9 @@ export function getImportedFromMidiData(fileData: ArrayBuffer): DeserialisedStru
         // Only place if the spot is empty
         if (
           targetY < pwMapHeight &&
-          pwBlock3DArray[LayerType.Foreground][x][targetY].bId === 0
+          blocks.blocks[LayerType.Foreground][x][targetY].bId === 0
         ) {
-          pwBlock3DArray[LayerType.Foreground][x][targetY] = new Block(blockId, [Buffer.from(noteGroup)]);
+          blocks.blocks[LayerType.Foreground][x][targetY] = new Block(PwBlockName.NOTE_PIANO, [Buffer.from(noteGroup)]);
           // Place background color blocks for each note in the group
         }
       }
@@ -102,32 +89,34 @@ export function getImportedFromMidiData(fileData: ArrayBuffer): DeserialisedStru
       // value.notes.forEach((note, idx) => {
       //   const [r, g, b] = getRGBfromNote(note);
       //   if (y + idx < pwMapHeight) {
-      //     pwBlock3DArray[LayerType.Background][x][y + idx] = new Block(getBlockId(PwBlockName.CUSTOM_SOLID_BG), [(b + (g << 8) + (r << 16))]);
+      //     blocks.blocks[LayerType.Background][x][y + idx] = new Block(getBlockId(PwBlockName.CUSTOM_SOLID_BG), [(b + (g << 8) + (r << 16))]);
       //   }
       // });
       last_x = Math.max(last_x, x)
     } else {
       // Optionally log or handle out-of-bounds notes
-      console.warn(`Note at x=${x}, y=${y} is out of bounds and will be skipped.`);
+      const message = `ERROR! Note at x=${x}, y=${y} is out of bounds and will be skipped.`
+      sendGlobalChatMessage(message)
+      MessageService.error(message)
     }
   });
   for (let x = 0; x <= last_x; x++) {
     if (x < (pwMapWidth-1)) {
       if (x !== 0) {
-        pwBlock3DArray[LayerType.Foreground][x][0] = new Block(getBlockId(PwBlockName.PORTAL), [3, x, x]);
+        blocks.blocks[LayerType.Foreground][x][0] = new Block(getBlockId(PwBlockName.PORTAL), [3, x, x]);
       }
       if (x < (pwMapWidth-1)) {
-        pwBlock3DArray[LayerType.Foreground][x][199 - portal_height] = new Block(getBlockId(PwBlockName.PORTAL), [3, 0, x+1]);
+        blocks.blocks[LayerType.Foreground][x][(pwMapHeight - 1) - portal_height] = new Block(getBlockId(PwBlockName.PORTAL), [3, 0, x+1]);
       }      
     }
   }
-  return new DeserialisedStructure(pwBlock3DArray, { width: pwMapWidth, height: pwMapHeight });
+  return new DeserialisedStructure(blocks.blocks, { width: pwMapWidth, height: pwMapHeight });
 }
 
 export function processMidiFile(midi: Midi): { [distance: number]: { type: string, notes: number[] } } {
   const write_notes: { [distance: number]: { type: string, notes: number[] } } = {};
-  const default_speed = 13.55; 
-  const multiplier = default_speed * (100/16);
+  const default_speed = 13.55; // This is the default falling speed at 100% gravity in the form of pixels/tick.
+  const multiplier = default_speed * (100/16); // This is the conversion rate from pixels/tick to blocks/second. (16 pixels = 1 block, 100 ticks = 1 second)
   let highest_time = 0
 
   midi.tracks.map(track => {
@@ -140,6 +129,7 @@ export function processMidiFile(midi: Midi): { [distance: number]: { type: strin
         if (highest_time <= note.time) {
           highest_time = note.time
         }
+        // Notes beyond these points don't exist on normal 88-note keyboards, such as in pixelwalker.
         if (note.midi < 21 || note.midi > 108) return;
 
         const distance = Math.round(note.time * multiplier);

@@ -55,15 +55,6 @@ async function onMidiFileChange(event: Event) {
             </div>
           </template>
         </v-tooltip>
-        <!-- <PiButton
-          :color="quantizePng ? 'green' : 'grey'"
-          :outlined="!quantizePng"
-          :title="'Quantize image colors (speed up image placement)'"
-          style="flex: 0 0 auto; min-width: 0; width: auto; display: inline-flex; padding: 0 8px;"
-          @click="quantizePng = !quantizePng"
-        >
-          Optimize
-        </PiButton> -->
       </v-row>
       <v-row>
         <v-col>

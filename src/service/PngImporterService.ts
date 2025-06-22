@@ -3,8 +3,7 @@ import { vec2 } from '@basementuniverse/vec'
 import { getBlockId, placeLayerDataBlocks } from '@/service/WorldService.ts'
 import { getPwGameWorldHelper } from '@/store/PWClientStore.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
-import { pwCheckEditWhenImporting } from '@/service/PWClientService.ts'
-import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
+import { pwCheckEditWhenImporting, pwCreateEmptyBlocks } from '@/service/PWClientService.ts'
 import { MessageService } from '@/service/MessageService.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
 import { PNG } from 'pngjs'
@@ -36,7 +35,7 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
   const IEND = Buffer.from([0x00,0x00,0x00,0x00,0x49,0x45,0x4E,0x44,0xAE,0x42,0x60,0x82]);
   const iendIndex = buffer.indexOf(IEND);
   if (iendIndex !== -1) {
-    buffer = buffer.slice(0, iendIndex + IEND.length);
+    buffer = buffer.subarray(0, iendIndex + IEND.length);
   }
   const png = PNG.sync.read(buffer);
 
@@ -99,23 +98,14 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
     }
   }
 
-  const pwBlock3DArray: [Block[][], Block[][], Block[][]] = [[], [], []];
-  for (let layer = 0; layer < TOTAL_PW_LAYERS; layer++) {
-    pwBlock3DArray[layer] = [];
-    for (let x = 0; x < pwMapWidth; x++) {
-      pwBlock3DArray[layer][x] = [];
-      for (let y = 0; y < pwMapHeight; y++) {
-        pwBlock3DArray[layer][x][y] = new Block(0);
-      }
-    }
-  }
+  const blocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
 
   for (const [hex, locations] of Object.entries(colorMap)) {
     const block = new Block(getBlockId(PwBlockName.CUSTOM_SOLID_BG), [hex]);
     for (const [x, y] of locations) {
-      pwBlock3DArray[LayerType.Background][x][y] = block;
+      blocks.blocks[LayerType.Background][x][y] = block;
     }
   }
 
-  return new DeserialisedStructure(pwBlock3DArray, { width: pwMapWidth, height: pwMapHeight });
+  return blocks;
 }
