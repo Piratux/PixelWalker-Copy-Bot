@@ -8,10 +8,15 @@ import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'
 import PiOverlay from '@/component/PiOverlay.vue'
 import { usePWClientStore } from '@/store/PWClientStore.ts'
+import { isEnvDevViewEnabled } from '@/util/Environment.ts'
 
 const loadingOverlay = ref(false)
 
 const importMidiFileInput = ref<HTMLInputElement>()
+
+const showColors = ref(false)
+
+const devViewEnabled = isEnvDevViewEnabled()
 
 function onImportMidiButtonClick() {
   importMidiFileInput.value!.click()
@@ -24,7 +29,7 @@ async function onMidiFileChange(event: Event) {
       return
     }
     sendGlobalChatMessage(`Importing midi from ${result.file.name}`)
-    await importFromMidi(result.data)
+    await importFromMidi(result.data, showColors.value)
   })
 }
 </script>
@@ -44,13 +49,23 @@ async function onMidiFileChange(event: Event) {
         />
         <v-tooltip :disabled="usePWClientStore().isConnected" location="bottom" text="Requires connecting the bot">
           <template #activator="{ props }">
-            <div style="width: 100%" v-bind="props">
+            <div style="width: 100%; display: flex; gap: 0.5rem" v-bind="props">
               <PiButton
                 :disabled="!usePWClientStore().isConnected" 
                 color="blue"
+                style="flex: 1 1 auto; min-width: 0; display: inline-flex"
                 @click="onImportMidiButtonClick"
               >
                 Import Midi
+              </PiButton>
+              <PiButton
+                v-if="devViewEnabled"
+                :disabled="!usePWClientStore().isConnected" 
+                :color="showColors ? 'green' : 'grey'"
+                style="flex: 0 0 auto; min-width: 0; width: auto; display: inline-flex"
+                @click="showColors = !showColors"
+              >
+                Show Colors
               </PiButton>
             </div>
           </template>

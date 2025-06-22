@@ -8,16 +8,16 @@ import { MessageService } from '@/service/MessageService.ts'
 import { Midi } from '@tonejs/midi'
 import { PwBlockName } from '@/gen/PwBlockName'
 
-export async function importFromMidi(fileData: ArrayBuffer) {
+export async function importFromMidi(fileData: ArrayBuffer, showColors: boolean) {
   if (!pwCheckEditWhenImporting(getPwGameWorldHelper())) {
     return
   }
 
-  const worldData = getImportedFromMidiData(fileData)
+  const worldData = getImportedFromMidiData(fileData, showColors)
 
   let message: string
   if (worldData === null) {
-    message = 'ERROR! Failed to get midi data.'
+    message = 'ERROR! Failed to load midi.'
     sendGlobalChatMessage(message)
     MessageService.error(message)
     return
@@ -37,7 +37,7 @@ export async function importFromMidi(fileData: ArrayBuffer) {
 }
 
 // Main PNG importer function
-export function getImportedFromMidiData(fileData: ArrayBuffer): DeserialisedStructure {
+export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boolean): DeserialisedStructure|null {
   const pwMapWidth = getPwGameWorldHelper().width;
   const pwMapHeight = getPwGameWorldHelper().height;
 
@@ -54,6 +54,9 @@ export function getImportedFromMidiData(fileData: ArrayBuffer): DeserialisedStru
 
   const midi = new Midi(fileData)
   const notes = processMidiFile(midi)
+  // if (length(notes) === 0) { // ctodo
+  //   return null
+  // }
   const columnHeight = pwMapHeight - 2 - portal_height; // Leave 1 block at top and bottom
   let last_x = 0;
 
@@ -85,13 +88,15 @@ export function getImportedFromMidiData(fileData: ArrayBuffer): DeserialisedStru
           // Place background color blocks for each note in the group
         }
       }
-      // -- Shows each note's colors, disabled for production --
-      // value.notes.forEach((note, idx) => {
-      //   const [r, g, b] = getRGBfromNote(note);
-      //   if (y + idx < pwMapHeight) {
-      //     blocks.blocks[LayerType.Background][x][y + idx] = new Block(getBlockId(PwBlockName.CUSTOM_SOLID_BG), [(b + (g << 8) + (r << 16))]);
-      //   }
-      // });
+      // Shows each note's colors, can only be turned on in dev mode
+      if (showColors) {
+        value.notes.forEach((note, idx) => {
+          const [r, g, b] = getRGBfromNote(note);
+          if (y + idx < pwMapHeight) {
+            blocks.blocks[LayerType.Background][x][y + idx] = new Block(getBlockId(PwBlockName.CUSTOM_SOLID_BG), [(b + (g << 8) + (r << 16))]);
+          }
+        });
+      }
       last_x = Math.max(last_x, x)
     } else {
       // Optionally log or handle out-of-bounds notes
