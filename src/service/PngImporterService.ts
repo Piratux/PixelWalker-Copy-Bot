@@ -29,7 +29,6 @@ export async function importFromPng(fileData: ArrayBuffer, quantize = true) {
   }
 }
 
-// Main PNG importer function
 export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): DeserialisedStructure {
   let buffer = Buffer.from(new Uint8Array(fileData));
   const IEND = Buffer.from([0x00,0x00,0x00,0x00,0x49,0x45,0x4E,0x44,0xAE,0x42,0x60,0x82]);
@@ -52,15 +51,10 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
       for (let x = 0; x < png.width; x++) {
         for (let y = 0; y < png.height; y++) {
           const idx = (png.width * y + x) << 2;
-          let r = png.data[idx];
-          let g = png.data[idx + 1];
-          let b = png.data[idx + 2];
-          r = Math.round(r / quantize_amt) * quantize_amt;
-          g = Math.round(g / quantize_amt) * quantize_amt;
-          b = Math.round(b / quantize_amt) * quantize_amt;
-          r = Math.max(0, Math.min(255, r));
-          g = Math.max(0, Math.min(255, g));
-          b = Math.max(0, Math.min(255, b));
+          const alpha = png.data[idx + 3];
+          const r = quantizeAndClamp(png.data[idx], quantize_amt, alpha);
+          const g = quantizeAndClamp(png.data[idx + 1], quantize_amt, alpha);
+          const b = quantizeAndClamp(png.data[idx + 2], quantize_amt, alpha);
           const hex = b + (g << 8) + (r << 16);
           uniqueColors.add(hex);
         }
@@ -77,20 +71,10 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
     for (let y = 0; y < pwMapHeight; y++) {
       if (x < png.width && y < png.height) {
         const idx = (png.width * y + x) << 2;
-        let r = png.data[idx];
-        let g = png.data[idx + 1];
-        let b = png.data[idx + 2];
-
-        // Quantize color to reduce unique colors. We do this to minimize placing time.
-        r = Math.round(r / quantize_amt) * quantize_amt;
-        g = Math.round(g / quantize_amt) * quantize_amt;
-        b = Math.round(b / quantize_amt) * quantize_amt;
-
-        // Clamp to [0, 255]
-        r = Math.max(0, Math.min(255, r));
-        g = Math.max(0, Math.min(255, g));
-        b = Math.max(0, Math.min(255, b));
-        
+        const alpha = png.data[idx + 3];
+        const r = quantizeAndClamp(png.data[idx], quantize_amt, alpha);
+        const g = quantizeAndClamp(png.data[idx + 1], quantize_amt, alpha);
+        const b = quantizeAndClamp(png.data[idx + 2], quantize_amt, alpha);
         const hex = b + (g << 8) + (r << 16);
         if (!colorMap[hex]) colorMap[hex] = [];
         colorMap[hex].push([x, y]);
@@ -108,4 +92,10 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
   }
 
   return blocks;
+}
+
+function quantizeAndClamp(value: number, quantize_amt: number, alpha: number): number {
+  // Blend with black based on alpha
+  const blended = Math.round((value * alpha) / 255);
+  return Math.max(0, Math.min(255, Math.round(blended / quantize_amt) * quantize_amt));
 }

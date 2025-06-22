@@ -58,18 +58,21 @@ async function onMidiFileChange(event: Event) {
               >
                 Import Midi
               </PiButton>
-              <PiButton
-                v-if="devViewEnabled"
-                :disabled="!usePWClientStore().isConnected" 
-                :color="showColors ? 'green' : 'grey'"
-                style="flex: 0 0 auto; min-width: 0; width: auto; display: inline-flex"
-                @click="showColors = !showColors"
-              >
-                Show Colors
-              </PiButton>
             </div>
           </template>
         </v-tooltip>
+      </v-row>
+      <v-row>
+        <v-checkbox
+          v-if="devViewEnabled"
+          v-model=showColors
+          :disabled="!usePWClientStore().isConnected" 
+          color="green"
+          hide-details
+          style="margin-bottom: -1rem; margin-left: 1rem"
+          label="Show Colors"
+          @click="showColors = !showColors"
+        />
       </v-row>
       <v-row>
         <v-col>

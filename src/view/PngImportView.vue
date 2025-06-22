@@ -59,21 +59,24 @@ async function onPngFileChange(event: Event) {
               >
                 Import PNG Background
               </PiButton>
-              <PiButton
-                :disabled="!usePWClientStore().isConnected" 
-                :color="quantizePng ? 'green' : 'grey'"
-                style="flex: 0 0 auto; min-width: 0; width: auto; display: inline-flex"
-                @click="quantizePng = !quantizePng"
-              >
-                Optimize
-              </PiButton>
             </div>
           </template>
         </v-tooltip>
       </v-row>
       <v-row>
+        <v-checkbox
+          v-model=quantizePng
+          :disabled="!usePWClientStore().isConnected"
+          color="green"
+          label="Optimize colors for faster placement"
+          hide-details
+          style="margin-bottom: -1rem; margin-left: 1rem"
+          @click="quantizePng = !quantizePng"
+        />
+      </v-row>
+      <v-row>
         <v-col>
-          Import a PNG image as the world background. "Optimize" will quantize colors for faster placement.
+          Import a PNG image as the world background.
         </v-col>
       </v-row>
     </v-col>

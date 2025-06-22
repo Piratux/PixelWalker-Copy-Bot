@@ -17,7 +17,7 @@ export async function importFromMidi(fileData: ArrayBuffer, showColors: boolean)
 
   let message: string
   if (worldData === null) {
-    message = 'ERROR! Failed to load midi.'
+    message = 'ERROR! This midi has no piano notes.'
     sendGlobalChatMessage(message)
     MessageService.error(message)
     return
@@ -54,9 +54,9 @@ export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boole
 
   const midi = new Midi(fileData)
   const notes = processMidiFile(midi)
-  // if (length(notes) === 0) { // ctodo
-  //   return null
-  // }
+  if (Object.keys(notes).length === 0) {
+    return null
+  }
   const columnHeight = pwMapHeight - 2 - portal_height; // Leave 1 block at top and bottom
   let last_x = 0;
 
@@ -99,7 +99,6 @@ export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boole
       }
       last_x = Math.max(last_x, x)
     } else {
-      // Optionally log or handle out-of-bounds notes
       const message = `ERROR! Note at x=${x}, y=${y} is out of bounds and will be skipped.`
       sendGlobalChatMessage(message)
       MessageService.error(message)
