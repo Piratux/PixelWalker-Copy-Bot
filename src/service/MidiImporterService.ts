@@ -36,12 +36,9 @@ export async function importFromMidi(fileData: ArrayBuffer, showColors: boolean)
   }
 }
 
-// Main PNG importer function
-export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boolean): DeserialisedStructure|null {
+function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boolean): DeserialisedStructure|null {
   const pwMapWidth = getPwGameWorldHelper().width;
   const pwMapHeight = getPwGameWorldHelper().height;
-
-  const portal_height = 1
 
   const blocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
 
@@ -57,11 +54,33 @@ export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boole
   if (Object.keys(notes).length === 0) {
     return null
   }
-  const columnHeight = pwMapHeight - 2 - portal_height; // Leave 1 block at top and bottom
-  let last_x = 0;
+  const last_x = writeNotes(notes, blocks, pwMapWidth, pwMapHeight, showColors)
+  for (let x = 0; x <= last_x; x++) {
+    if (x < (pwMapWidth-1)) {
+      if (x !== 0) {
+        blocks.blocks[LayerType.Foreground][x][0] = new Block(getBlockId(PwBlockName.PORTAL), [3, x, x]);
+      }
+      if (x < (pwMapWidth-1)) {
+        blocks.blocks[LayerType.Foreground][x][pwMapHeight - 2] = new Block(getBlockId(PwBlockName.PORTAL), [3, 0, x+1]);
+      }      
+    }
+  }
+  return new DeserialisedStructure(blocks.blocks, { width: pwMapWidth, height: pwMapHeight });
+}
 
+function writeNotes(
+  notes: { [distance: number]: { type: string, notes: number[] } },
+  blocks: DeserialisedStructure,
+  pwMapWidth: number,
+  pwMapHeight: number,
+  showColors: boolean
+): number {
+  const columnHeight = pwMapHeight - 3; // Leave 1 block at top and bottom
+  let last_x = 0;
   // its worth noting that this doesnt account for time taken to travel between portals, but otherwise its pretty seamless.
-  Object.entries(notes).forEach(([key, value]) => {
+  const entries = Object.entries(notes);
+  for (let entryIdx = 0; entryIdx < entries.length; entryIdx++) {
+    const [key, value] = entries[entryIdx];
     const spot = Number(key) + 100; // This is the distance along the music track
 
     // Determine which column (x) and row (y) the block should go in
@@ -72,8 +91,6 @@ export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boole
       x >= 0 && x < pwMapWidth &&
       y >= 0 && y < pwMapHeight
     ) {
-      // const blockId = getBlockId((value.type === "piano") ? PwBlockName.NOTE_PIANO : PwBlockName.NOTE_GUITAR);
-
       // Split notes into groups of 5
       for (let i = 0; i < value.notes.length; i += 5) {
         const noteGroup = value.notes.slice(i, i + 5);
@@ -99,25 +116,16 @@ export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boole
       }
       last_x = Math.max(last_x, x)
     } else {
-      const message = `ERROR! Note at x=${x}, y=${y} is out of bounds and will be skipped.`
+      const message = `ERROR! Note at x=${x}, y=${y} is out of bounds. Stopping.`
       sendGlobalChatMessage(message)
       MessageService.error(message)
-    }
-  });
-  for (let x = 0; x <= last_x; x++) {
-    if (x < (pwMapWidth-1)) {
-      if (x !== 0) {
-        blocks.blocks[LayerType.Foreground][x][0] = new Block(getBlockId(PwBlockName.PORTAL), [3, x, x]);
-      }
-      if (x < (pwMapWidth-1)) {
-        blocks.blocks[LayerType.Foreground][x][(pwMapHeight - 1) - portal_height] = new Block(getBlockId(PwBlockName.PORTAL), [3, 0, x+1]);
-      }      
+      break
     }
   }
-  return new DeserialisedStructure(blocks.blocks, { width: pwMapWidth, height: pwMapHeight });
+  return last_x
 }
 
-export function processMidiFile(midi: Midi): { [distance: number]: { type: string, notes: number[] } } {
+function processMidiFile(midi: Midi): { [distance: number]: { type: string, notes: number[] } } {
   const write_notes: { [distance: number]: { type: string, notes: number[] } } = {};
   const default_speed = 13.55; // This is the default falling speed at 100% gravity in the form of pixels/tick.
   const multiplier = default_speed * (100/16); // This is the conversion rate from pixels/tick to blocks/second. (16 pixels = 1 block, 100 ticks = 1 second)
@@ -160,7 +168,7 @@ export function processMidiFile(midi: Midi): { [distance: number]: { type: strin
   return write_notes
 }
 
-export function getRGBfromNote(note: number): [number, number, number] {
+function getRGBfromNote(note: number): [number, number, number] {
   const hue = (note % 12) * (360 / 13);
   const saturation = 100;
   const lightness = (Math.floor(note / 12) * (65 / 8)) + 15;
