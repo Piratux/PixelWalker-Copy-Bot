@@ -10,6 +10,8 @@ http://piratux.github.io/PixelWalker-Copy-Bot/
 Features accessible via commands:
 
 - Copy/paste selected region
+- Move selected region
+- Mask blocks when pasting (such as only pasting background blocks)
 - Repeated paste of selected region
     - Smart repeated paste - switches/portals/etc. get auto incremented based on placed pattern (useful for building
       switch worlds)
@@ -19,7 +21,9 @@ Features accessible via commands:
 Features accessible via bot page:
 
 - Export PixelWalker world to .eelvl file
-- Import .eelvl file to PixelWalker world
+- Import .eelvl file
+- Import .midi file (piano notes only for now)
+- Import .png file
 
 ## Requirements to run project
 
