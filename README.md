@@ -97,7 +97,9 @@ You can disable them by adding the following lines as the top of the file:
 
 ## When block names change in `/listblocks`
 
-Actions to be done:
+After PixelWalker update, some blocks may change.
+
+If blocks change, the following needs to be performed:
 
 - Block names in `EelvlBlocks.ts` need to be updated
 - The following needs to be run
