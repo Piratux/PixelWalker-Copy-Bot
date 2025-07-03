@@ -1,6 +1,6 @@
 import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
-import { getBlockId, placeLayerDataBlocks } from '@/service/WorldService.ts'
+import { placeLayerDataBlocks } from '@/service/WorldService.ts'
 import { getPwGameWorldHelper } from '@/store/PWClientStore.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
 import { pwCheckEditWhenImporting, pwCreateEmptyBlocks } from '@/service/PWClientService.ts'
@@ -85,7 +85,7 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
   const blocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
 
   for (const [hex, locations] of Object.entries(colorMap)) {
-    const block = new Block(getBlockId(PwBlockName.CUSTOM_SOLID_BG), [hex]);
+    const block = new Block(PwBlockName.CUSTOM_SOLID_BG, [hex]);
     for (const [x, y] of locations) {
       blocks.blocks[LayerType.Background][x][y] = block;
     }

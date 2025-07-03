@@ -1,6 +1,6 @@
 import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
-import { getBlockId, placeWorldDataBlocks } from '@/service/WorldService.ts'
+import { placeWorldDataBlocks } from '@/service/WorldService.ts'
 import { getPwGameWorldHelper } from '@/store/PWClientStore.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
 import { pwCheckEditWhenImporting, pwCreateEmptyBlocks } from '@/service/PWClientService.ts'
@@ -43,11 +43,11 @@ function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boolean): De
   const blocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
 
   // These blocks create a spawner, and a set of boosts that get you to the max falling speed pretty fast
-  blocks.blocks[LayerType.Foreground][0][0] = new Block(getBlockId(PwBlockName.TOOL_SPAWN_LOBBY));
-  blocks.blocks[LayerType.Foreground][0][1] = new Block(getBlockId(PwBlockName.BOOST_DOWN));
-  blocks.blocks[LayerType.Overlay][0][1] = new Block(getBlockId(PwBlockName.LIQUID_MUD));
-  blocks.blocks[LayerType.Overlay][0][2] = new Block(getBlockId(PwBlockName.LIQUID_WATER));
-  blocks.blocks[LayerType.Foreground][0][2] = new Block(getBlockId(PwBlockName.TOOL_GOD_MODE_ACTIVATOR));
+  blocks.blocks[LayerType.Foreground][0][0] = new Block(PwBlockName.TOOL_SPAWN_LOBBY);
+  blocks.blocks[LayerType.Foreground][0][1] = new Block(PwBlockName.BOOST_DOWN);
+  blocks.blocks[LayerType.Overlay][0][1] = new Block(PwBlockName.LIQUID_MUD);
+  blocks.blocks[LayerType.Overlay][0][2] = new Block(PwBlockName.LIQUID_WATER);
+  blocks.blocks[LayerType.Foreground][0][2] = new Block(PwBlockName.TOOL_GOD_MODE_ACTIVATOR);
 
   const midi = new Midi(fileData)
   const notes = processMidiFile(midi)
@@ -58,10 +58,10 @@ function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boolean): De
   for (let x = 0; x <= last_x; x++) {
     if (x < (pwMapWidth-1)) {
       if (x !== 0) {
-        blocks.blocks[LayerType.Foreground][x][0] = new Block(getBlockId(PwBlockName.PORTAL), [3, x, x]);
+        blocks.blocks[LayerType.Foreground][x][0] = new Block(PwBlockName.PORTAL_VISIBLE_DOWN, [x.toString(), x.toString()]);
       }
       if (x < (pwMapWidth-1)) {
-        blocks.blocks[LayerType.Foreground][x][pwMapHeight - 2] = new Block(getBlockId(PwBlockName.PORTAL), [3, 0, x+1]);
+        blocks.blocks[LayerType.Foreground][x][pwMapHeight - 2] = new Block(PwBlockName.PORTAL_VISIBLE_DOWN, ['0', (x+1).toString()]);
       }      
     }
   }
@@ -110,7 +110,7 @@ function writeNotes(
         value.notes.forEach((note, idx) => {
           const [r, g, b] = getRGBfromNote(note);
           if (y + idx < pwMapHeight) {
-            blocks.blocks[LayerType.Background][x][y + idx] = new Block(getBlockId(PwBlockName.CUSTOM_SOLID_BG), [(b + (g << 8) + (r << 16))]);
+            blocks.blocks[LayerType.Background][x][y + idx] = new Block(PwBlockName.CUSTOM_SOLID_BG, [(b + (g << 8) + (r << 16))]);
           }
         });
       }

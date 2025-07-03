@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-07-03 Version 1.3.1
+- Bot: Updated to work with PixelWalker version 0.22.0-alpha
+
 2025-06-23 Version 1.3.0
 - Website: Added an option to import PNGs into the world as hex-backgrounds. Thanks Bluecloud!
 - Website: Added an option to import MIDI files into the world. Currently only accepts piano midis. Thanks Bluecloud!
