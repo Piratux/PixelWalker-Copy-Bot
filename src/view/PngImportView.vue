@@ -40,19 +40,13 @@ async function onPngFileChange(event: Event) {
 
   <PiCardContainer>
     <v-col>
-      <v-row class="align-center" style="gap: 0.5rem; flex-wrap: nowrap; white-space: nowrap;">
-        <input
-          ref="importPngFileInput"
-          accept=".png"
-          style="display: none"
-          type="file"
-          @change="onPngFileChange"
-        />
+      <v-row class="align-center" style="gap: 0.5rem; flex-wrap: nowrap; white-space: nowrap">
+        <input ref="importPngFileInput" accept=".png" style="display: none" type="file" @change="onPngFileChange" />
         <v-tooltip :disabled="usePWClientStore().isConnected" location="bottom" text="Requires connecting the bot">
           <template #activator="{ props }">
             <div style="width: 100%; display: flex; gap: 0.5rem" v-bind="props">
               <PiButton
-                :disabled="!usePWClientStore().isConnected" 
+                :disabled="!usePWClientStore().isConnected"
                 color="blue"
                 style="flex: 1 1 auto; min-width: 0; display: inline-flex"
                 @click="onImportPngButtonClick"
@@ -65,7 +59,7 @@ async function onPngFileChange(event: Event) {
       </v-row>
       <v-row>
         <v-checkbox
-          v-model=quantizePng
+          v-model="quantizePng"
           :disabled="!usePWClientStore().isConnected"
           color="green"
           label="Optimize colors for faster placement"
@@ -75,9 +69,7 @@ async function onPngFileChange(event: Event) {
         />
       </v-row>
       <v-row>
-        <v-col>
-          Import a PNG image as the world background.
-        </v-col>
+        <v-col> Import a PNG image as the world background. </v-col>
       </v-row>
     </v-col>
   </PiCardContainer>

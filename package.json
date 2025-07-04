@@ -63,8 +63,8 @@
   },
   "lint-staged": {
     "*": [
-      "npm run lint",
-      "prettier --write"
+      "prettier --write",
+      "eslint --fix"
     ]
   }
 }

@@ -30,54 +30,54 @@ export async function importFromPng(fileData: ArrayBuffer, quantize = true) {
 }
 
 export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): DeserialisedStructure {
-  let buffer = Buffer.from(new Uint8Array(fileData));
-  const IEND = Buffer.from([0x00,0x00,0x00,0x00,0x49,0x45,0x4E,0x44,0xAE,0x42,0x60,0x82]);
-  const iendIndex = buffer.indexOf(IEND);
+  let buffer = Buffer.from(new Uint8Array(fileData))
+  const IEND = Buffer.from([0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82])
+  const iendIndex = buffer.indexOf(IEND)
   if (iendIndex !== -1) {
-    buffer = buffer.subarray(0, iendIndex + IEND.length);
+    buffer = buffer.subarray(0, iendIndex + IEND.length)
   }
-  const png = PNG.sync.read(buffer);
+  const png = PNG.sync.read(buffer)
 
-  const pwMapWidth = getPwGameWorldHelper().width;
-  const pwMapHeight = getPwGameWorldHelper().height;
+  const pwMapWidth = getPwGameWorldHelper().width
+  const pwMapHeight = getPwGameWorldHelper().height
 
   // optimizing the color-palette here could be improved a LOT, but it works.
-  let quantize_amt = 1;
+  let quantize_amt = 1
   if (quantize) {
-    const MAX_COLORS = 1024;
-    const uniqueColors = new Set<number>();
+    const MAX_COLORS = 1024
+    const uniqueColors = new Set<number>()
     while (quantize_amt <= 64) {
-      uniqueColors.clear();
+      uniqueColors.clear()
       for (let x = 0; x < png.width; x++) {
         for (let y = 0; y < png.height; y++) {
-          const idx = (png.width * y + x) << 2;
-          const alpha = png.data[idx + 3];
-          const r = quantizeAndClamp(png.data[idx], quantize_amt, alpha);
-          const g = quantizeAndClamp(png.data[idx + 1], quantize_amt, alpha);
-          const b = quantizeAndClamp(png.data[idx + 2], quantize_amt, alpha);
-          const hex = b + (g << 8) + (r << 16);
-          uniqueColors.add(hex);
+          const idx = (png.width * y + x) << 2
+          const alpha = png.data[idx + 3]
+          const r = quantizeAndClamp(png.data[idx], quantize_amt, alpha)
+          const g = quantizeAndClamp(png.data[idx + 1], quantize_amt, alpha)
+          const b = quantizeAndClamp(png.data[idx + 2], quantize_amt, alpha)
+          const hex = b + (g << 8) + (r << 16)
+          uniqueColors.add(hex)
         }
       }
-      if (uniqueColors.size <= MAX_COLORS) break;
-      quantize_amt *= 2;
+      if (uniqueColors.size <= MAX_COLORS) break
+      quantize_amt *= 2
     }
   }
 
   // 1. Group locations by color
-  const colorMap: Record<string, Array<[number, number]>> = {};
+  const colorMap: Record<string, Array<[number, number]>> = {}
 
   for (let x = 0; x < pwMapWidth; x++) {
     for (let y = 0; y < pwMapHeight; y++) {
       if (x < png.width && y < png.height) {
-        const idx = (png.width * y + x) << 2;
-        const alpha = png.data[idx + 3];
-        const r = quantizeAndClamp(png.data[idx], quantize_amt, alpha);
-        const g = quantizeAndClamp(png.data[idx + 1], quantize_amt, alpha);
-        const b = quantizeAndClamp(png.data[idx + 2], quantize_amt, alpha);
-        const hex = b + (g << 8) + (r << 16);
-        if (!colorMap[hex]) colorMap[hex] = [];
-        colorMap[hex].push([x, y]);
+        const idx = (png.width * y + x) << 2
+        const alpha = png.data[idx + 3]
+        const r = quantizeAndClamp(png.data[idx], quantize_amt, alpha)
+        const g = quantizeAndClamp(png.data[idx + 1], quantize_amt, alpha)
+        const b = quantizeAndClamp(png.data[idx + 2], quantize_amt, alpha)
+        const hex = b + (g << 8) + (r << 16)
+        if (!colorMap[hex]) colorMap[hex] = []
+        colorMap[hex].push([x, y])
       }
     }
   }
@@ -85,17 +85,17 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
   const blocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
 
   for (const [hex, locations] of Object.entries(colorMap)) {
-    const block = new Block(PwBlockName.CUSTOM_SOLID_BG, [hex]);
+    const block = new Block(PwBlockName.CUSTOM_SOLID_BG, [hex])
     for (const [x, y] of locations) {
-      blocks.blocks[LayerType.Background][x][y] = block;
+      blocks.blocks[LayerType.Background][x][y] = block
     }
   }
 
-  return blocks;
+  return blocks
 }
 
 function quantizeAndClamp(value: number, quantize_amt: number, alpha: number): number {
   // Blend with black based on alpha
-  const blended = Math.round((value * alpha) / 255);
-  return Math.max(0, Math.min(255, Math.round(blended / quantize_amt) * quantize_amt));
+  const blended = Math.round((value * alpha) / 255)
+  return Math.max(0, Math.min(255, Math.round(blended / quantize_amt) * quantize_amt))
 }

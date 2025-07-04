@@ -1053,4 +1053,4 @@ export enum EelvlBlockId {
   NPC_WALRUS = 1578,
   NPC_CRAB = 1579,
 }
-export type EelvlBlockIdKeys = keyof typeof EelvlBlockId;
+export type EelvlBlockIdKeys = keyof typeof EelvlBlockId

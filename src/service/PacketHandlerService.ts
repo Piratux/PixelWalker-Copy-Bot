@@ -171,16 +171,18 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
           layer: singleBlock.Layer,
           pos,
         }
-      } else if ([
-        PwBlockName.PORTAL_VISIBLE_DOWN,
-        PwBlockName.PORTAL_VISIBLE_LEFT,
-        PwBlockName.PORTAL_VISIBLE_RIGHT,
-        PwBlockName.PORTAL_VISIBLE_UP,
-        PwBlockName.PORTAL_INVISIBLE_DOWN,
-        PwBlockName.PORTAL_INVISIBLE_LEFT,
-        PwBlockName.PORTAL_INVISIBLE_RIGHT,
-        PwBlockName.PORTAL_INVISIBLE_UP,
-      ].includes(singleBlock.PaletteId as PwBlockName)) {
+      } else if (
+        [
+          PwBlockName.PORTAL_VISIBLE_DOWN,
+          PwBlockName.PORTAL_VISIBLE_LEFT,
+          PwBlockName.PORTAL_VISIBLE_RIGHT,
+          PwBlockName.PORTAL_VISIBLE_UP,
+          PwBlockName.PORTAL_INVISIBLE_DOWN,
+          PwBlockName.PORTAL_INVISIBLE_LEFT,
+          PwBlockName.PORTAL_INVISIBLE_RIGHT,
+          PwBlockName.PORTAL_INVISIBLE_UP,
+        ].includes(singleBlock.PaletteId as PwBlockName)
+      ) {
         worldBlock = { block: new Block(singleBlock.Id, ['0', '0']), layer: singleBlock.Layer, pos }
       } else {
         worldBlock = { block: new Block(singleBlock.Id), layer: singleBlock.Layer, pos }

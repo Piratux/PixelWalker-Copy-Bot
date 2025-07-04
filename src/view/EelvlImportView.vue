@@ -56,9 +56,7 @@ async function onEelvlFileChange(event: Event) {
   </PiCardContainer>
   <PiCardContainer>
     <v-col>
-      <v-row>
-        <h3>Import info</h3></v-row
-      >
+      <v-row> <h3>Import info</h3></v-row>
       <v-row>
         PixelWalker doesn't have:
         <ul>
