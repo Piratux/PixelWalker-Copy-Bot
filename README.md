@@ -127,5 +127,3 @@ npx simple-git-hooks
 ```
 
 See more info here: https://github.com/toplenboren/simple-git-hooks
-
-
