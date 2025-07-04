@@ -69,7 +69,7 @@ async function onPngFileChange(event: Event) {
         />
       </v-row>
       <v-row>
-        <v-col> Import a PNG image as the world background. </v-col>
+        <v-col> Import a PNG image as the world background.</v-col>
       </v-row>
     </v-col>
   </PiCardContainer>

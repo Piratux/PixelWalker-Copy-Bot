@@ -69,7 +69,7 @@ async function onMidiFileChange(event: Event) {
         />
       </v-row>
       <v-row>
-        <v-col> Imports a MIDI file's piano tracks into a world. </v-col>
+        <v-col> Imports a MIDI file's piano tracks into a world.</v-col>
       </v-row>
     </v-col>
   </PiCardContainer>
