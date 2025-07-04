@@ -13,8 +13,8 @@ Features accessible via commands:
 - Move selected region
 - Mask blocks when pasting (such as only pasting background blocks)
 - Repeated paste of selected region
-    - Smart repeated paste - switches/portals/etc. get auto incremented based on placed pattern (useful for building
-      switch worlds)
+  - Smart repeated paste - switches/portals/etc. get auto incremented based on placed pattern (useful for building
+    switch worlds)
 - Undo/redo blocks placed by bot
 - Import PixelWalker worlds via link
 
@@ -107,6 +107,9 @@ If blocks change, the following needs to be performed:
 ```
 npm run gen-files
 ```
+
+
+
 
 - `*.pwlvl` files need to be updated in `tests/resources`
 - Run `.test` in game
