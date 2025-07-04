@@ -9,7 +9,6 @@
     "build": "vite build",
     "quick-build": "vue-tsc && vite build",
     "preview": "vite preview",
-    "format": "npx pretty-quick",
     "lint": "npx eslint . --fix --ignore-pattern dist",
     "gen-files": "npx tsx src/script/GenerateBlockEnumFiles.ts",
     "check-dependencies": "npx npm-check-updates",
@@ -67,7 +66,7 @@
   "lint-staged": {
     "*": [
       "npm run lint",
-      "npm run format"
+      "prettier --write"
     ]
   }
 }
