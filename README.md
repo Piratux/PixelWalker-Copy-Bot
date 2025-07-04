@@ -110,3 +110,13 @@ npm run gen-files
 
 - `*.pwlvl` files need to be updated in `tests/resources`
 - Run `.test` in game
+
+## When changing pre commit hooks
+
+If you change pre commit hooks, you need to run the following command:
+
+```
+npx simple-git-hooks
+```
+
+See more info here: https://github.com/toplenboren/simple-git-hooks
