@@ -10,7 +10,7 @@
     "quick-build": "vue-tsc && vite build",
     "preview": "vite preview",
     "format": "prettier src --write",
-    "lint": "npx eslint . --fix",
+    "lint": "npx eslint . --fix --ignore-pattern dist",
     "gen-files": "npx tsx src/script/GenerateBlockEnumFiles.ts",
     "check-dependencies": "npx npm-check-updates",
     "update-dependencies": "npx npm-check-updates -u && npm install"
