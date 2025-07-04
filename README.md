@@ -31,7 +31,14 @@ Node.js >= 22.12.0
 
 ## Local development
 
-At the root of project run:
+If you want to setup project for local development, at the root of project run once:
+
+```
+npm install
+npx simple-git-hooks
+```
+
+Then when you want to test changes, you can run:
 
 ```
 npm run dev
@@ -64,7 +71,7 @@ To have custom config only when running locally:
 
 NOTE: All env file entries must start with `VITE_`, otherwise value will be undefined in code.
 
-## Test production build
+### Test production build
 
 At the root of project run:
 
@@ -78,13 +85,13 @@ http://localhost:4173/PixelWalker-Copy-Bot/
 
 Vite's HMR won't work for production build, so you need to run build and preview commands when you make code changes.
 
-## Runtime tests
+### Runtime tests
 
 This repository contains runtime tests.
 
 To use them, run `.test` while in game.
 
-## Disable ESLint/Vue-tsc
+### Disable ESLint/Vue-tsc
 
 ESLint and vue-tsc may be sometimes unwanted during development.
 
@@ -95,7 +102,7 @@ You can disable them by adding the following lines as the top of the file:
 // @ts-nocheck
 ```
 
-## When block names change in `/listblocks`
+### When block names change in `/listblocks`
 
 After PixelWalker update, some blocks may change.
 
@@ -111,7 +118,7 @@ npm run gen-files
 - `*.pwlvl` files need to be updated in `tests/resources`
 - Run `.test` in game
 
-## When changing pre commit hooks
+### When changing pre commit hooks
 
 If you change pre commit hooks, you need to run the following command:
 
