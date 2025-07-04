@@ -108,7 +108,7 @@ After PixelWalker update, some blocks may change.
 
 If blocks change, the following needs to be performed:
 
-- Block names in `EelvlBlocks.ts` need to be updated
+- Block names in `EelvlBlocks.ts` need to be updated.
 - The following needs to be run
 
 ```
@@ -125,5 +125,7 @@ If you change pre commit hooks, you need to run the following command:
 ```
 npx simple-git-hooks
 ```
+
+
 
 See more info here: https://github.com/toplenboren/simple-git-hooks
