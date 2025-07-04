@@ -1,23 +1,24 @@
 <!doctype html>
 <html lang="en">
-<head>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" id="viewport-meta" />
+    <title>PixelWalker copy bot</title>
+  </head>
+  <script>
+    function isMobile() {
+      return window.matchMedia("(max-width: 768px)").matches
+    }
 
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/png" href="/logo.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" id="viewport-meta" />
-  <title>PixelWalker copy bot</title>
-</head>
-<script>
-  function isMobile() {
-    return window.matchMedia('(max-width: 768px)').matches
-  }
-
-  if (isMobile()) {
-    document.getElementById('viewport-meta').setAttribute('content', 'width=device-width, initial-scale=0.7, user-scalable=no')
-  }
-</script>
-<body>
-<div id="app"></div>
-<script type="module" src="/src/Main.ts"></script>
-</body>
+    if (isMobile()) {
+      document
+        .getElementById("viewport-meta")
+        .setAttribute("content", "width=device-width, initial-scale=0.7, user-scalable=no")
+    }
+  </script>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/Main.ts"></script>
+  </body>
 </html>
