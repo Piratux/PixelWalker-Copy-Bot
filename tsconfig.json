@@ -22,5 +22,5 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["vuetify", "node", "vite/client"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "vite.config.ts", "vite-env.d.ts"]
+  "include": ["src/**/*.ts", "src/**/*.vue", "vite.config.ts", "vite-env.d.ts"]
 }
