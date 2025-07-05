@@ -69,7 +69,6 @@ async function onEelvlFileChange(event: Event) {
           <li>Fireworks decoration [1581].</li>
           <li>Golden easter egg decoration [1591].</li>
           <li>Green space decoration [1603].</li>
-          <li>Shadow [1596, 1605 - 1617].</li>
           <li>NPC [1550 - 1559, 1569 - 1579].</li>
           <li>Zombie and curse effect duration is limited to 720 seconds, but in EELVL limit is 999 seconds.</li>
         </ul>
