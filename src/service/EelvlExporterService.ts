@@ -358,8 +358,12 @@ function getPwToEelvlEffectsMultiJumpBlock(pwBlock: Block): EelvlBlock {
 }
 
 function getPwToEelvlPortalBlock(pwBlock: Block, eelvlBlockId: EelvlBlockId): EelvlBlock {
-  const portalId = pwBlock.args[0]
-  const portalTarget = pwBlock.args[1]
+  const portalIdToNumber = (portalId: string): number | undefined => {
+    return /^\d{1,5}$/.test(portalId) ? parseInt(portalId) : undefined
+  }
+
+  const portalId = pwBlock.args[0] as string
+  const portalTarget = pwBlock.args[1] as string
   let rotation
   switch (pwBlock.name as PwBlockName) {
     case PwBlockName.PORTAL_VISIBLE_LEFT:
@@ -379,11 +383,18 @@ function getPwToEelvlPortalBlock(pwBlock: Block, eelvlBlockId: EelvlBlockId): Ee
       rotation = 0
       break
   }
+  const portalIdInt = portalIdToNumber(portalId)
+  const portalTargetInt = portalIdToNumber(portalTarget)
+  if (portalIdInt === undefined || portalTargetInt === undefined) {
+    return createMissingBlockSign(
+      `${pwBlock.name} portal id: ${portalId}, portal target: ${portalTarget}, rotation: ${rotation}`,
+    )
+  }
   return {
     blockId: eelvlBlockId,
-    intParameter: rotation as number,
-    portalId: portalId as number,
-    portalTarget: portalTarget as number,
+    intParameter: rotation,
+    portalId: portalIdInt,
+    portalTarget: portalTargetInt,
   }
 }
 

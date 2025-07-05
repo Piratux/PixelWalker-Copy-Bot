@@ -368,7 +368,7 @@ function getEelvlToPwPortalBlock(eelvlBlock: EelvlBlock): Block {
         eelvlBlockId === EelvlBlockId.PORTAL ? PwBlockName.PORTAL_VISIBLE_LEFT : PwBlockName.PORTAL_INVISIBLE_LEFT
       break
   }
-  return createBlock(pwBlockName, [portalId, portalTarget])
+  return createBlock(pwBlockName, [portalId.toString(), portalTarget.toString()])
 }
 
 function getEelvlToPwNoteBlock(eelvlBlock: EelvlBlock, pwBlockName: PwBlockName): Block {
