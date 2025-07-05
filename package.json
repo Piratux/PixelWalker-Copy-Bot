@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "format": "npx prettier . --write --ignore-pattern dist",
     "lint": "npx eslint . --fix --ignore-pattern dist",
+    "ts-check": "vue-tsc --noEmit",
     "gen-files": "npx tsx src/script/GenerateBlockEnumFiles.ts",
     "check-dependencies": "npx npm-check-updates",
     "update-dependencies": "npx npm-check-updates -u && npm install"
@@ -59,7 +60,7 @@
     "vue-tsc": "^2.2.8"
   },
   "simple-git-hooks": {
-    "pre-commit": "npx lint-staged"
+    "pre-commit": "npx lint-staged && npm run ts-check"
   },
   "lint-staged": {
     "*": [
