@@ -4,12 +4,15 @@ import everyBlockOriginalPwlvlFile from '@/test/resources/every-block-original.p
 import piratuxPfpQuantizedPwlvlFile from '@/test/resources/piratux-pfp-quantized.pwlvl?url'
 import piratuxPfpUnquantizedPwlvlFile from '@/test/resources/piratux-pfp-unquantized.pwlvl?url'
 import piratuxPfpPngFile from '@/test/resources/piratux-pfp.png?url'
+import thomasBergersenAuraPianoPwlvlFile from '@/test/resources/Thomas_Bergersen-Aura_Piano.pwlvl?url'
+import thomasBergersenAuraPianoMidFile from '@/test/resources/Thomas_Bergersen-Aura_Piano.mid?url'
 import { getImportedFromEelvlData } from '@/service/EelvlImporterService.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
 import { getExportedToEelvlData } from '@/service/EelvlExporterService.ts'
 import {
   compareDeserialisedStructureData,
   getDataFromEelvlFile,
+  getDataFromMidiFile,
   getDataFromPngFile,
   getDataFromPwlvlFile,
   placePwLvlblocks,
@@ -30,6 +33,7 @@ export async function performRuntimeTests() {
     testEelvlExportWithPwlvlData,
     testPngImportQuantized,
     testPngImportUnquantized,
+    testMidiImport,
   ]
   for (let i = 0; i < tests.length; i++) {
     const test = tests[i]
@@ -131,4 +135,11 @@ async function testPngImportUnquantized() {
   const receivedData = await getDataFromPngFile(piratuxPfpPngFile, false)
 
   compareDeserialisedStructureData(receivedData, expectedData)
+}
+
+async function testMidiImport() {
+  const expectedData = await getDataFromPwlvlFile(thomasBergersenAuraPianoPwlvlFile)
+  const receivedData = await getDataFromMidiFile(thomasBergersenAuraPianoMidFile)
+
+  compareDeserialisedStructureData(receivedData!, expectedData)
 }

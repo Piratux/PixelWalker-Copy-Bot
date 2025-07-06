@@ -7,6 +7,7 @@ import { pwCheckEditWhenImporting, pwCreateEmptyBlocks } from '@/service/PWClien
 import { MessageService } from '@/service/MessageService.ts'
 import { Midi } from '@tonejs/midi'
 import { PwBlockName } from '@/gen/PwBlockName'
+import { uniq } from 'lodash-es'
 
 export async function importFromMidi(fileData: ArrayBuffer, showColors: boolean) {
   if (!pwCheckEditWhenImporting(getPwGameWorldHelper())) {
@@ -36,7 +37,7 @@ export async function importFromMidi(fileData: ArrayBuffer, showColors: boolean)
   }
 }
 
-function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boolean): DeserialisedStructure | null {
+export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boolean): DeserialisedStructure | null {
   const pwMapWidth = getPwGameWorldHelper().width
   const pwMapHeight = getPwGameWorldHelper().height
 
@@ -96,7 +97,7 @@ function writeNotes(
     if (x >= 0 && x < pwMapWidth && y >= 0 && y < pwMapHeight) {
       // Split notes into groups of 5
       for (let i = 0; i < value.notes.length; i += 5) {
-        const noteGroup = value.notes.slice(i, i + 5)
+        const noteGroup = uniq(value.notes.slice(i, i + 5).sort((a, b) => a - b))
         const targetY = y + Math.floor(i / 5)
 
         // Only place if the spot is empty
