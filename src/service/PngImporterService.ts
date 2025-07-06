@@ -65,7 +65,7 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
   }
 
   // 1. Group locations by color
-  const colorMap: Record<string, Array<[number, number]>> = {}
+  const colorMap = new Map<number, Array<[number, number]>>()
 
   for (let x = 0; x < pwMapWidth; x++) {
     for (let y = 0; y < pwMapHeight; y++) {
@@ -76,15 +76,18 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
         const g = quantizeAndClamp(png.data[idx + 1], quantize_amt, alpha)
         const b = quantizeAndClamp(png.data[idx + 2], quantize_amt, alpha)
         const hex = b + (g << 8) + (r << 16)
-        if (!colorMap[hex]) colorMap[hex] = []
-        colorMap[hex].push([x, y])
+
+        if (!colorMap.has(hex)) {
+          colorMap.set(hex, [])
+        }
+        colorMap.get(hex)!.push([x, y])
       }
     }
   }
 
   const blocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
 
-  for (const [hex, locations] of Object.entries(colorMap)) {
+  for (const [hex, locations] of colorMap) {
     const block = new Block(PwBlockName.CUSTOM_SOLID_BG, [hex])
     for (const [x, y] of locations) {
       blocks.blocks[LayerType.Background][x][y] = block

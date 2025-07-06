@@ -1,12 +1,16 @@
 import everyBlockEelvlFile from '@/test/resources/every-block.eelvl?url'
 import everyBlockExportedEelvlPwlvlFile from '@/test/resources/every-block-exported-eelvl.pwlvl?url'
 import everyBlockOriginalPwlvlFile from '@/test/resources/every-block-original.pwlvl?url'
+import piratuxPfpQuantizedPwlvlFile from '@/test/resources/piratux-pfp-quantized.pwlvl?url'
+import piratuxPfpUnquantizedPwlvlFile from '@/test/resources/piratux-pfp-unquantized.pwlvl?url'
+import piratuxPfpPngFile from '@/test/resources/piratux-pfp.png?url'
 import { getImportedFromEelvlData } from '@/service/EelvlImporterService.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
 import { getExportedToEelvlData } from '@/service/EelvlExporterService.ts'
 import {
   compareDeserialisedStructureData,
   getDataFromEelvlFile,
+  getDataFromPngFile,
   getDataFromPwlvlFile,
   placePwLvlblocks,
 } from '@/test/RuntimeTestsUtil.ts'
@@ -24,6 +28,8 @@ export async function performRuntimeTests() {
     testEelvlImport,
     testEelvlExportWithEelvlData,
     testEelvlExportWithPwlvlData,
+    testPngImportQuantized,
+    testPngImportUnquantized,
   ]
   for (let i = 0; i < tests.length; i++) {
     const test = tests[i]
@@ -111,4 +117,18 @@ async function testMapUpdateFromPlayerInitPacket() {
 
   await pwJoinWorld(pwGameClient, worldId)
   await waitUntil(() => initReceived, { timeout: 30000, intervalBetweenAttempts: 1000 })
+}
+
+async function testPngImportQuantized() {
+  const expectedData = await getDataFromPwlvlFile(piratuxPfpQuantizedPwlvlFile)
+  const receivedData = await getDataFromPngFile(piratuxPfpPngFile, true)
+
+  compareDeserialisedStructureData(receivedData, expectedData)
+}
+
+async function testPngImportUnquantized() {
+  const expectedData = await getDataFromPwlvlFile(piratuxPfpUnquantizedPwlvlFile)
+  const receivedData = await getDataFromPngFile(piratuxPfpPngFile, false)
+
+  compareDeserialisedStructureData(receivedData, expectedData)
 }
