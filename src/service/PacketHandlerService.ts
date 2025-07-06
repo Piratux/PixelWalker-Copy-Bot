@@ -1,6 +1,6 @@
 import { getPwBlocks, getPwGameClient, getPwGameWorldHelper, usePWClientStore } from '@/store/PWClientStore.ts'
 import { Block, ComponentTypeHeader, IPlayer, LayerType, Point, PWGameWorldHelper } from 'pw-js-world'
-import { cloneDeep } from 'lodash-es'
+import { cloneDeep, isUndefined } from 'lodash-es'
 import { BotData, createBotData } from '@/type/BotData.ts'
 import { getPlayerBotData } from '@/store/BotStore.ts'
 import { BotState } from '@/enum/BotState.ts'
@@ -12,6 +12,7 @@ import {
   getBlockAt,
   getBlockName,
   placeMultipleBlocks,
+  getBlockId
 } from '@/service/WorldService.ts'
 import { addUndoItemWorldBlock, performRedo, performUndo } from '@/service/UndoRedoService.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
@@ -65,6 +66,9 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       break
     case '.help':
       helpCommandReceived(args, playerId)
+      break
+    case '.replace':
+      replaceCommandReceived(args, playerId)
       break
     case '.paste':
       pasteCommandReceived(args, playerId, false)
@@ -350,6 +354,14 @@ function helpCommandReceived(args: string[], playerId: number) {
       )
       sendPrivateChatMessage(`Example usage: .help paste`, playerId)
       break
+    case 'replace':
+    case '.replace':
+      sendPrivateChatMessage('.replace allows you to change copied blocks and their arguments.', playerId)
+      sendPrivateChatMessage('.replace color find replace - allows you to change color/state, based upon the name of the block.', playerId)
+      sendPrivateChatMessage('.replace <replaceOp> number [name_find] - Allows you to edit number arguments on blocks.', playerId)
+      sendPrivateChatMessage('replaceOp - add, sub, mult, or div.', playerId)
+      sendPrivateChatMessage(`name_find - an optional arg allowing you to restrict replace arg operations`, playerId)
+      break
     case 'paste':
     case '.paste':
       sendPrivateChatMessage('.paste x_times y_times [x_spacing y_spacing] - repeat next paste (x/y)_times.', playerId)
@@ -482,6 +494,117 @@ function pasteCommandReceived(args: string[], playerId: number, smartPaste: bool
   botData.spacingVec = vec2(spacingX, spacingY)
   botData.smartRepeatEnabled = smartPaste
   sendPrivateChatMessage(`Next paste will be repeated ${repeatX}x${repeatY} times`, playerId)
+}
+
+function replaceCommandReceived(args: string[], playerId: number) {
+  if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+    return
+  }
+
+  if (getPlayerBotData()[playerId].selectedBlocks.length === 0) {
+    sendPrivateChatMessage(`ERROR! Select blocks before replacing them!`, playerId)
+    return
+  }
+
+  switch (args[1].toLowerCase()) {
+    case 'color':
+      replaceColorCommand(args, playerId)
+      break
+    case 'div':
+    case 'divide':
+      replaceDivideCommand(args, playerId)
+      break
+    case 'mult':
+    case 'multiply':
+      replaceMultiplyCommand(args, playerId)
+      break
+    case 'add':
+      replaceAddCommand(args, playerId)
+      break
+    case 'sub':
+    case 'subtract':
+      replaceSubCommand(args, playerId)
+      break
+    default:
+      sendPrivateChatMessage(`ERROR! Correct usage is .replace <type> arg1 arg2`, playerId)
+  }
+}
+
+function replaceColorCommand(args: string[], playerId: number) {
+  const search_for = args[2].toUpperCase()
+  const replace_with = args[3].toUpperCase()
+  let counter = 0
+  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map(world_block => {
+    const copy_name = world_block.block.name.replace(search_for, replace_with)
+    if(world_block.block.name !== copy_name) {
+      const poss_block_id = getBlockId(copy_name as PwBlockName)
+      if(isFinite(poss_block_id) && !isUndefined(poss_block_id)){
+        const deepblock = cloneDeep(world_block)
+        deepblock.block = new Block(poss_block_id, world_block.block.args)
+        counter += 1
+        return deepblock
+      }
+    }
+    return world_block
+  })
+  /**
+  Two options if they change the layer of the block
+  1. Check if the layer is different than the original block, and skip it.
+  2. Change the layer, deleting any old worldblocks in the array at that position
+  */
+  sendPrivateChatMessage(`${counter} blocks ${search_for} switched to ${replace_with}`, playerId)
+}
+
+type replaceOp = (a: number, b: number) => number
+
+function replaceArithmeticCommand(
+  args: string[],
+  playerId: number,
+  op: replaceOp,
+  opPast: string
+) {
+  const amount = Number(args[2])
+  const search_for = args[3]?.toUpperCase() ?? ""
+  let counter = 0
+  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map(world_block => {
+    if (search_for === "" || world_block.block.name.indexOf(search_for) !== -1) {
+      if (world_block.block.args.length !== 0) {
+        const deep_block = cloneDeep(world_block)
+        // if avoid altering boolean args.
+        if (deep_block.block.name === PwBlockName.SWITCH_LOCAL_ACTIVATOR as (string)) {
+          deep_block.block.args[0] = Math.floor(op(deep_block.block.args[0] as number, amount))
+          return deep_block
+        }
+        deep_block.block.args = deep_block.block.args.map(arg => {
+          if (typeof arg == 'number') {
+            counter += 1
+            return Math.floor(op(arg, amount))
+          } else {
+            return arg
+          }
+        })
+        return deep_block
+      }
+    }
+    return world_block
+  })
+  sendPrivateChatMessage(`${counter} blocks ${opPast} by ${amount}`, playerId)
+}
+
+function replaceDivideCommand(args: string[], playerId: number) {
+  replaceArithmeticCommand(args, playerId, (a, b) => a / b, "divided")
+}
+
+function replaceMultiplyCommand(args: string[], playerId: number) {
+  replaceArithmeticCommand(args, playerId, (a, b) => a * b, "multiplied")
+}
+
+function replaceAddCommand(args: string[], playerId: number) {
+  replaceArithmeticCommand(args, playerId, (a, b) => a + b, "added")
+}
+
+function replaceSubCommand(args: string[], playerId: number) {
+  replaceArithmeticCommand(args, playerId, (a, b) => a - b, "subtracted")
 }
 
 function playerInitPacketReceived() {
