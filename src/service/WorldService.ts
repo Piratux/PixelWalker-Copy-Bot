@@ -1,4 +1,4 @@
-import { Block, BufferReader, createBlockPackets, DeserialisedStructure, Point, SendableBlockPacket } from 'pw-js-world'
+import { Block, BufferReader, createBlockPackets, DeserialisedStructure, LayerType, Point, SendableBlockPacket } from 'pw-js-world'
 import {
   getPwBlocksByPwId,
   getPwBlocksByPwName,
@@ -98,6 +98,18 @@ export function getBlockName(pwBlockId: number): PwBlockName {
 
 export function getBlockId(pwBlockName: PwBlockName): number {
   return getPwBlocksByPwName()[pwBlockName].Id
+}
+
+export function getBlockIdFromString(name: string): number|undefined {
+  const block = getPwBlocksByPwName()[name as PwBlockName]
+  if (!block) {
+    return undefined
+  }
+  return block.Id
+}
+
+export function getBlockLayer(pwBlockId: number): LayerType {
+  return getPwBlocksByPwId()[pwBlockId].Layer as LayerType
 }
 
 export function convertDeserializedStructureToWorldBlocks(
