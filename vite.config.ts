@@ -5,6 +5,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import eslint from 'vite-plugin-eslint2'
 import checker from 'vite-plugin-checker'
+import PWReloadCallbacksPlugin from './plugins/reloadCallbacks'
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
@@ -18,6 +19,7 @@ export default defineConfig(() => {
       checker({
         vueTsc: true,
       }),
+      PWReloadCallbacksPlugin(),
     ],
     optimizeDeps: {
       esbuildOptions: {

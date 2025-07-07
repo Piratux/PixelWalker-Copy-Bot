@@ -30,15 +30,43 @@ import { getWorldIdIfUrl } from '@/service/WorldIdExtractorService.ts'
 import { handleException } from '@/util/Exception.ts'
 import { GameError } from '@/class/GameError.ts'
 import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
+import type { WorldEventNames } from 'pw-js-api'
+import { Promisable } from '@/util/Promise'
+
+type CallbackEntry = {
+  name: WorldEventNames
+  // we disable any here because there is no reasonable way to represent the generic packet arguments that properly interfaces with pw-js-api
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  fn: (...args: any) => Promisable<void | "STOP">;
+}
+const callbacks: CallbackEntry[] = [
+  { name: 'playerInitPacket', fn: playerInitPacketReceived },
+  { name: 'worldBlockPlacedPacket', fn: worldBlockPlacedPacketReceived },
+  { name: 'playerChatPacket', fn: playerChatPacketReceived },
+  { name: 'playerJoinedPacket', fn: playerJoinedPacketReceived },
+];
 
 export function registerCallbacks() {
-  getPwGameClient()
-    .addHook(getPwGameWorldHelper().receiveHook)
-    .addCallback('debug', console.log)
-    .addCallback('playerInitPacket', playerInitPacketReceived)
-    .addCallback('worldBlockPlacedPacket', worldBlockPlacedPacketReceived)
-    .addCallback('playerChatPacket', playerChatPacketReceived)
-    .addCallback('playerJoinedPacket', playerJoinedPacketReceived)
+  const client = getPwGameClient();
+  const helper = getPwGameWorldHelper();
+  client.addHook(helper.receiveHook);
+  client.addCallback('debug', console.log);
+  for (const cb of callbacks) {
+    client.addCallback(cb.name, cb.fn);
+  }
+}
+
+if (import.meta.hot) {
+  import.meta.hot.on('reload-callbacks', ({ }) => {
+    if (import.meta.hot) {
+      if(!import.meta.hot.data.hot_version) {
+        import.meta.hot.data.hot_version = 1
+      } else {
+        import.meta.hot.data.hot_version++
+      }
+    }
+    console.log(hotReload()) // make it easy to see amongst the many logs
+  });
 }
 
 function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
@@ -89,6 +117,9 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       break
     case '.import':
       await importCommandReceived(args, playerId)
+      break
+    case '.hotreload':
+      reloadWrapper(args, playerId)
       break
     default:
       if (args[0].startsWith('.')) {
@@ -182,6 +213,29 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
       }
     }
   }
+}
+
+function reloadWrapper(_args: string[], playerId: number) {
+  if (getPwGameWorldHelper().getPlayer(playerId)?.username !== 'PIRATUX') {
+    sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
+    return
+  }
+  sendPrivateChatMessage(hotReload(), playerId)
+}
+
+function hotReload(): string {
+  const client = getPwGameClient();
+  if (!client) {
+    // this should basically never happen because the client should need to be connected for this code to be "hot"
+    console.error("Tried to hot-reload with no client connected.")
+    return "Tried to hot-reload with no client connected."
+  }
+  const version = import.meta.hot?.data.hot_version || 0
+  for (const cb of callbacks) {
+    client.removeCallback(cb.name);
+    client.addCallback(cb.name, cb.fn);
+  }
+  return `Hot reloading callbacks. Version: ${version}`
 }
 
 async function importCommandReceived(args: string[], playerId: number) {

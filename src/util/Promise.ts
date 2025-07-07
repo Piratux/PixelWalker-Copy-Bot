@@ -4,3 +4,6 @@ export function createAsyncCallback(callback: () => void): () => Promise<void> {
     resolve();
   });
 }
+
+// This should be an exact copy of ps-js-api's Promisable type.
+export type Promisable<T> = T | Promise<T>;
