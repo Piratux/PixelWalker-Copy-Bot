@@ -25,6 +25,7 @@ import {
   pwEnterEditKey,
   pwJoinWorld,
 } from '@/service/PWClientService.ts'
+import { isDeveloper } from '@/util/Environment'
 import { getImportedFromPwlvlData } from '@/service/PwlvlImporterService.ts'
 import { getWorldIdIfUrl } from '@/service/WorldIdExtractorService.ts'
 import { handleException } from '@/util/Exception.ts'
@@ -143,7 +144,8 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
     return
   }
 
-  if (getPwGameWorldHelper().getPlayer(playerId)?.username !== 'PIRATUX') {
+  if (!isDeveloper(playerId)) {
+    sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId) 
     return
   }
 
@@ -186,7 +188,7 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
 
 async function importCommandReceived(args: string[], playerId: number) {
   if (
-    getPwGameWorldHelper().getPlayer(playerId)?.username !== 'PIRATUX' &&
+    !isDeveloper(playerId) &&
     getPwGameWorldHelper().getPlayer(playerId)?.isWorldOwner !== true
   ) {
     sendPrivateChatMessage('ERROR! Command is exclusive to world owners', playerId)
@@ -310,7 +312,8 @@ async function importCommandReceived(args: string[], playerId: number) {
 }
 
 async function testCommandReceived(_args: string[], playerId: number) {
-  if (getPwGameWorldHelper().getPlayer(playerId)?.username !== 'PIRATUX') {
+  if (!isDeveloper(playerId)) {
+    sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
     return
   }
 
