@@ -67,8 +67,9 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
     case '.help':
       helpCommandReceived(args, playerId)
       break
-    case '.replace':
-      replaceCommandReceived(args, playerId)
+    case '.ec':
+    case '.editcopy':
+      editCopyCommandReceived(args, playerId)
       break
     case '.paste':
       pasteCommandReceived(args, playerId, false)
@@ -354,13 +355,15 @@ function helpCommandReceived(args: string[], playerId: number) {
       )
       sendPrivateChatMessage(`Example usage: .help paste`, playerId)
       break
-    case 'replace':
-    case '.replace':
-      sendPrivateChatMessage('.replace allows you to change copied blocks and their arguments.', playerId)
-      sendPrivateChatMessage('.replace color find replace - allows you to change color/state, based upon the name of the block.', playerId)
-      sendPrivateChatMessage('.replace <replaceOp> number [name_find] - Allows you to edit number arguments on blocks.', playerId)
-      sendPrivateChatMessage('replaceOp - add, sub, mult, or div.', playerId)
-      sendPrivateChatMessage(`name_find - an optional arg allowing you to restrict replace arg operations`, playerId)
+    case 'ec':
+    case '.ec':
+    case 'editcopy':
+    case '.editcopy':
+      sendPrivateChatMessage('.editcopy (alias: ec) allows you to change copied blocks and their arguments.', playerId)
+      sendPrivateChatMessage('.editcopy color find replace - allows you to change color/state, based upon the name of the block.', playerId)
+      sendPrivateChatMessage('.editcopy <editOp> number [name_find] - Allows you to edit number arguments on blocks.', playerId)
+      sendPrivateChatMessage('editOp - add, subtract (alias: sub), multiply (alias: mult), or divide (alias: div).', playerId)
+      sendPrivateChatMessage(`name_find - restricts to blocks with this string in their name`, playerId)
       break
     case 'paste':
     case '.paste':
@@ -496,7 +499,7 @@ function pasteCommandReceived(args: string[], playerId: number, smartPaste: bool
   sendPrivateChatMessage(`Next paste will be repeated ${repeatX}x${repeatY} times`, playerId)
 }
 
-function replaceCommandReceived(args: string[], playerId: number) {
+function editCopyCommandReceived(args: string[], playerId: number) {
   if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
     return
   }
@@ -508,29 +511,29 @@ function replaceCommandReceived(args: string[], playerId: number) {
 
   switch (args[1].toLowerCase()) {
     case 'color':
-      replaceColorCommand(args, playerId)
+      editCopyColorCommand(args, playerId)
       break
     case 'div':
     case 'divide':
-      replaceDivideCommand(args, playerId)
+      editCopyDivideCommand(args, playerId)
       break
     case 'mult':
     case 'multiply':
-      replaceMultiplyCommand(args, playerId)
+      editCopyMultiplyCommand(args, playerId)
       break
     case 'add':
-      replaceAddCommand(args, playerId)
+      editCopyAddCommand(args, playerId)
       break
     case 'sub':
     case 'subtract':
-      replaceSubCommand(args, playerId)
+      editCopySubCommand(args, playerId)
       break
     default:
-      sendPrivateChatMessage(`ERROR! Correct usage is .replace <type> arg1 arg2`, playerId)
+      sendPrivateChatMessage(`ERROR! Correct usage is .editcopy <type> arg1 arg2`, playerId)
   }
 }
 
-function replaceColorCommand(args: string[], playerId: number) {
+function editCopyColorCommand(args: string[], playerId: number) {
   const search_for = args[2].toUpperCase()
   const replace_with = args[3].toUpperCase()
   let counter = 0
@@ -555,12 +558,12 @@ function replaceColorCommand(args: string[], playerId: number) {
   sendPrivateChatMessage(`${counter} blocks ${search_for} switched to ${replace_with}`, playerId)
 }
 
-type replaceOp = (a: number, b: number) => number
+type editCopyOp = (a: number, b: number) => number
 
-function replaceArithmeticCommand(
+function editCopyArithmeticCommand(
   args: string[],
   playerId: number,
-  op: replaceOp,
+  op: editCopyOp,
   opPast: string
 ) {
   const amount = Number(args[2])
@@ -591,20 +594,20 @@ function replaceArithmeticCommand(
   sendPrivateChatMessage(`${counter} blocks ${opPast} by ${amount}`, playerId)
 }
 
-function replaceDivideCommand(args: string[], playerId: number) {
-  replaceArithmeticCommand(args, playerId, (a, b) => a / b, "divided")
+function editCopyDivideCommand(args: string[], playerId: number) {
+  editCopyArithmeticCommand(args, playerId, (a, b) => a / b, "divided")
 }
 
-function replaceMultiplyCommand(args: string[], playerId: number) {
-  replaceArithmeticCommand(args, playerId, (a, b) => a * b, "multiplied")
+function editCopyMultiplyCommand(args: string[], playerId: number) {
+  editCopyArithmeticCommand(args, playerId, (a, b) => a * b, "multiplied")
 }
 
-function replaceAddCommand(args: string[], playerId: number) {
-  replaceArithmeticCommand(args, playerId, (a, b) => a + b, "added")
+function editCopyAddCommand(args: string[], playerId: number) {
+  editCopyArithmeticCommand(args, playerId, (a, b) => a + b, "added")
 }
 
-function replaceSubCommand(args: string[], playerId: number) {
-  replaceArithmeticCommand(args, playerId, (a, b) => a - b, "subtracted")
+function editCopySubCommand(args: string[], playerId: number) {
+  editCopyArithmeticCommand(args, playerId, (a, b) => a - b, "subtracted")
 }
 
 function playerInitPacketReceived() {
