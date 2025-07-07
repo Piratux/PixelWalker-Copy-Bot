@@ -1,6 +1,6 @@
 import { getPwBlocks, getPwGameClient, getPwGameWorldHelper, usePWClientStore } from '@/store/PWClientStore.ts'
 import { Block, ComponentTypeHeader, IPlayer, LayerType, Point, PWGameWorldHelper } from 'pw-js-world'
-import { cloneDeep, isUndefined } from 'lodash-es'
+import { cloneDeep } from 'lodash-es'
 import { BotData, createBotData } from '@/type/BotData.ts'
 import { getPlayerBotData } from '@/store/BotStore.ts'
 import { BotState } from '@/enum/BotState.ts'
@@ -541,7 +541,7 @@ function editCopyColorCommand(args: string[], playerId: number) {
     const copy_name = world_block.block.name.replace(search_for, replace_with)
     if(world_block.block.name !== copy_name) {
       const poss_block_id = getBlockId(copy_name as PwBlockName)
-      if(isFinite(poss_block_id) && !isUndefined(poss_block_id)){
+      if(isFinite(poss_block_id) && poss_block_id !== undefined){
         const deepblock = cloneDeep(world_block)
         deepblock.block = new Block(poss_block_id, world_block.block.args)
         counter += 1
