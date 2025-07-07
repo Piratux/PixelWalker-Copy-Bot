@@ -7,7 +7,13 @@ import {
   Point,
   SendableBlockPacket,
 } from 'pw-js-world'
-import { getPwBlocksByPwId, getPwBlocksByPwName, getPwGameClient, getPwGameWorldHelper, usePWClientStore } from '@/store/PWClientStore.ts'
+import {
+  getPwBlocksByPwId,
+  getPwBlocksByPwName,
+  getPwGameClient,
+  getPwGameWorldHelper,
+  usePWClientStore,
+} from '@/store/PWClientStore.ts'
 import { WorldBlock } from '@/type/WorldBlock.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
 import { sleep } from '@/util/Sleep.ts'
@@ -110,7 +116,7 @@ export function getBlockName(pwBlockId: number): PwBlockName {
   return getPwBlocksByPwId()[pwBlockId].PaletteId.toUpperCase() as PwBlockName
 }
 
-export function getBlockIdFromString(name: string): number|undefined {
+export function getBlockIdFromString(name: string): number | undefined {
   const block = getPwBlocksByPwName()[name as PwBlockName]
   if (!block) {
     return undefined
