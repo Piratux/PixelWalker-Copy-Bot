@@ -22,6 +22,8 @@ export function isDeveloper(playerId: number) {
   let dev_username = 'PIRATUX'
   if(import.meta.env.VITE_DEV_USERNAME) {
     dev_username = import.meta.env.VITE_DEV_USERNAME.toUpperCase()
+  } else {
+    console.log('VITE_DEV_USERNAME is not defined in environment variables, assuming "PIRATUX"')
   }
   return (player.username == dev_username)
 }
