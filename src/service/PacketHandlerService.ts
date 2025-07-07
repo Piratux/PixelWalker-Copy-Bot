@@ -145,7 +145,7 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
   }
 
   if (!isDeveloper(playerId)) {
-    sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId) 
+    sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
     return
   }
 
@@ -200,10 +200,7 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
 }
 
 async function importCommandReceived(args: string[], playerId: number) {
-  if (
-    !isDeveloper(playerId) &&
-    getPwGameWorldHelper().getPlayer(playerId)?.isWorldOwner !== true
-  ) {
+  if (!isDeveloper(playerId) && getPwGameWorldHelper().getPlayer(playerId)?.isWorldOwner !== true) {
     sendPrivateChatMessage('ERROR! Command is exclusive to world owners', playerId)
     return
   }

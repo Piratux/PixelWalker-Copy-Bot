@@ -16,14 +16,14 @@ export function isEnvDevViewEnabled() {
 
 export function isDeveloper(playerId: number) {
   const player = getPwGameWorldHelper().getPlayer(playerId)
-  if(!player) {
+  if (!player) {
     return false
   }
   let dev_username = 'PIRATUX'
-  if(import.meta.env.VITE_DEV_USERNAME) {
+  if (import.meta.env.VITE_DEV_USERNAME) {
     dev_username = import.meta.env.VITE_DEV_USERNAME.toUpperCase()
   } else {
     console.log('VITE_DEV_USERNAME is not defined in environment variables, assuming "PIRATUX"')
   }
-  return (player.username == dev_username)
+  return player.username === dev_username
 }
