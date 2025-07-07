@@ -1,10 +1,9 @@
 <template>
   <v-sheet class="mx-auto" max-width="600">
     <v-container fluid>
-      <slot/>
+      <slot />
     </v-container>
   </v-sheet>
 </template>
 
-<script setup lang="ts">
-</script>
+<script setup lang="ts"></script>

@@ -10,16 +10,20 @@ http://piratux.github.io/PixelWalker-Copy-Bot/
 Features accessible via commands:
 
 - Copy/paste selected region
+- Move selected region
+- Mask blocks when pasting (such as only pasting background blocks)
 - Repeated paste of selected region
-    - Smart repeated paste - switches/portals/etc. get auto incremented based on placed pattern (useful for building
-      switch worlds)
+  - Smart repeated paste - switches/portals/etc. get auto incremented based on placed pattern (useful for building
+    switch worlds)
 - Undo/redo blocks placed by bot
 - Import PixelWalker worlds via link
 
 Features accessible via bot page:
 
 - Export PixelWalker world to .eelvl file
-- Import .eelvl file to PixelWalker world
+- Import .eelvl file
+- Import .midi file (piano notes only for now)
+- Import .png file
 
 ## Requirements to run project
 
@@ -27,7 +31,14 @@ Node.js >= 22.12.0
 
 ## Local development
 
-At the root of project run:
+If you want to setup project for local development, at the root of project run once:
+
+```
+npm install
+npx simple-git-hooks
+```
+
+Then when you want to test changes, you can run:
 
 ```
 npm run dev
@@ -60,7 +71,7 @@ To have custom config only when running locally:
 
 NOTE: All env file entries must start with `VITE_`, otherwise value will be undefined in code.
 
-## Test production build
+### Test production build
 
 At the root of project run:
 
@@ -74,13 +85,13 @@ http://localhost:4173/PixelWalker-Copy-Bot/
 
 Vite's HMR won't work for production build, so you need to run build and preview commands when you make code changes.
 
-## Runtime tests
+### Runtime tests
 
 This repository contains runtime tests.
 
 To use them, run `.test` while in game.
 
-## Disable ESLint/Vue-tsc
+### Disable ESLint/Vue-tsc
 
 ESLint and vue-tsc may be sometimes unwanted during development.
 
@@ -91,12 +102,14 @@ You can disable them by adding the following lines as the top of the file:
 // @ts-nocheck
 ```
 
-## When block names change in `/listblocks`
+### When block names change in `/listblocks`
 
-Actions to be done:
+After PixelWalker update, some blocks may change.
+
+If blocks change, the following needs to be performed:
 
 - Block names in `EelvlBlocks.ts` need to be updated
-- The following needs to be run
+- The following needs to be run:
 
 ```
 npm run gen-files
@@ -104,3 +117,13 @@ npm run gen-files
 
 - `*.pwlvl` files need to be updated in `tests/resources`
 - Run `.test` in game
+
+### When changing pre commit hooks
+
+If you change pre commit hooks, you need to run the following command:
+
+```
+npx simple-git-hooks
+```
+
+See more info here: https://github.com/toplenboren/simple-git-hooks

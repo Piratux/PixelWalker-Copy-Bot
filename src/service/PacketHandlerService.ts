@@ -13,7 +13,7 @@ import {
   getBlockName,
   placeMultipleBlocks,
   getBlockIdFromString,
-  getBlockLayer
+  getBlockLayer,
 } from '@/service/WorldService.ts'
 import { addUndoItemWorldBlock, performRedo, performUndo } from '@/service/UndoRedoService.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
@@ -176,6 +176,19 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
           layer: singleBlock.Layer,
           pos,
         }
+      } else if (
+        [
+          PwBlockName.PORTAL_VISIBLE_DOWN,
+          PwBlockName.PORTAL_VISIBLE_LEFT,
+          PwBlockName.PORTAL_VISIBLE_RIGHT,
+          PwBlockName.PORTAL_VISIBLE_UP,
+          PwBlockName.PORTAL_INVISIBLE_DOWN,
+          PwBlockName.PORTAL_INVISIBLE_LEFT,
+          PwBlockName.PORTAL_INVISIBLE_RIGHT,
+          PwBlockName.PORTAL_INVISIBLE_UP,
+        ].includes(singleBlock.PaletteId as PwBlockName)
+      ) {
+        worldBlock = { block: new Block(singleBlock.Id, ['0', '0']), layer: singleBlock.Layer, pos }
       } else {
         worldBlock = { block: new Block(singleBlock.Id), layer: singleBlock.Layer, pos }
       }
@@ -323,8 +336,8 @@ async function testCommandReceived(_args: string[], playerId: number) {
     return
   }
 
-  if (getPwGameWorldHelper().width < 100 || getPwGameWorldHelper().height < 100) {
-    sendPrivateChatMessage('ERROR! To perform tests, world must be at least 100x100 size.', playerId)
+  if (getPwGameWorldHelper().width < 200 || getPwGameWorldHelper().height < 200) {
+    sendPrivateChatMessage('ERROR! To perform tests, world must be at least 200x200 size.', playerId)
     return
   }
 
@@ -358,8 +371,11 @@ function helpCommandReceived(args: string[], playerId: number) {
     case 'edit':
     case '.edit':
       sendPrivateChatMessage('.edit - allows you to change copied blocks and their arguments.', playerId)
-      sendPrivateChatMessage('.edit name find replace - allows you to change the block based on it\'s.', playerId)
-      sendPrivateChatMessage('.edit <mathOp> number [name_find] - Allows you to edit number arguments on blocks.', playerId)
+      sendPrivateChatMessage(".edit name find replace - allows you to change the block based on it's.", playerId)
+      sendPrivateChatMessage(
+        '.edit <mathOp> number [name_find] - Allows you to edit number arguments on blocks.',
+        playerId,
+      )
       sendPrivateChatMessage('mathOp - add, sub, mul, or div.', playerId)
       sendPrivateChatMessage('name_find - restricts to blocks with this string in their name', playerId)
       break
@@ -537,16 +553,16 @@ function editNameCommand(args: string[], playerId: number) {
   }
   let counter = 0
   const copy_names_found: Set<string> = new Set<string>()
-  let warning = ""
-  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map(world_block => {
+  let warning = ''
+  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map((world_block) => {
     const copy_name = world_block.block.name.replace(search_for, replace_with)
-    if(world_block.block.name !== copy_name && copy_name != "") {
+    if (world_block.block.name !== copy_name && copy_name != '') {
       copy_names_found.add(copy_name)
       const poss_block_id = getBlockIdFromString(copy_name)
-      if(poss_block_id !== undefined && !isNaN(poss_block_id)){
+      if (poss_block_id !== undefined && !isNaN(poss_block_id)) {
         const deepblock = cloneDeep(world_block)
-        if(getBlockLayer(poss_block_id) !== getBlockLayer(world_block.block.bId)) {
-          warning = ".edit name does not support changing layers"
+        if (getBlockLayer(poss_block_id) !== getBlockLayer(world_block.block.bId)) {
+          warning = '.edit name does not support changing layers'
           return world_block
         }
         deepblock.block = new Block(poss_block_id, world_block.block.args)
@@ -556,42 +572,37 @@ function editNameCommand(args: string[], playerId: number) {
     }
     return world_block
   })
-  if(!warning && counter == 0 && copy_names_found.size == 1) {
+  if (!warning && counter == 0 && copy_names_found.size == 1) {
     // some blocks are confusingly named, if theyre trying to edit a single block type let them know that its not valid.
     sendPrivateChatMessage(`${counter} blocks changed. ${[...copy_names_found][0]} is not a valid block.`, playerId)
     return
   }
   sendPrivateChatMessage(`${counter} blocks ${search_for} changed to ${replace_with}`, playerId)
-  if(warning) {
+  if (warning) {
     sendPrivateChatMessage(`Warning: ${warning}`, playerId)
   }
 }
 
 type mathOp = (a: number, b: number) => number
 
-function editArithmeticCommand(
-  args: string[],
-  playerId: number,
-  op: mathOp,
-  opPast: string
-) {
+function editArithmeticCommand(args: string[], playerId: number, op: mathOp, opPast: string) {
   const amount = Number(args[2])
   if (isNaN(amount)) {
     sendPrivateChatMessage(`ERROR! Correct usage is .edit <mathOp> number [name_find]`, playerId)
     return
   }
-  const search_for = args[3]?.toUpperCase() ?? ""
+  const search_for = args[3]?.toUpperCase() ?? ''
   let counter = 0
-  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map(world_block => {
-    if (search_for === "" || world_block.block.name.indexOf(search_for) !== -1) {
+  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map((world_block) => {
+    if (search_for === '' || world_block.block.name.indexOf(search_for) !== -1) {
       if (world_block.block.args.length !== 0) {
         const deep_block = cloneDeep(world_block)
         // if avoid altering boolean args.
-        if (deep_block.block.name === PwBlockName.SWITCH_LOCAL_ACTIVATOR as (string)) {
+        if (deep_block.block.name === (PwBlockName.SWITCH_LOCAL_ACTIVATOR as string)) {
           deep_block.block.args[0] = Math.floor(op(deep_block.block.args[0] as number, amount))
           return deep_block
         }
-        deep_block.block.args = deep_block.block.args.map(arg => {
+        deep_block.block.args = deep_block.block.args.map((arg) => {
           if (typeof arg === 'number') {
             counter++
             return Math.max(0, Math.floor(op(arg, amount)))
@@ -608,27 +619,27 @@ function editArithmeticCommand(
 }
 
 function editDivideCommand(args: string[], playerId: number) {
-  if(Number(args[2]) <= 0) {
+  if (Number(args[2]) <= 0) {
     sendPrivateChatMessage(`ERROR! Cannot divide by zero or negative numbers.`, playerId)
     return
   }
-  editArithmeticCommand(args, playerId, (a, b) => a / b, "divided")
+  editArithmeticCommand(args, playerId, (a, b) => a / b, 'divided')
 }
 
 function editMultiplyCommand(args: string[], playerId: number) {
-  if(Number(args[2]) < 0) {
+  if (Number(args[2]) < 0) {
     sendPrivateChatMessage(`ERROR! Cannot multiply by negative numbers.`, playerId)
     return
   }
-  editArithmeticCommand(args, playerId, (a, b) => a * b, "multiplied")
+  editArithmeticCommand(args, playerId, (a, b) => a * b, 'multiplied')
 }
 
 function editAddCommand(args: string[], playerId: number) {
-  editArithmeticCommand(args, playerId, (a, b) => a + b, "added")
+  editArithmeticCommand(args, playerId, (a, b) => a + b, 'added')
 }
 
 function editSubCommand(args: string[], playerId: number) {
-  editArithmeticCommand(args, playerId, (a, b) => a - b, "subtracted")
+  editArithmeticCommand(args, playerId, (a, b) => a - b, 'subtracted')
 }
 
 function playerInitPacketReceived() {
@@ -701,29 +712,36 @@ function mergeWorldBlocks(blocks_bottom: WorldBlock[], blocks_top: WorldBlock[])
 }
 
 function applyMoveMode(botData: BotData, allBlocks: WorldBlock[]) {
-  if (botData.moveEnabled) {
-    const replacedByLastMoveOperationBlocks = allBlocks.map(
-      (block) =>
-        botData.replacedByLastMoveOperationBlocks.find(
-          (replacedBlock) => vec2.eq(block.pos, replacedBlock.pos) && block.layer === replacedBlock.layer,
-        ) ?? {
-          pos: block.pos,
-          layer: block.layer,
-          block: getBlockAt(block.pos, block.layer),
-        },
-    )
-
-    if (botData.moveOperationPerformedOnce) {
-      allBlocks = mergeWorldBlocks(botData.replacedByLastMoveOperationBlocks, allBlocks)
-    }
-    const emptyBlocks = getSelectedAreaAsEmptyBlocks(botData)
-    allBlocks = mergeWorldBlocks(emptyBlocks, allBlocks)
-
-    botData.moveOperationPerformedOnce = true
-
-    botData.replacedByLastMoveOperationBlocks = replacedByLastMoveOperationBlocks
+  // TODO: There is an issue, where quickly spamming blue coins to move selected blocks, will cause some blocks to remain permanent, even though move should be non destructive.
+  //  I have no idea what causes it and how to fix it.
+  if (!botData.moveEnabled) {
+    return allBlocks
   }
-  return allBlocks
+
+  let resultBlocks: WorldBlock[] = []
+  const replacedByLastMoveOperationBlocksMap = new Map(
+    botData.replacedByLastMoveOperationBlocks.map((block) => [`${block.layer},${block.pos.x},${block.pos.y}`, block]),
+  )
+  const replacedByLastMoveOperationBlocks = allBlocks.map(
+    (block) =>
+      replacedByLastMoveOperationBlocksMap.get(`${block.layer},${block.pos.x},${block.pos.y}`) ?? {
+        pos: block.pos,
+        layer: block.layer,
+        block: getBlockAt(block.pos, block.layer),
+      },
+  )
+
+  if (botData.moveOperationPerformedOnce) {
+    resultBlocks = botData.replacedByLastMoveOperationBlocks
+  }
+  const emptyBlocks = getSelectedAreaAsEmptyBlocks(botData)
+  resultBlocks = mergeWorldBlocks(resultBlocks, emptyBlocks)
+  resultBlocks = mergeWorldBlocks(resultBlocks, allBlocks)
+
+  botData.moveOperationPerformedOnce = true
+
+  botData.replacedByLastMoveOperationBlocks = replacedByLastMoveOperationBlocks
+  return resultBlocks
 }
 
 function filterByLayerMasks(allBlocks: WorldBlock[], botData: BotData) {
@@ -806,6 +824,7 @@ function disableMoveMode(botData: BotData, playerId: number) {
   if (botData.moveEnabled) {
     botData.moveEnabled = false
     botData.moveOperationPerformedOnce = false
+    botData.replacedByLastMoveOperationBlocks = []
     sendPrivateChatMessage('Move mode disabled', playerId)
   }
 }
@@ -975,9 +994,7 @@ function blueCoinBlockPlaced(
   for (let i = 0; i < data.positions.length; i++) {
     const blockPos = data.positions[i]
 
-    if (getBlockName(data.blockId) === PwBlockName.COIN_BLUE) {
-      pasteBlocks(botData, blockPos)
-    }
+    pasteBlocks(botData, blockPos)
   }
 }
 

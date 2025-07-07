@@ -1,11 +1,13 @@
-import { Block, BufferReader, createBlockPackets, DeserialisedStructure, LayerType, Point, SendableBlockPacket } from 'pw-js-world'
 import {
-  getPwBlocksByPwId,
-  getPwBlocksByPwName,
-  getPwGameClient,
-  getPwGameWorldHelper,
-  usePWClientStore,
-} from '@/store/PWClientStore.ts'
+  Block,
+  BufferReader,
+  createBlockPackets,
+  DeserialisedStructure,
+  LayerType,
+  Point,
+  SendableBlockPacket,
+} from 'pw-js-world'
+import { getPwBlocksByPwId, getPwBlocksByPwName, getPwGameClient, getPwGameWorldHelper, usePWClientStore } from '@/store/PWClientStore.ts'
 import { WorldBlock } from '@/type/WorldBlock.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
 import { sleep } from '@/util/Sleep.ts'
@@ -35,6 +37,18 @@ export async function placeWorldDataBlocks(worldData: DeserialisedStructure, pos
   const packets: SendableBlockPacket[] = worldData.toPackets(pos.x, pos.y)
 
   return await placePackets(packets, worldData.width * worldData.height * TOTAL_PW_LAYERS)
+}
+
+export async function placeLayerDataBlocks(
+  worldData: DeserialisedStructure,
+  pos: Point,
+  layer: LayerType,
+): Promise<boolean> {
+  const packets: SendableBlockPacket[] = worldData
+    .toPackets(pos.x, pos.y)
+    .filter((packet) => (packet.layer as LayerType) === layer)
+
+  return await placePackets(packets, worldData.width * worldData.height)
 }
 
 async function placePackets(packets: SendableBlockPacket[], blockCount: number): Promise<boolean> {
@@ -94,10 +108,6 @@ export function placeBlockPacket(blockPacket: SendableBlockPacket) {
 
 export function getBlockName(pwBlockId: number): PwBlockName {
   return getPwBlocksByPwId()[pwBlockId].PaletteId.toUpperCase() as PwBlockName
-}
-
-export function getBlockId(pwBlockName: PwBlockName): number {
-  return getPwBlocksByPwName()[pwBlockName].Id
 }
 
 export function getBlockIdFromString(name: string): number|undefined {

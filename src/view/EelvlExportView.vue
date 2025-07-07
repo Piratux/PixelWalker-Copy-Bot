@@ -74,9 +74,11 @@ async function onExportEelvlButtonClick() {
           <li>Orange, yellow, cyan and purple canvas foreground blocks.</li>
           <li>Bronze and silver colours of gilded block pack</li>
           <li>
-            Multiple layers: some blocks like water or fog are placed on overlay layer. If there are blocks in overlay
+            Multiple layers: water, fog and some decorations are placed on overlay layer. If there are blocks in overlay
             and foreground layer, blocks in overlay layer are not exported
           </li>
+          <li>Strings in portal ID and portal target ID</li>
+          <li>White and black crystal</li>
         </ul>
       </v-row>
       <v-row>All missing blocks are replaced with sign (except for backgrounds).</v-row>
