@@ -335,7 +335,7 @@ function helpCommandReceived(args: string[], playerId: number) {
   if (args.length == 1) {
     sendPrivateChatMessage('Gold coin - select blocks', playerId)
     sendPrivateChatMessage('Blue coin - paste blocks', playerId)
-    sendPrivateChatMessage('Commands: .help .ping .paste .smartpaste .undo .redo .import .move .mask', playerId)
+    sendPrivateChatMessage('Commands: .help .ping .paste .smartpaste .undo .redo .import .editcopy .move .mask', playerId)
     sendPrivateChatMessage('See more info about each command via .help [command]', playerId)
     sendPrivateChatMessage('You can also use the bot: piratux.github.io/PixelWalker-Copy-Bot/', playerId)
     return
@@ -363,7 +363,7 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage('.editcopy color find replace - allows you to change color/state, based upon the name of the block.', playerId)
       sendPrivateChatMessage('.editcopy <editOp> number [name_find] - Allows you to edit number arguments on blocks.', playerId)
       sendPrivateChatMessage('editOp - add, subtract (alias: sub), multiply (alias: mult), or divide (alias: div).', playerId)
-      sendPrivateChatMessage(`name_find - restricts to blocks with this string in their name`, playerId)
+      sendPrivateChatMessage('name_find - restricts to blocks with this string in their name', playerId)
       break
     case 'paste':
     case '.paste':
