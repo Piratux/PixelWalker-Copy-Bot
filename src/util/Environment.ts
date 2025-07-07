@@ -11,7 +11,7 @@ export function isEnvDevViewEnabled() {
   if (!import.meta.env.VITE_DEV_VIEW) {
     throw new Error('VITE_DEV_VIEW is not defined in environment variables')
   }
-  return (import.meta.env.VITE_DEV_VIEW === 'TRUE')
+  return import.meta.env.VITE_DEV_VIEW === 'TRUE'
 }
 
 export function isDeveloper(playerId: number) {

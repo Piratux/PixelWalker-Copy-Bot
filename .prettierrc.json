@@ -6,11 +6,6 @@
   "trailingComma": "all",
   "arrowParens": "always",
   "endOfLine": "auto",
-
-  "pluginSearchDirs": [
-    "."
-  ],
-
   "singleQuote": true,
   "overrides": [
     {

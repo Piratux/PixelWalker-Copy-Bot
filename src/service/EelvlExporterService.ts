@@ -206,9 +206,15 @@ function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock {
       return { blockId: EelvlBlockId.SIGN_NORMAL, signType: 1, signText: pwBlock.args[0] as string }
     case PwBlockName.SIGN_GOLD:
       return { blockId: EelvlBlockId.SIGN_NORMAL, signType: 3, signText: pwBlock.args[0] as string }
-    case PwBlockName.PORTAL:
+    case PwBlockName.PORTAL_VISIBLE_LEFT:
+    case PwBlockName.PORTAL_VISIBLE_RIGHT:
+    case PwBlockName.PORTAL_VISIBLE_UP:
+    case PwBlockName.PORTAL_VISIBLE_DOWN:
       return getPwToEelvlPortalBlock(pwBlock, EelvlBlockId.PORTAL)
-    case PwBlockName.PORTAL_INVISIBLE:
+    case PwBlockName.PORTAL_INVISIBLE_LEFT:
+    case PwBlockName.PORTAL_INVISIBLE_RIGHT:
+    case PwBlockName.PORTAL_INVISIBLE_UP:
+    case PwBlockName.PORTAL_INVISIBLE_DOWN:
       return getPwToEelvlPortalBlock(pwBlock, EelvlBlockId.PORTAL_INVISIBLE)
     case PwBlockName.PORTAL_WORLD:
       return {
@@ -352,28 +358,43 @@ function getPwToEelvlEffectsMultiJumpBlock(pwBlock: Block): EelvlBlock {
 }
 
 function getPwToEelvlPortalBlock(pwBlock: Block, eelvlBlockId: EelvlBlockId): EelvlBlock {
-  let rotation = pwBlock.args[0]
-  const portalId = pwBlock.args[1]
-  const portalTarget = pwBlock.args[2]
-  switch (rotation) {
-    case 0:
+  const portalIdToNumber = (portalId: string): number | undefined => {
+    return /^\d{1,5}$/.test(portalId) ? parseInt(portalId) : undefined
+  }
+
+  const portalId = pwBlock.args[0] as string
+  const portalTarget = pwBlock.args[1] as string
+  let rotation
+  switch (pwBlock.name as PwBlockName) {
+    case PwBlockName.PORTAL_VISIBLE_LEFT:
+    case PwBlockName.PORTAL_INVISIBLE_LEFT:
       rotation = 1
       break
-    case 1:
+    case PwBlockName.PORTAL_VISIBLE_UP:
+    case PwBlockName.PORTAL_INVISIBLE_UP:
       rotation = 2
       break
-    case 2:
+    case PwBlockName.PORTAL_VISIBLE_RIGHT:
+    case PwBlockName.PORTAL_INVISIBLE_RIGHT:
       rotation = 3
       break
-    case 3:
+    case PwBlockName.PORTAL_VISIBLE_DOWN:
+    case PwBlockName.PORTAL_INVISIBLE_DOWN:
       rotation = 0
       break
   }
+  const portalIdInt = portalIdToNumber(portalId)
+  const portalTargetInt = portalIdToNumber(portalTarget)
+  if (portalIdInt === undefined || portalTargetInt === undefined) {
+    return createMissingBlockSign(
+      `${pwBlock.name} portal id: ${portalId}, portal target: ${portalTarget}, rotation: ${rotation}`,
+    )
+  }
   return {
     blockId: eelvlBlockId,
-    intParameter: rotation as number,
-    portalId: portalId as number,
-    portalTarget: portalTarget as number,
+    intParameter: rotation,
+    portalId: portalIdInt,
+    portalTarget: portalTargetInt,
   }
 }
 

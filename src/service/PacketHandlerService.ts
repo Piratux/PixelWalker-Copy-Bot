@@ -173,6 +173,19 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
           layer: singleBlock.Layer,
           pos,
         }
+      } else if (
+        [
+          PwBlockName.PORTAL_VISIBLE_DOWN,
+          PwBlockName.PORTAL_VISIBLE_LEFT,
+          PwBlockName.PORTAL_VISIBLE_RIGHT,
+          PwBlockName.PORTAL_VISIBLE_UP,
+          PwBlockName.PORTAL_INVISIBLE_DOWN,
+          PwBlockName.PORTAL_INVISIBLE_LEFT,
+          PwBlockName.PORTAL_INVISIBLE_RIGHT,
+          PwBlockName.PORTAL_INVISIBLE_UP,
+        ].includes(singleBlock.PaletteId as PwBlockName)
+      ) {
+        worldBlock = { block: new Block(singleBlock.Id, ['0', '0']), layer: singleBlock.Layer, pos }
       } else {
         worldBlock = { block: new Block(singleBlock.Id), layer: singleBlock.Layer, pos }
       }
@@ -321,8 +334,8 @@ async function testCommandReceived(_args: string[], playerId: number) {
     return
   }
 
-  if (getPwGameWorldHelper().width < 100 || getPwGameWorldHelper().height < 100) {
-    sendPrivateChatMessage('ERROR! To perform tests, world must be at least 100x100 size.', playerId)
+  if (getPwGameWorldHelper().width < 200 || getPwGameWorldHelper().height < 200) {
+    sendPrivateChatMessage('ERROR! To perform tests, world must be at least 200x200 size.', playerId)
     return
   }
 
@@ -557,29 +570,36 @@ function mergeWorldBlocks(blocks_bottom: WorldBlock[], blocks_top: WorldBlock[])
 }
 
 function applyMoveMode(botData: BotData, allBlocks: WorldBlock[]) {
-  if (botData.moveEnabled) {
-    const replacedByLastMoveOperationBlocks = allBlocks.map(
-      (block) =>
-        botData.replacedByLastMoveOperationBlocks.find(
-          (replacedBlock) => vec2.eq(block.pos, replacedBlock.pos) && block.layer === replacedBlock.layer,
-        ) ?? {
-          pos: block.pos,
-          layer: block.layer,
-          block: getBlockAt(block.pos, block.layer),
-        },
-    )
-
-    if (botData.moveOperationPerformedOnce) {
-      allBlocks = mergeWorldBlocks(botData.replacedByLastMoveOperationBlocks, allBlocks)
-    }
-    const emptyBlocks = getSelectedAreaAsEmptyBlocks(botData)
-    allBlocks = mergeWorldBlocks(emptyBlocks, allBlocks)
-
-    botData.moveOperationPerformedOnce = true
-
-    botData.replacedByLastMoveOperationBlocks = replacedByLastMoveOperationBlocks
+  // TODO: There is an issue, where quickly spamming blue coins to move selected blocks, will cause some blocks to remain permanent, even though move should be non destructive.
+  //  I have no idea what causes it and how to fix it.
+  if (!botData.moveEnabled) {
+    return allBlocks
   }
-  return allBlocks
+
+  let resultBlocks: WorldBlock[] = []
+  const replacedByLastMoveOperationBlocksMap = new Map(
+    botData.replacedByLastMoveOperationBlocks.map((block) => [`${block.layer},${block.pos.x},${block.pos.y}`, block]),
+  )
+  const replacedByLastMoveOperationBlocks = allBlocks.map(
+    (block) =>
+      replacedByLastMoveOperationBlocksMap.get(`${block.layer},${block.pos.x},${block.pos.y}`) ?? {
+        pos: block.pos,
+        layer: block.layer,
+        block: getBlockAt(block.pos, block.layer),
+      },
+  )
+
+  if (botData.moveOperationPerformedOnce) {
+    resultBlocks = botData.replacedByLastMoveOperationBlocks
+  }
+  const emptyBlocks = getSelectedAreaAsEmptyBlocks(botData)
+  resultBlocks = mergeWorldBlocks(resultBlocks, emptyBlocks)
+  resultBlocks = mergeWorldBlocks(resultBlocks, allBlocks)
+
+  botData.moveOperationPerformedOnce = true
+
+  botData.replacedByLastMoveOperationBlocks = replacedByLastMoveOperationBlocks
+  return resultBlocks
 }
 
 function filterByLayerMasks(allBlocks: WorldBlock[], botData: BotData) {
@@ -662,6 +682,7 @@ function disableMoveMode(botData: BotData, playerId: number) {
   if (botData.moveEnabled) {
     botData.moveEnabled = false
     botData.moveOperationPerformedOnce = false
+    botData.replacedByLastMoveOperationBlocks = []
     sendPrivateChatMessage('Move mode disabled', playerId)
   }
 }
@@ -831,9 +852,7 @@ function blueCoinBlockPlaced(
   for (let i = 0; i < data.positions.length; i++) {
     const blockPos = data.positions[i]
 
-    if (getBlockName(data.blockId) === PwBlockName.COIN_BLUE) {
-      pasteBlocks(botData, blockPos)
-    }
+    pasteBlocks(botData, blockPos)
   }
 }
 

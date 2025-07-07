@@ -6,7 +6,7 @@ import { EelvlBlock } from '@/type/EelvlBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { EelvlFileHeader } from '@/type/WorldData.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
-import { getBlockId, placeWorldDataBlocks } from '@/service/WorldService.ts'
+import { placeWorldDataBlocks } from '@/service/WorldService.ts'
 import { getPwBlocksByEelvlParameters, getPwBlocksByPwId, getPwGameWorldHelper } from '@/store/PWClientStore.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
 import { cloneDeep } from 'lodash-es'
@@ -153,7 +153,7 @@ function readPositionsByteArrays(bytes: ByteArray): vec2[] {
 }
 
 function createBlock(pwBlockName: PwBlockName, args?: BlockArg[]): Block {
-  return new Block(getBlockId(pwBlockName), args)
+  return new Block(pwBlockName, args)
 }
 
 function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Block {
@@ -198,9 +198,9 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
           return createBlock(PwBlockName.EMPTY)
       }
     case EelvlBlockId.PORTAL:
-      return getEelvlToPwPortalBlock(eelvlBlock, PwBlockName.PORTAL)
+      return getEelvlToPwPortalBlock(eelvlBlock)
     case EelvlBlockId.PORTAL_INVISIBLE:
-      return getEelvlToPwPortalBlock(eelvlBlock, PwBlockName.PORTAL_INVISIBLE)
+      return getEelvlToPwPortalBlock(eelvlBlock)
     case EelvlBlockId.PORTAL_WORLD:
       return createBlock(PwBlockName.PORTAL_WORLD, [
         eelvlBlock.worldPortalTargetWorldId!,
@@ -339,25 +339,36 @@ function getEelvlToPwEffectsMultiJumpBlock(eelvlBlock: EelvlBlock): Block {
   return createBlock(PwBlockName.EFFECTS_MULTI_JUMP, [jumpCount])
 }
 
-function getEelvlToPwPortalBlock(eelvlBlock: EelvlBlock, pwBlockName: PwBlockName): Block {
-  let rotation = eelvlBlock.intParameter!
+function getEelvlToPwPortalBlock(eelvlBlock: EelvlBlock): Block {
+  const rotation = eelvlBlock.intParameter!
+  let pwBlockName
   const portalId = eelvlBlock.portalId!
   const portalTarget = eelvlBlock.portalTarget!
+  const eelvlBlockId = eelvlBlock.blockId as EelvlBlockId
   switch (rotation) {
     case 1:
-      rotation = 0
+      pwBlockName =
+        eelvlBlockId === EelvlBlockId.PORTAL ? PwBlockName.PORTAL_VISIBLE_LEFT : PwBlockName.PORTAL_INVISIBLE_LEFT
       break
     case 2:
-      rotation = 1
+      pwBlockName =
+        eelvlBlockId === EelvlBlockId.PORTAL ? PwBlockName.PORTAL_VISIBLE_UP : PwBlockName.PORTAL_INVISIBLE_UP
       break
     case 3:
-      rotation = 2
+      pwBlockName =
+        eelvlBlockId === EelvlBlockId.PORTAL ? PwBlockName.PORTAL_VISIBLE_RIGHT : PwBlockName.PORTAL_INVISIBLE_RIGHT
       break
     case 0:
-      rotation = 3
+      pwBlockName =
+        eelvlBlockId === EelvlBlockId.PORTAL ? PwBlockName.PORTAL_VISIBLE_DOWN : PwBlockName.PORTAL_INVISIBLE_DOWN
+      break
+    default:
+      console.warn(`Unknown portal rotation: ${rotation}, using default LEFT`)
+      pwBlockName =
+        eelvlBlockId === EelvlBlockId.PORTAL ? PwBlockName.PORTAL_VISIBLE_LEFT : PwBlockName.PORTAL_INVISIBLE_LEFT
       break
   }
-  return createBlock(pwBlockName, [rotation, portalId, portalTarget])
+  return createBlock(pwBlockName, [portalId.toString(), portalTarget.toString()])
 }
 
 function getEelvlToPwNoteBlock(eelvlBlock: EelvlBlock, pwBlockName: PwBlockName): Block {
