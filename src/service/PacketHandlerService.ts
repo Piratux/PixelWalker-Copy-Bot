@@ -543,6 +543,11 @@ function editCopyColorCommand(args: string[], playerId: number) {
       const poss_block_id = getBlockId(copy_name as PwBlockName)
       if(isFinite(poss_block_id) && poss_block_id !== undefined){
         const deepblock = cloneDeep(world_block)
+        // If this changes the layer of the placed block, the bots crashes. So... don't do that.
+        // There seems to be no support right now for detecting what layer a block SHOULD go on via api
+        // Future options for fixing this once we know what layer
+        // 1. Check if the layer is different than the original block, and skip it.
+        // 2. Change the layer, deleting any old worldblocks in the array at that position
         deepblock.block = new Block(poss_block_id, world_block.block.args)
         counter += 1
         return deepblock
@@ -550,20 +555,15 @@ function editCopyColorCommand(args: string[], playerId: number) {
     }
     return world_block
   })
-  /**
-  Two options if they change the layer of the block
-  1. Check if the layer is different than the original block, and skip it.
-  2. Change the layer, deleting any old worldblocks in the array at that position
-  */
   sendPrivateChatMessage(`${counter} blocks ${search_for} switched to ${replace_with}`, playerId)
 }
 
-type editCopyOp = (a: number, b: number) => number
+type editOp = (a: number, b: number) => number
 
 function editCopyArithmeticCommand(
   args: string[],
   playerId: number,
-  op: editCopyOp,
+  op: editOp,
   opPast: string
 ) {
   const amount = Number(args[2])
