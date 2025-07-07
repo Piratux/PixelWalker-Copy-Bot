@@ -6,6 +6,5 @@ export function createAsyncCallback(callback: () => void): () => Promise<void> {
     })
 }
 
-
 // This should be an exact copy of pw-js-api's Promisable type.
-export type Promisable<T> = T | Promise<T>;
+export type Promisable<T> = T | Promise<T>
