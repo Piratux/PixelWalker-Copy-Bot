@@ -7,6 +7,8 @@ import { placeWorldDataBlocks } from '@/service/WorldService.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { GameError } from '@/class/GameError.ts'
 import { pwClearWorld } from '@/service/PWClientService.ts'
+import { getImportedFromPngData } from '@/service/PngImporterService.ts'
+import { getImportedFromMidiData } from '@/service/MidiImporterService.ts'
 
 export function compareDeserialisedStructureData(
   receivedData: DeserialisedStructure,
@@ -41,6 +43,18 @@ export async function getDataFromEelvlFile(fileUrl: string): Promise<Deserialise
   const fileRaw = await fetch(fileUrl)
   const fileArrayBuffer = await fileRaw.arrayBuffer()
   return getImportedFromEelvlData(fileArrayBuffer)
+}
+
+export async function getDataFromPngFile(fileUrl: string, quantized: boolean): Promise<DeserialisedStructure> {
+  const fileRaw = await fetch(fileUrl)
+  const fileArrayBuffer = await fileRaw.arrayBuffer()
+  return getImportedFromPngData(fileArrayBuffer, quantized)
+}
+
+export async function getDataFromMidiFile(fileUrl: string): Promise<DeserialisedStructure | null> {
+  const fileRaw = await fetch(fileUrl)
+  const fileArrayBuffer = await fileRaw.arrayBuffer()
+  return getImportedFromMidiData(fileArrayBuffer, false)
 }
 
 // Returns blocks loaded from fileUrl

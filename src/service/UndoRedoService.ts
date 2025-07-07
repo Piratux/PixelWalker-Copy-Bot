@@ -19,7 +19,11 @@ export function addUndoItemWorldBlock(botData: BotData, newBlocks: WorldBlock[])
   botData.undoStack.push(undoRedoItem)
 }
 
-export function addUndoItemDeserializedStructure(botData: BotData, blocks: DeserialisedStructure, offsetPos: vec2 = vec2(0,0)) {
+export function addUndoItemDeserializedStructure(
+  botData: BotData,
+  blocks: DeserialisedStructure,
+  offsetPos: vec2 = vec2(0, 0),
+) {
   const worldBlocks = convertDeserializedStructureToWorldBlocks(blocks, offsetPos)
   addUndoItemWorldBlock(botData, worldBlocks)
 }

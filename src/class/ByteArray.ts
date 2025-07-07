@@ -312,8 +312,7 @@ export class ByteArray {
     this.hashexpand(length)
 
     for (let i = 0; i < length; i++) {
-      this.buffer[i + this.hashposition] =
-        Buffer.isBuffer(bytes) ? bytes[i + offset] : bytes.buffer[i + offset]
+      this.buffer[i + this.hashposition] = Buffer.isBuffer(bytes) ? bytes[i + offset] : bytes.buffer[i + offset]
     }
 
     this.hashposition += length

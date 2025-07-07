@@ -1,4 +1,10 @@
-import { ExportEelvlViewRoute, HomeViewRoute, ImportEelvlViewRoute } from '@/router/Routes.ts'
+import {
+  ExportEelvlViewRoute,
+  HomeViewRoute,
+  ImportEelvlViewRoute,
+  MidiImportViewRoute,
+  PngImportViewRoute,
+} from '@/router/Routes.ts'
 
 export const MENU_ITEMS = [
   {
@@ -12,5 +18,13 @@ export const MENU_ITEMS = [
   {
     text: 'Export EELVL',
     link: ExportEelvlViewRoute.path,
+  },
+  {
+    text: 'Import PNG',
+    link: PngImportViewRoute.path,
+  },
+  {
+    text: 'Import MIDI',
+    link: MidiImportViewRoute.path,
   },
 ]
