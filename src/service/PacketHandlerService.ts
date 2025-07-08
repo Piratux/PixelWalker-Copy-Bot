@@ -605,7 +605,7 @@ function editArithmeticCommand(args: string[], playerId: number, op: mathOp, opP
         deep_block.block.args = deep_block.block.args.map((arg) => {
           if (typeof arg === 'number') {
             counter++
-            return Math.max(0, Math.floor(op(arg, amount)))
+            return Math.floor(op(arg, amount))
           } else {
             return arg
           }
