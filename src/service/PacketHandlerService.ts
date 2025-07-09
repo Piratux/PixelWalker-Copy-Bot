@@ -545,12 +545,14 @@ function editCommandReceived(args: string[], playerId: number) {
 }
 
 function editNameCommand(args: string[], playerId: number) {
-  const search_for = args[2].toUpperCase()
-  const replace_with = args[3].toUpperCase()
-  if (!search_for || !replace_with) {
+  let search_for = args[2]
+  let replace_with = args[3]
+  if (typeof search_for !== 'string' || typeof replace_with !== 'string') {
     sendPrivateChatMessage(`ERROR! Correct usage is .edit name find replace`, playerId)
     return
   }
+  search_for = search_for.toUpperCase()
+  replace_with = replace_with.toUpperCase()
   let counter = 0
   const copy_names_found: Set<string> = new Set<string>()
   let warning = ''
