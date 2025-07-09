@@ -1,4 +1,5 @@
 <template>
+  <PiOverlay :loading="loadingOverlay"></PiOverlay>
   <v-app-bar color="primary">
     <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
     <v-toolbar-title>PixelWalker copy bot</v-toolbar-title>
@@ -40,6 +41,7 @@ import { isEnvDevViewEnabled } from '@/util/Environment.ts'
 import { withLoading } from '@/service/LoaderProxyService.ts'
 import { getPwGameClient, usePWClientStore } from '@/store/PWClientStore.ts'
 import { resetAllStores } from '@/plugin/ResetStore.ts'
+import PiOverlay from '@/component/PiOverlay.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -66,9 +68,11 @@ onMounted(async () => {
 })
 
 async function handleRouting(path: string | undefined) {
-  if (path && routePath.value !== path) {
-    await router.push({ path })
-  }
+  await withLoading(loadingOverlay, async () => {
+    if (path && routePath.value !== path) {
+      await router.push({ path })
+    }
+  })
 }
 
 const showDrawer = computed(() => {
