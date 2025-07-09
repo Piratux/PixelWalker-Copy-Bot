@@ -1,13 +1,13 @@
 import { ByteArray } from '@/class/ByteArray.ts'
 import { EelvlBlockId } from '@/gen/EelvlBlockId.ts'
 import type { BlockArg } from 'pw-js-world'
-import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
+import { Block, DeserialisedStructure } from 'pw-js-world'
 import { EelvlBlock } from '@/type/EelvlBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { EelvlFileHeader } from '@/type/WorldData.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
-import { placeWorldDataBlocks } from '@/service/WorldService.ts'
-import { getPwBlocksByEelvlParameters, getPwBlocksByPwId, getPwGameWorldHelper } from '@/store/PWClientStore.ts'
+import { getBlockLayer, placeWorldDataBlocks } from '@/service/WorldService.ts'
+import { getPwBlocksByEelvlParameters, getPwGameWorldHelper } from '@/store/PWClientStore.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
 import { cloneDeep } from 'lodash-es'
 import { pwCheckEditWhenImporting } from '@/service/PWClientService.ts'
@@ -60,7 +60,7 @@ export function getImportedFromEelvlData(fileData: ArrayBuffer): DeserialisedStr
     }
 
     const pwBlock: Block = mapBlockIdEelvlToPw(eelvlBlock, eelvlLayer)
-    const pwLayer = getPwLayer(pwBlock.bId)
+    const pwLayer = getBlockLayer(pwBlock.bId)
     for (const pos of blockPositions) {
       if (pos.x >= 0 && pos.y >= 0 && pos.x < pwMapWidth && pos.y < pwMapHeight) {
         pwBlock3DArray[pwLayer][pos.x][pos.y] = cloneDeep(pwBlock)
@@ -90,10 +90,6 @@ export async function importFromEelvl(fileData: ArrayBuffer) {
     sendGlobalChatMessage(message)
     MessageService.error(message)
   }
-}
-
-function getPwLayer(pwBlockId: number): LayerType {
-  return getPwBlocksByPwId()[pwBlockId].Layer as LayerType
 }
 
 function readEelvlBlock(bytes: ByteArray, eelvlBlockId: number) {

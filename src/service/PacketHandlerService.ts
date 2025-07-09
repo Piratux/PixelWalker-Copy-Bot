@@ -12,6 +12,8 @@ import {
   getBlockAt,
   getBlockName,
   placeMultipleBlocks,
+  getBlockIdFromString,
+  getBlockLayer,
 } from '@/service/WorldService.ts'
 import { addUndoItemWorldBlock, performRedo, performUndo } from '@/service/UndoRedoService.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
@@ -104,6 +106,9 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       break
     case '.help':
       helpCommandReceived(args, playerId)
+      break
+    case '.edit':
+      editCommandReceived(args, playerId)
       break
     case '.paste':
       pasteCommandReceived(args, playerId, false)
@@ -381,7 +386,7 @@ function helpCommandReceived(args: string[], playerId: number) {
   if (args.length == 1) {
     sendPrivateChatMessage('Gold coin - select blocks', playerId)
     sendPrivateChatMessage('Blue coin - paste blocks', playerId)
-    sendPrivateChatMessage('Commands: .help .ping .paste .smartpaste .undo .redo .import .move .mask', playerId)
+    sendPrivateChatMessage('Commands: .help .ping .paste .smartpaste .undo .redo .import .edit .move .mask', playerId)
     sendPrivateChatMessage('See more info about each command via .help [command]', playerId)
     sendPrivateChatMessage('You can also use the bot: piratux.github.io/PixelWalker-Copy-Bot/', playerId)
     return
@@ -400,6 +405,17 @@ function helpCommandReceived(args: string[], playerId: number) {
         playerId,
       )
       sendPrivateChatMessage(`Example usage: .help paste`, playerId)
+      break
+    case 'edit':
+    case '.edit':
+      sendPrivateChatMessage('.edit - allows you to change copied blocks and their arguments.', playerId)
+      sendPrivateChatMessage(".edit name find replace - allows you to change the block based on it's.", playerId)
+      sendPrivateChatMessage(
+        '.edit <mathOp> number [name_find] - Allows you to edit number arguments on blocks.',
+        playerId,
+      )
+      sendPrivateChatMessage('mathOp - add, sub, mul, or div.', playerId)
+      sendPrivateChatMessage('name_find - restricts to blocks with this string in their name', playerId)
       break
     case 'paste':
     case '.paste':
@@ -533,6 +549,137 @@ function pasteCommandReceived(args: string[], playerId: number, smartPaste: bool
   botData.spacingVec = vec2(spacingX, spacingY)
   botData.smartRepeatEnabled = smartPaste
   sendPrivateChatMessage(`Next paste will be repeated ${repeatX}x${repeatY} times`, playerId)
+}
+
+function editCommandReceived(args: string[], playerId: number) {
+  if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+    return
+  }
+
+  if (getPlayerBotData()[playerId].selectedBlocks.length === 0) {
+    sendPrivateChatMessage(`ERROR! Select blocks before replacing them!`, playerId)
+    return
+  }
+
+  switch (args[1].toLowerCase()) {
+    case 'name':
+      editNameCommand(args, playerId)
+      break
+    case 'div':
+      editDivideCommand(args, playerId)
+      break
+    case 'mul':
+      editMultiplyCommand(args, playerId)
+      break
+    case 'add':
+      editAddCommand(args, playerId)
+      break
+    case 'sub':
+      editSubCommand(args, playerId)
+      break
+    default:
+      sendPrivateChatMessage(`ERROR! Correct usage is .edit <type> arg1 arg2`, playerId)
+  }
+}
+
+function editNameCommand(args: string[], playerId: number) {
+  let search_for = args[2]
+  let replace_with = args[3]
+  if (typeof search_for !== 'string' || typeof replace_with !== 'string') {
+    sendPrivateChatMessage(`ERROR! Correct usage is .edit name find replace`, playerId)
+    return
+  }
+  search_for = search_for.toUpperCase()
+  replace_with = replace_with.toUpperCase()
+  let counter = 0
+  const copy_names_found: Set<string> = new Set<string>()
+  let warning = ''
+  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map((world_block) => {
+    const copy_name = world_block.block.name.replace(search_for, replace_with)
+    if (world_block.block.name !== copy_name && copy_name != '') {
+      copy_names_found.add(copy_name)
+      const poss_block_id = getBlockIdFromString(copy_name)
+      if (poss_block_id !== undefined && !isNaN(poss_block_id)) {
+        const deepblock = cloneDeep(world_block)
+        if (getBlockLayer(poss_block_id) !== getBlockLayer(world_block.block.bId)) {
+          warning = '.edit name does not support changing layers'
+          return world_block
+        }
+        deepblock.block = new Block(poss_block_id, world_block.block.args)
+        counter++
+        return deepblock
+      }
+    }
+    return world_block
+  })
+  if (!warning && counter == 0 && copy_names_found.size == 1) {
+    // some blocks are confusingly named, if theyre trying to edit a single block type let them know that its not valid.
+    sendPrivateChatMessage(`${counter} blocks changed. ${[...copy_names_found][0]} is not a valid block.`, playerId)
+    return
+  }
+  sendPrivateChatMessage(`${counter} blocks ${search_for} changed to ${replace_with}`, playerId)
+  if (warning) {
+    sendPrivateChatMessage(`Warning: ${warning}`, playerId)
+  }
+}
+
+type mathOp = (a: number, b: number) => number
+
+function editArithmeticCommand(args: string[], playerId: number, op: mathOp, opPast: string) {
+  const amount = Number(args[2])
+  if (isNaN(amount)) {
+    sendPrivateChatMessage(`ERROR! Correct usage is .edit <mathOp> number [name_find]`, playerId)
+    return
+  }
+  const search_for = args[3]?.toUpperCase() ?? ''
+  let counter = 0
+  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map((world_block) => {
+    if (search_for === '' || world_block.block.name.indexOf(search_for) !== -1) {
+      if (world_block.block.args.length !== 0) {
+        const deep_block = cloneDeep(world_block)
+        // if avoid altering boolean args.
+        if (deep_block.block.name === (PwBlockName.SWITCH_LOCAL_ACTIVATOR as string)) {
+          deep_block.block.args[0] = Math.floor(op(deep_block.block.args[0] as number, amount))
+          return deep_block
+        }
+        deep_block.block.args = deep_block.block.args.map((arg) => {
+          if (typeof arg === 'number') {
+            counter++
+            return Math.floor(op(arg, amount))
+          } else {
+            return arg
+          }
+        })
+        return deep_block
+      }
+    }
+    return world_block
+  })
+  sendPrivateChatMessage(`${counter} blocks ${opPast} by ${amount}`, playerId)
+}
+
+function editDivideCommand(args: string[], playerId: number) {
+  if (Number(args[2]) <= 0) {
+    sendPrivateChatMessage(`ERROR! Cannot divide by zero or negative numbers.`, playerId)
+    return
+  }
+  editArithmeticCommand(args, playerId, (a, b) => a / b, 'divided')
+}
+
+function editMultiplyCommand(args: string[], playerId: number) {
+  if (Number(args[2]) < 0) {
+    sendPrivateChatMessage(`ERROR! Cannot multiply by negative numbers.`, playerId)
+    return
+  }
+  editArithmeticCommand(args, playerId, (a, b) => a * b, 'multiplied')
+}
+
+function editAddCommand(args: string[], playerId: number) {
+  editArithmeticCommand(args, playerId, (a, b) => a + b, 'added')
+}
+
+function editSubCommand(args: string[], playerId: number) {
+  editArithmeticCommand(args, playerId, (a, b) => a - b, 'subtracted')
 }
 
 function playerInitPacketReceived() {
