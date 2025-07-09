@@ -58,15 +58,25 @@ export function registerCallbacks() {
 
 if (import.meta.hot) {
   import.meta.hot.on('vite:afterUpdate', ({}) => {
-    if (import.meta.hot !== undefined) {
-      if (!import.meta.hot.data.hot_version) {
-        import.meta.hot.data.hot_version = 1
-      } else {
-        import.meta.hot.data.hot_version++
-      }
-    }
-    console.log(hotReload()) // make it easy to see amongst the many logs
+    hotReload()
   })
+}
+
+function hotReload() {
+  const client = getPwGameClient()
+  if (!client) {
+    // this should basically never happen because the client should need to be connected for this code to be "hot"
+    console.error('Tried to hot-reload with no client connected.')
+    return 
+  }
+  for (const cb of callbacks) {
+    client.removeCallback(cb.name)
+    client.addCallback(cb.name, cb.fn)
+  }
+  const date = new Date(Date.now())
+  const message = `[${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}] Hot reloading callbacks.`
+  console.log(message)
+  sendGlobalChatMessage(message)
 }
 
 function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
@@ -117,9 +127,6 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       break
     case '.import':
       await importCommandReceived(args, playerId)
-      break
-    case '.hotreload':
-      reloadWrapper(args, playerId)
       break
     default:
       if (args[0].startsWith('.')) {
@@ -226,30 +233,6 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
       }
     }
   }
-}
-
-function reloadWrapper(_args: string[], playerId: number) {
-  if (getPwGameWorldHelper().getPlayer(playerId)?.username !== 'BLUECLOUD') {
-    sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
-    return
-  }
-  sendPrivateChatMessage(hotReload(), playerId)
-}
-
-function hotReload(): string {
-  const client = getPwGameClient()
-  if (!client) {
-    // this should basically never happen because the client should need to be connected for this code to be "hot"
-    console.error('Tried to hot-reload with no client connected.')
-    return ''
-  }
-  const version = import.meta.hot?.data.hot_version || 0
-  for (const cb of callbacks) {
-    client.removeCallback(cb.name)
-    client.addCallback(cb.name, cb.fn)
-  }
-  const date = new Date(Date.now())
-  return `[${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}] Hot reloading callbacks. Version: ${version}`
 }
 
 async function importCommandReceived(args: string[], playerId: number) {
