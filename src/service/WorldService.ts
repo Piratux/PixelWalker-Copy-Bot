@@ -147,3 +147,22 @@ export function convertDeserializedStructureToWorldBlocks(
   }
   return resultBlocks
 }
+
+export function blockIsPortal(pwBlockName: PwBlockName | string): boolean {
+  return [
+    PwBlockName.PORTAL_VISIBLE_DOWN,
+    PwBlockName.PORTAL_VISIBLE_LEFT,
+    PwBlockName.PORTAL_VISIBLE_RIGHT,
+    PwBlockName.PORTAL_VISIBLE_UP,
+    PwBlockName.PORTAL_INVISIBLE_DOWN,
+    PwBlockName.PORTAL_INVISIBLE_LEFT,
+    PwBlockName.PORTAL_INVISIBLE_RIGHT,
+    PwBlockName.PORTAL_INVISIBLE_UP,
+  ].includes(pwBlockName as PwBlockName)
+}
+
+export function portalIdToNumber(portalId: string): number | undefined {
+  const portalIdIsInteger = /^\d{1,5}$/.test(portalId)
+  const portalIdHasNoLeadingZeros = portalId === parseInt(portalId).toString()
+  return portalIdIsInteger && portalIdHasNoLeadingZeros ? parseInt(portalId) : undefined
+}

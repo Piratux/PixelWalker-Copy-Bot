@@ -8,7 +8,7 @@ import ManyKeysMap from 'many-keys-map'
 import { vec2 } from '@basementuniverse/vec'
 import { EelvlFileHeader } from '@/type/WorldData.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
-import { getBlockName } from '@/service/WorldService.ts'
+import { getBlockName, portalIdToNumber } from '@/service/WorldService.ts'
 import { EelvlLayer } from '@/enum/EelvlLayer.ts'
 import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
 import { EelvlBlockEntry } from '@/type/EelvlBlockEntry.ts'
@@ -358,10 +358,6 @@ function getPwToEelvlEffectsMultiJumpBlock(pwBlock: Block): EelvlBlock {
 }
 
 function getPwToEelvlPortalBlock(pwBlock: Block, eelvlBlockId: EelvlBlockId): EelvlBlock {
-  const portalIdToNumber = (portalId: string): number | undefined => {
-    return /^\d{1,5}$/.test(portalId) ? parseInt(portalId) : undefined
-  }
-
   const portalId = pwBlock.args[0] as string
   const portalTarget = pwBlock.args[1] as string
   let rotation

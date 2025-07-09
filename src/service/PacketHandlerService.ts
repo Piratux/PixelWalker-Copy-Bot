@@ -14,6 +14,8 @@ import {
   placeMultipleBlocks,
   getBlockIdFromString,
   getBlockLayer,
+  blockIsPortal,
+  portalIdToNumber,
 } from '@/service/WorldService.ts'
 import { addUndoItemWorldBlock, performRedo, performUndo } from '@/service/UndoRedoService.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
@@ -216,18 +218,7 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
           layer: singleBlock.Layer,
           pos,
         }
-      } else if (
-        [
-          PwBlockName.PORTAL_VISIBLE_DOWN,
-          PwBlockName.PORTAL_VISIBLE_LEFT,
-          PwBlockName.PORTAL_VISIBLE_RIGHT,
-          PwBlockName.PORTAL_VISIBLE_UP,
-          PwBlockName.PORTAL_INVISIBLE_DOWN,
-          PwBlockName.PORTAL_INVISIBLE_LEFT,
-          PwBlockName.PORTAL_INVISIBLE_RIGHT,
-          PwBlockName.PORTAL_INVISIBLE_UP,
-        ].includes(singleBlock.PaletteId as PwBlockName)
-      ) {
+      } else if (blockIsPortal(singleBlock.PaletteId)) {
         worldBlock = { block: new Block(singleBlock.Id, ['0', '0']), layer: singleBlock.Layer, pos }
       } else {
         worldBlock = { block: new Block(singleBlock.Id), layer: singleBlock.Layer, pos }
@@ -712,6 +703,25 @@ function applySmartTransformForBlocks(
           if (pastePosBlock.block.bId === nextBlockY.block.bId) {
             const diffY = (nextBlockY.block.args[i] as number) - (pastePosBlock.block.args[i] as number)
             blockCopy.block.args[i] = (blockCopy.block.args[i] as number) + diffY * repetitionY
+          }
+        } else if (blockIsPortal(pastePosBlock.block.name)) {
+          if (pastePosBlock.block.bId === nextBlockX.block.bId) {
+            const nextBlockXPortalId = portalIdToNumber(nextBlockX.block.args[i] as string)
+            const pastePosBlockPortalId = portalIdToNumber(pastePosBlock.block.args[i] as string)
+            const blockCopyPortalId = portalIdToNumber(blockCopy.block.args[i] as string)
+            if (nextBlockXPortalId && pastePosBlockPortalId && blockCopyPortalId) {
+              const diffX = nextBlockXPortalId - pastePosBlockPortalId
+              blockCopy.block.args[i] = (blockCopyPortalId + diffX * repetitionX).toString()
+            }
+          }
+          if (pastePosBlock.block.bId === nextBlockY.block.bId) {
+            const nextBlockYPortalId = portalIdToNumber(nextBlockY.block.args[i] as string)
+            const pastePosBlockPortalId = portalIdToNumber(pastePosBlock.block.args[i] as string)
+            const blockCopyPortalId = portalIdToNumber(blockCopy.block.args[i] as string)
+            if (nextBlockYPortalId && pastePosBlockPortalId && blockCopyPortalId) {
+              const diffY = nextBlockYPortalId - pastePosBlockPortalId
+              blockCopy.block.args[i] = (blockCopyPortalId + diffY * repetitionY).toString()
+            }
           }
         }
       }

@@ -3,6 +3,7 @@ PixelWalker copy bot changelog
 2025-07-09 Version 1.4.0
 - Bot: Added command ".edit name find replace" - edits selected block name substrings from "find" to "replace". Thanks Bluecloud!
 - Bot: Added command ".edit math_op number [name_find]" - edits selected block number arguments. Thanks Bluecloud!
+- Bot: Made .smartpaste command work with portals again. It only works if portal IDs are integers.
 - Website: Added loading overlay when navigating between menu pages.
 
 2025-07-06 Version 1.3.2
