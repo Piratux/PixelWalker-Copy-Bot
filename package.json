@@ -25,7 +25,7 @@
     "many-keys-map": "^2.0.1",
     "pinia": "^3.0.1",
     "pngjs": "^7.0.0",
-    "pw-js-api": "github:Piratux/pw-js-api#6def7872b77848363ba32a50087ec3f00a04177d",
+    "pw-js-api": "^0.3.5",
     "pw-js-world": "^0.4.1-dev.766d8c6",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
