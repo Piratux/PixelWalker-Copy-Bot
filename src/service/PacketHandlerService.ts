@@ -70,14 +70,14 @@ function hotReload() {
   if (!client) {
     // this should basically never happen because the client should need to be connected for this code to be "hot"
     console.error('Tried to hot-reload with no client connected.')
-    return 
+    return
   }
   for (const cb of callbacks) {
     client.removeCallback(cb.name)
     client.addCallback(cb.name, cb.fn)
   }
   const date = new Date(Date.now())
-  const message = `[${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}] Hot reloading callbacks.`
+  const message = `[${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}] Hot reloaded callbacks.`
   console.log(message)
   sendGlobalChatMessage(message)
 }
@@ -408,14 +408,13 @@ function helpCommandReceived(args: string[], playerId: number) {
       break
     case 'edit':
     case '.edit':
-      sendPrivateChatMessage('.edit - allows you to change copied blocks and their arguments.', playerId)
-      sendPrivateChatMessage(".edit name find replace - allows you to change the block based on it's.", playerId)
       sendPrivateChatMessage(
-        '.edit <mathOp> number [name_find] - Allows you to edit number arguments on blocks.',
+        '.edit name find replace - edits selected block name substrings from "find" to "replace".',
         playerId,
       )
-      sendPrivateChatMessage('mathOp - add, sub, mul, or div.', playerId)
-      sendPrivateChatMessage('name_find - restricts to blocks with this string in their name', playerId)
+      sendPrivateChatMessage('edit math_op number [name_find] - edits selected block number arguments.', playerId)
+      sendPrivateChatMessage('math_op - add, sub, mul or div.', playerId)
+      sendPrivateChatMessage('name_find - restricts to blocks with this substring in their name', playerId)
       break
     case 'paste':
     case '.paste':
@@ -561,7 +560,7 @@ function editCommandReceived(args: string[], playerId: number) {
     return
   }
 
-  switch (args[1].toLowerCase()) {
+  switch (args[1]?.toLowerCase()) {
     case 'name':
       editNameCommand(args, playerId)
       break
@@ -585,7 +584,7 @@ function editCommandReceived(args: string[], playerId: number) {
 function editNameCommand(args: string[], playerId: number) {
   let search_for = args[2]
   let replace_with = args[3]
-  if (typeof search_for !== 'string' || typeof replace_with !== 'string') {
+  if (!search_for || !replace_with) {
     sendPrivateChatMessage(`ERROR! Correct usage is .edit name find replace`, playerId)
     return
   }
@@ -617,7 +616,7 @@ function editNameCommand(args: string[], playerId: number) {
     sendPrivateChatMessage(`${counter} blocks changed. ${[...copy_names_found][0]} is not a valid block.`, playerId)
     return
   }
-  sendPrivateChatMessage(`${counter} blocks ${search_for} changed to ${replace_with}`, playerId)
+  sendPrivateChatMessage(`${counter} blocks changed ${search_for} to ${replace_with}`, playerId)
   if (warning) {
     sendPrivateChatMessage(`Warning: ${warning}`, playerId)
   }
@@ -628,7 +627,7 @@ type mathOp = (a: number, b: number) => number
 function editArithmeticCommand(args: string[], playerId: number, op: mathOp, opPast: string) {
   const amount = Number(args[2])
   if (isNaN(amount)) {
-    sendPrivateChatMessage(`ERROR! Correct usage is .edit <mathOp> number [name_find]`, playerId)
+    sendPrivateChatMessage(`ERROR! Correct usage is .edit math_op number [name_find]`, playerId)
     return
   }
   const search_for = args[3]?.toUpperCase() ?? ''

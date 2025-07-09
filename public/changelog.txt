@@ -1,5 +1,9 @@
 PixelWalker copy bot changelog
 
+2025-07-09 Version 1.4.0
+- Bot: Added command ".edit name find replace" - edits selected block name substrings from "find" to "replace". Thanks Bluecloud!
+- Bot: Added command ".edit math_op number [name_find]" - edits selected block number arguments. Thanks Bluecloud!
+
 2025-07-06 Version 1.3.2
 - Bot: Fixed an issue where move operation was not performed correctly in some cases
 - Bot: Fixed an issue where move operation would take a long time for large selected area
