@@ -31,15 +31,53 @@ import { getWorldIdIfUrl } from '@/service/WorldIdExtractorService.ts'
 import { handleException } from '@/util/Exception.ts'
 import { GameError } from '@/class/GameError.ts'
 import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
+import type { WorldEventNames } from 'pw-js-api'
+import { Promisable } from '@/util/Promise'
+
+type CallbackEntry = {
+  name: WorldEventNames
+  // we disable any here because there is no reasonable way to represent the generic packet arguments that properly interfaces with pw-js-api
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  fn: (...args: any) => Promisable<void | 'STOP'>
+}
+const callbacks: CallbackEntry[] = [
+  { name: 'playerInitPacket', fn: playerInitPacketReceived },
+  { name: 'worldBlockPlacedPacket', fn: worldBlockPlacedPacketReceived },
+  { name: 'playerChatPacket', fn: playerChatPacketReceived },
+  { name: 'playerJoinedPacket', fn: playerJoinedPacketReceived },
+]
 
 export function registerCallbacks() {
-  getPwGameClient()
-    .addHook(getPwGameWorldHelper().receiveHook)
-    .addCallback('debug', console.log)
-    .addCallback('playerInitPacket', playerInitPacketReceived)
-    .addCallback('worldBlockPlacedPacket', worldBlockPlacedPacketReceived)
-    .addCallback('playerChatPacket', playerChatPacketReceived)
-    .addCallback('playerJoinedPacket', playerJoinedPacketReceived)
+  const client = getPwGameClient()
+  const helper = getPwGameWorldHelper()
+  client.addHook(helper.receiveHook)
+  client.addCallback('debug', console.log)
+  for (const cb of callbacks) {
+    client.addCallback(cb.name, cb.fn)
+  }
+}
+
+if (import.meta.hot) {
+  import.meta.hot.on('vite:afterUpdate', ({}) => {
+    hotReload()
+  })
+}
+
+function hotReload() {
+  const client = getPwGameClient()
+  if (!client) {
+    // this should basically never happen because the client should need to be connected for this code to be "hot"
+    console.error('Tried to hot-reload with no client connected.')
+    return 
+  }
+  for (const cb of callbacks) {
+    client.removeCallback(cb.name)
+    client.addCallback(cb.name, cb.fn)
+  }
+  const date = new Date(Date.now())
+  const message = `[${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}] Hot reloading callbacks.`
+  console.log(message)
+  sendGlobalChatMessage(message)
 }
 
 function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
