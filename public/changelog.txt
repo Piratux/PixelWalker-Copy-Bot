@@ -1,6 +1,7 @@
 PixelWalker copy bot changelog
 
-2025-07-19 Version 1.4.1
+2025-07-19 Version 1.5.0
+- Bot: Added command ".edit id find_id replace_id" - edits selected block ids from "find_id" to "replace_id".
 - Bot: .move mode now does not get disabled anymore when new area is selected.
 - Bot: Improved .move mode block placement speed a little.
 - Bot: Fixed an issue where bot would not place blocks when they were pasted not within bounds of world.

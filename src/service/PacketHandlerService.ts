@@ -1,6 +1,12 @@
-import { getPwBlocks, getPwGameClient, getPwGameWorldHelper, usePWClientStore } from '@/store/PWClientStore.ts'
+import {
+  getPwBlocks,
+  getPwBlocksByPwId,
+  getPwGameClient,
+  getPwGameWorldHelper,
+  usePWClientStore,
+} from '@/store/PWClientStore.ts'
 import { Block, ComponentTypeHeader, IPlayer, LayerType, Point, PWGameWorldHelper } from 'pw-js-world'
-import { cloneDeep } from 'lodash-es'
+import { cloneDeep, isEqual } from 'lodash-es'
 import { BotData, createBotData } from '@/type/BotData.ts'
 import { getPlayerBotData } from '@/store/BotStore.ts'
 import { BotState } from '@/enum/BotState.ts'
@@ -403,6 +409,10 @@ function helpCommandReceived(args: string[], playerId: number) {
         '.edit name find replace - edits selected block name substrings from "find" to "replace".',
         playerId,
       )
+      sendPrivateChatMessage(
+        '.edit id find_id replace_id - edits selected block ids from "find_id" to "replace_id".',
+        playerId,
+      )
       sendPrivateChatMessage('edit math_op number [name_find] - edits selected block number arguments.', playerId)
       sendPrivateChatMessage('math_op - add, sub, mul or div.', playerId)
       sendPrivateChatMessage('name_find - restricts to blocks with this substring in their name', playerId)
@@ -555,6 +565,9 @@ function editCommandReceived(args: string[], playerId: number) {
     case 'name':
       editNameCommand(args, playerId)
       break
+    case 'id':
+      editIdCommand(args, playerId)
+      break
     case 'div':
       editDivideCommand(args, playerId)
       break
@@ -611,6 +624,54 @@ function editNameCommand(args: string[], playerId: number) {
   if (warning) {
     sendPrivateChatMessage(`Warning: ${warning}`, playerId)
   }
+}
+
+function editIdCommand(args: string[], playerId: number) {
+  const search_for_id = Number(args[2])
+  const replace_with_id = Number(args[3])
+  if (isNaN(search_for_id) || isNaN(replace_with_id)) {
+    sendPrivateChatMessage(`ERROR! Correct usage is .edit id find_id replace_id`, playerId)
+    return
+  }
+
+  const blocksById = getPwBlocksByPwId()
+  if (!(search_for_id in blocksById) || !(replace_with_id in blocksById)) {
+    sendPrivateChatMessage(`ERROR! Invalid id specified`, playerId)
+    return
+  }
+
+  if (search_for_id === 0 || replace_with_id === 0) {
+    sendPrivateChatMessage(`ERROR! find or replace id=0 is not allowed`, playerId)
+    return
+  }
+
+  const search_for_block = blocksById[search_for_id]
+  const replace_with_block = blocksById[replace_with_id]
+  if (search_for_block.Layer !== replace_with_block.Layer) {
+    sendPrivateChatMessage(`ERROR! find and replace block layers must match`, playerId)
+    return
+  }
+
+  if (
+    (search_for_block.BlockDataArgs !== undefined || replace_with_block.BlockDataArgs !== undefined) &&
+    !isEqual(search_for_block.BlockDataArgs, replace_with_block.BlockDataArgs)
+  ) {
+    sendPrivateChatMessage(`ERROR! find and replace block arguments must match`, playerId)
+    return
+  }
+
+  let counter = 0
+  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map((world_block) => {
+    if (world_block.block.bId !== search_for_id) {
+      return world_block
+    } else {
+      const deepBlock = cloneDeep(world_block)
+      deepBlock.block = new Block(replace_with_id, world_block.block.args)
+      counter++
+      return deepBlock
+    }
+  })
+  sendPrivateChatMessage(`${counter} blocks changed ${search_for_id} to ${replace_with_id}`, playerId)
 }
 
 type mathOp = (a: number, b: number) => number
