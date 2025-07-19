@@ -832,24 +832,25 @@ function pasteBlocks(botData: BotData, blockPos: Point) {
     const nextBlocksY = getBlocksInArea(nextBlocksYFromPos, nextBlocksYToPos)
 
     for (let x = 0; x < Math.abs(botData.repeatVec.x); x++) {
-      const offsetPosX = pastePosBlocksFromPos.x + x * offsetSize.x
-      // TODO: fix this, so it doesn't require break, because it currently doesn't work when pasting structure where top left x is negative
+      const pastePosBlocksFromPosOffsetX = pastePosBlocksFromPos.x + x * offsetSize.x
+      const pastePosBlocksToPosOffsetX = pastePosBlocksToPos.x + x * offsetSize.x
       if (
-        offsetPosX + botData.selectionLocalTopLeftPos.x >= mapWidth ||
-        offsetPosX + botData.selectionLocalBottomRightPos.x < 0
+        (pastePosBlocksFromPosOffsetX >= mapWidth || pastePosBlocksFromPosOffsetX < 0) &&
+        (pastePosBlocksToPosOffsetX >= mapWidth || pastePosBlocksToPosOffsetX < 0)
       ) {
         break
       }
       for (let y = 0; y < Math.abs(botData.repeatVec.y); y++) {
-        const offsetPosY = pastePosBlocksFromPos.y + y * offsetSize.y
+        const pastePosBlocksFromPosOffsetY = pastePosBlocksFromPos.y + y * offsetSize.y
+        const pastePosBlocksToPosOffsetY = pastePosBlocksToPos.y + y * offsetSize.y
         if (
-          offsetPosY + botData.selectionLocalTopLeftPos.y >= mapHeight ||
-          offsetPosY + botData.selectionLocalBottomRightPos.y < 0
+          (pastePosBlocksFromPosOffsetY >= mapHeight || pastePosBlocksFromPosOffsetY < 0) &&
+          (pastePosBlocksToPosOffsetY >= mapHeight || pastePosBlocksToPosOffsetY < 0)
         ) {
           break
         }
 
-        const offsetPos = vec2(offsetPosX, offsetPosY)
+        const offsetPos = vec2(pastePosBlocksFromPosOffsetX, pastePosBlocksFromPosOffsetY)
 
         let finalBlocks = applyPosOffsetForBlocks(offsetPos, botData.selectedBlocks)
         if (botData.smartRepeatEnabled) {
