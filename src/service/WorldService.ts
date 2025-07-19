@@ -96,6 +96,11 @@ function updateBlockMap(blockPacket: SendableBlockPacket) {
   for (let i = 0, len = positions.length; i < len; i++) {
     const { x, y } = positions[i]
 
+    // TODO: maybe consider doing PR that filters position to be within map bounds in createBlockPackets
+    if (x < 0 || x >= getPwGameWorldHelper().width || y < 0 || y >= getPwGameWorldHelper().height) {
+      continue
+    }
+
     getPwGameWorldHelper().blocks[layer][x][y] = new Block(blockId, args)
   }
 }
