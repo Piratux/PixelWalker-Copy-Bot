@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-07-19 Version 1.4.1
+- Bot: .move mode now does not get disabled anymore when new area is selected.
+
 2025-07-09 Version 1.4.0
 - Bot: Added command ".edit name find replace" - edits selected block name substrings from "find" to "replace". Thanks Bluecloud!
 - Bot: Added command ".edit math_op number [name_find]" - edits selected block number arguments. Thanks Bluecloud!

@@ -179,9 +179,9 @@ function maskCommandReceived(args: string[], playerId: number) {
 
 function moveCommandReceived(_args: string[], playerId: number) {
   const botData = getPlayerBotData()[playerId]
-  botData.moveEnabled = true
+  botData.moveEnabled = !botData.moveEnabled
 
-  sendPrivateChatMessage(`Move mode enabled`, playerId)
+  sendPrivateChatMessage(`Move mode ${botData.moveEnabled ? 'enabled' : 'disabled'}`, playerId)
 }
 
 async function placeallCommandReceived(_args: string[], playerId: number) {
@@ -869,13 +869,9 @@ function pasteBlocks(botData: BotData, blockPos: Point) {
   }
 }
 
-function disableMoveMode(botData: BotData, playerId: number) {
-  if (botData.moveEnabled) {
-    botData.moveEnabled = false
-    botData.moveOperationPerformedOnce = false
-    botData.replacedByLastMoveOperationBlocks = []
-    sendPrivateChatMessage('Move mode disabled', playerId)
-  }
+function resetMoveModeData(botData: BotData) {
+  botData.moveOperationPerformedOnce = false
+  botData.replacedByLastMoveOperationBlocks = []
 }
 
 function selectBlocks(botData: BotData, blockPos: Point, playerId: number) {
@@ -914,7 +910,7 @@ function selectBlocks(botData: BotData, blockPos: Point, playerId: number) {
 
     botData.selectedBlocks = getBlocksInArea(botData.selectedFromPos, botData.selectedToPos)
 
-    disableMoveMode(botData, playerId)
+    resetMoveModeData(botData)
   }
 
   sendPrivateChatMessage(`Selected ${selectedTypeText} x: ${blockPos.x} y: ${blockPos.y}`, playerId)
