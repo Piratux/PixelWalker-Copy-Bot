@@ -1033,13 +1033,17 @@ function blueCoinBlockPlaced(
     return
   }
 
-  // We want to prevent paste happening when player accidentally uses fill or brush tool
-  // But simultaneously, if player drags blue coin across the map, there could be multiple blue coins in single packet
-  // This is not ideal, but good enough
-  for (let i = 0; i < data.positions.length; i++) {
-    const blockPos = data.positions[i]
-
+  if (botData.moveEnabled) {
+    const blockPos = data.positions[data.positions.length - 1]
     pasteBlocks(botData, blockPos)
+  } else {
+    // We want to prevent paste happening when player accidentally uses fill or brush tool
+    // But simultaneously, if player drags blue coin across the map, there could be multiple blue coins in single packet
+    // This is not ideal, but good enough
+    for (let i = 0; i < data.positions.length; i++) {
+      const blockPos = data.positions[i]
+      pasteBlocks(botData, blockPos)
+    }
   }
 }
 

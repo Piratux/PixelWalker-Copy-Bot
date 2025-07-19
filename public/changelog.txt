@@ -2,6 +2,7 @@ PixelWalker copy bot changelog
 
 2025-07-19 Version 1.4.1
 - Bot: .move mode now does not get disabled anymore when new area is selected.
+- Bot: Improved .move mode block placement speed a little.
 
 2025-07-09 Version 1.4.0
 - Bot: Added command ".edit name find replace" - edits selected block name substrings from "find" to "replace". Thanks Bluecloud!
