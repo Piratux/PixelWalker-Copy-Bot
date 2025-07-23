@@ -277,6 +277,12 @@ function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock {
     // TODO: Awaiting fix
     case PwBlockName.CHRISTMAS_STRING_LIGHT_BOTTOM_GREEN:
       return { blockId: EelvlBlockId.CHRISTMAS_STRING_LIGHT_BOTTOM_RED, intParameter: 3 }
+    // TODO: Awaiting fix
+    case PwBlockName.CHRISTMAS_STRING_LIGHT_TOP_YELLOW:
+      return { blockId: EelvlBlockId.CHRISTMAS_STRING_LIGHT_TOP_RED, intParameter: 2 }
+    // TODO: Awaiting fix
+    case PwBlockName.CHRISTMAS_STRING_LIGHT_TOP_GREEN:
+      return { blockId: EelvlBlockId.CHRISTMAS_STRING_LIGHT_TOP_RED, intParameter: 3 }
     default: {
       const mappedPwBlock = getPwBlocksByPwId()[pwBlock.bId]
 
