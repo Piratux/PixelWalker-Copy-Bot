@@ -160,7 +160,10 @@ function processMidiFile(midi: Midi): { [distance: number]: { type: string; note
             console.warn(`Block type conflict at distance ${distance}`)
             return
           }
-          entry.notes.push(note.midi - 21)
+          // Only push if it doesn't already exist at that point. Prevents 2 of the same note at the same block.
+          if (entry.notes.indexOf(note.midi - 21) === -1) {
+            entry.notes.push(note.midi - 21)
+          }
         }
       })
     } else {
