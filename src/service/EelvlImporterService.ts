@@ -244,6 +244,22 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
         default:
           return createBlock(PwBlockName.EMPTY)
       }
+    // TODO: Awaiting fix
+    case EelvlBlockId.CHRISTMAS_STRING_LIGHT_TOP_RED:
+      switch (eelvlBlock.intParameter) {
+        case 1:
+          return createBlock(PwBlockName.CHRISTMAS_STRING_LIGHT_TOP_RED)
+        case 2:
+          return createBlock(PwBlockName.CHRISTMAS_STRING_LIGHT_TOP_YELLOW)
+        case 3:
+          return createBlock(PwBlockName.CHRISTMAS_STRING_LIGHT_TOP_GREEN)
+        case 4:
+          return createBlock(PwBlockName.CHRISTMAS_STRING_LIGHT_TOP_BLUE)
+        case 0:
+          return createBlock(PwBlockName.CHRISTMAS_STRING_LIGHT_TOP_PURPLE)
+        default:
+          return createBlock(PwBlockName.EMPTY)
+      }
     // NOTE: PW Devs will not fix this
     case EelvlBlockId.CHRISTMAS_GIFT_HALF_RED:
       return createBlock(PwBlockName.CHRISTMAS_GIFT_HALF_RED)
@@ -259,6 +275,8 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
     // NOTE: PW Devs will not fix this
     case EelvlBlockId.CHRISTMAS_GIFT_HALF_YELLOW:
       return createBlock(PwBlockName.CHRISTMAS_GIFT_HALF_YELLOW)
+    case EelvlBlockId.OUTERSPACE_SIGN_GREEN:
+      return createBlock(PwBlockName.OUTERSPACE_SIGN_GREEN, [''])
 
     default: {
       const eelvlBlockName = EelvlBlockId[eelvlBlock.blockId]

@@ -1,7 +1,10 @@
 PixelWalker copy bot changelog
 
-2025-07-24 Version 1.5.1
+2025-07-24 Version 1.5.2
 - Website: Midi files with two identical notes at the same time no longer try to play both notes.
+
+2025-07-23 Version 1.5.1
+- Bot: Updated to work with PixelWalker version 0.23.1-alpha
 
 2025-07-19 Version 1.5.0
 - Bot: Added command ".edit id find_id replace_id" - edits selected block ids from "find_id" to "replace_id".
