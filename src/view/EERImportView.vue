@@ -208,19 +208,18 @@ function getExportedToEERData(eerWorld: EerWorld): Buffer {
 }
 
 function getPositionsAsVec2Array(data: EerBlock): vec2[] {
+  const vec2Array: vec2[] = [];
   if (data.x && data.y) {
-    const positions: vec2[] = []
     for (let k = 0; k < data.x.length; k += 2) {
       const xVal = (data.x[k] << 8) + data.x[k + 1]
       const yVal = (data.y[k] << 8) + data.y[k + 1]
-      positions.push(vec2(xVal, yVal))
+      vec2Array.push(vec2(xVal, yVal))
     }
-    return positions
-  } else if (data.x1 && data.y1) {
-    return data.x1.map((x, i) => vec2(x, data.y1![i]))
   }
-
-  throw new Error('Unknown position array')
+  if (data.x1 && data.y1) {
+    vec2Array.push(...data.x1.map((x, i) => vec2(x, data.y1![i])))
+  }
+  return vec2Array
 }
 
 async function getEERdata() {
