@@ -96,8 +96,8 @@ function readEelvlBlock(bytes: ByteArray, eelvlBlockId: number) {
   const eelvlBlock = {} as EelvlBlock
 
   switch (eelvlBlockId as EelvlBlockId) {
-    case EelvlBlockId.PORTAL:
-    case EelvlBlockId.PORTAL_INVISIBLE:
+    case EelvlBlockId.PORTAL_VISIBLE_LEFT:
+    case EelvlBlockId.PORTAL_INVISIBLE_LEFT:
       eelvlBlock.intParameter = bytes.readInt()
       eelvlBlock.portalId = bytes.readInt()
       eelvlBlock.portalTarget = bytes.readInt()
@@ -191,11 +191,11 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
         case 3:
           return createBlock(PwBlockName.SIGN_GOLD, [eelvlBlock.signText!])
         default:
-          return createBlock(PwBlockName.EMPTY)
+          return createBlock(PwBlockName.SIGN_GREEN, [eelvlBlock.signText!])
       }
-    case EelvlBlockId.PORTAL:
+    case EelvlBlockId.PORTAL_VISIBLE_LEFT:
       return getEelvlToPwPortalBlock(eelvlBlock)
-    case EelvlBlockId.PORTAL_INVISIBLE:
+    case EelvlBlockId.PORTAL_INVISIBLE_LEFT:
       return getEelvlToPwPortalBlock(eelvlBlock)
     case EelvlBlockId.PORTAL_WORLD:
       return createBlock(PwBlockName.PORTAL_WORLD, [
@@ -229,34 +229,26 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
     case EelvlBlockId.NOTE_GUITAR:
       return getEelvlToPwNoteBlock(eelvlBlock, PwBlockName.NOTE_GUITAR)
     // TODO: Awaiting fix
-    case EelvlBlockId.CHRISTMAS_STRING_LIGHT_BOTTOM_RED:
+    case EelvlBlockId.BORDER_GLOW_CUP_LEFT:
       switch (eelvlBlock.intParameter) {
         case 1:
-          return createBlock(PwBlockName.CHRISTMAS_STRING_LIGHT_BOTTOM_RED)
+          return createBlock(PwBlockName.BORDER_GLOW_CUP_RIGHT)
         case 2:
-          return createBlock(PwBlockName.CHRISTMAS_STRING_LIGHT_BOTTOM_YELLOW)
+          return createBlock(PwBlockName.BORDER_GLOW_CUP_BOTTOM)
         case 3:
-          return createBlock(PwBlockName.CHRISTMAS_STRING_LIGHT_BOTTOM_GREEN)
-        case 4:
-          return createBlock(PwBlockName.CHRISTMAS_STRING_LIGHT_BOTTOM_BLUE)
+          return createBlock(PwBlockName.BORDER_GLOW_CUP_LEFT)
         case 0:
-          return createBlock(PwBlockName.CHRISTMAS_STRING_LIGHT_BOTTOM_PURPLE)
+          return createBlock(PwBlockName.BORDER_GLOW_CUP_TOP)
         default:
           return createBlock(PwBlockName.EMPTY)
       }
     // TODO: Awaiting fix
-    case EelvlBlockId.CHRISTMAS_STRING_LIGHT_TOP_RED:
+    case EelvlBlockId.BORDER_GLOW_STRAIGHT_HORIZONTAL:
       switch (eelvlBlock.intParameter) {
         case 1:
-          return createBlock(PwBlockName.CHRISTMAS_STRING_LIGHT_TOP_RED)
-        case 2:
-          return createBlock(PwBlockName.CHRISTMAS_STRING_LIGHT_TOP_YELLOW)
-        case 3:
-          return createBlock(PwBlockName.CHRISTMAS_STRING_LIGHT_TOP_GREEN)
-        case 4:
-          return createBlock(PwBlockName.CHRISTMAS_STRING_LIGHT_TOP_BLUE)
+          return createBlock(PwBlockName.BORDER_GLOW_STRAIGHT_HORIZONTAL)
         case 0:
-          return createBlock(PwBlockName.CHRISTMAS_STRING_LIGHT_TOP_PURPLE)
+          return createBlock(PwBlockName.BORDER_GLOW_STRAIGHT_VERTICAL)
         default:
           return createBlock(PwBlockName.EMPTY)
       }
@@ -292,6 +284,16 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
         return new Block(pwBlock.Id)
       }
 
+      const pwBlockMorph0 = getPwBlocksByEelvlParameters().get(
+        eelvlBlock.intParameter === undefined ? [eelvlBlock.blockId] : [eelvlBlock.blockId, 0],
+      )
+
+      if (pwBlockMorph0 !== undefined) {
+        return createUnknownParameterBlockSign(
+          `Unknown block parameter. Name: ${eelvlBlockName}, parameter: ${eelvlBlock.intParameter}`,
+        )
+      }
+
       if (eelvlLayer !== EelvlLayer.BACKGROUND) {
         return createMissingBlockSign(`Missing PixelWalker block: ${eelvlBlockName}`)
       } else {
@@ -305,6 +307,10 @@ function createMissingBlockSign(message: string): Block {
   return createBlock(PwBlockName.SIGN_NORMAL, [message])
 }
 
+function createUnknownParameterBlockSign(message: string): Block {
+  return createBlock(PwBlockName.SIGN_GREEN, [message])
+}
+
 function getEelvlToPwEffectsJumpHeightBlock(eelvlBlock: EelvlBlock): Block {
   const jumpHeight = eelvlBlock.intParameter
   switch (jumpHeight) {
@@ -315,7 +321,9 @@ function getEelvlToPwEffectsJumpHeightBlock(eelvlBlock: EelvlBlock): Block {
     case 1:
       return createBlock(PwBlockName.EFFECTS_JUMP_HEIGHT, [6])
     default:
-      return createBlock(PwBlockName.EMPTY)
+      return createUnknownParameterBlockSign(
+        `Unknown block parameter. Name: ${PwBlockName.EFFECTS_JUMP_HEIGHT}, parameter: ${jumpHeight}`,
+      )
   }
 }
 
@@ -329,7 +337,9 @@ function getEelvlToPwEffectsSpeedBlock(eelvlBlock: EelvlBlock): Block {
     case 1:
       return createBlock(PwBlockName.EFFECTS_SPEED, [150])
     default:
-      return createBlock(PwBlockName.EMPTY)
+      return createUnknownParameterBlockSign(
+        `Unknown block parameter. Name: ${PwBlockName.EFFECTS_SPEED}, parameter: ${speed}`,
+      )
   }
 }
 
@@ -341,7 +351,9 @@ function getEelvlToPwEffectsGravityForceBlock(eelvlBlock: EelvlBlock): Block {
     case 0:
       return createBlock(PwBlockName.EFFECTS_GRAVITYFORCE, [100])
     default:
-      return createBlock(PwBlockName.EMPTY)
+      return createUnknownParameterBlockSign(
+        `Unknown block parameter. Name: ${PwBlockName.EFFECTS_GRAVITYFORCE}, parameter: ${gravityForce}`,
+      )
   }
 }
 
@@ -362,24 +374,33 @@ function getEelvlToPwPortalBlock(eelvlBlock: EelvlBlock): Block {
   switch (rotation) {
     case 1:
       pwBlockName =
-        eelvlBlockId === EelvlBlockId.PORTAL ? PwBlockName.PORTAL_VISIBLE_LEFT : PwBlockName.PORTAL_INVISIBLE_LEFT
+        eelvlBlockId === EelvlBlockId.PORTAL_VISIBLE_LEFT
+          ? PwBlockName.PORTAL_VISIBLE_LEFT
+          : PwBlockName.PORTAL_INVISIBLE_LEFT
       break
     case 2:
       pwBlockName =
-        eelvlBlockId === EelvlBlockId.PORTAL ? PwBlockName.PORTAL_VISIBLE_UP : PwBlockName.PORTAL_INVISIBLE_UP
+        eelvlBlockId === EelvlBlockId.PORTAL_VISIBLE_LEFT
+          ? PwBlockName.PORTAL_VISIBLE_UP
+          : PwBlockName.PORTAL_INVISIBLE_UP
       break
     case 3:
       pwBlockName =
-        eelvlBlockId === EelvlBlockId.PORTAL ? PwBlockName.PORTAL_VISIBLE_RIGHT : PwBlockName.PORTAL_INVISIBLE_RIGHT
+        eelvlBlockId === EelvlBlockId.PORTAL_VISIBLE_LEFT
+          ? PwBlockName.PORTAL_VISIBLE_RIGHT
+          : PwBlockName.PORTAL_INVISIBLE_RIGHT
       break
     case 0:
       pwBlockName =
-        eelvlBlockId === EelvlBlockId.PORTAL ? PwBlockName.PORTAL_VISIBLE_DOWN : PwBlockName.PORTAL_INVISIBLE_DOWN
+        eelvlBlockId === EelvlBlockId.PORTAL_VISIBLE_LEFT
+          ? PwBlockName.PORTAL_VISIBLE_DOWN
+          : PwBlockName.PORTAL_INVISIBLE_DOWN
       break
     default:
-      console.warn(`Unknown portal rotation: ${rotation}, using default LEFT`)
       pwBlockName =
-        eelvlBlockId === EelvlBlockId.PORTAL ? PwBlockName.PORTAL_VISIBLE_LEFT : PwBlockName.PORTAL_INVISIBLE_LEFT
+        eelvlBlockId === EelvlBlockId.PORTAL_VISIBLE_LEFT
+          ? PwBlockName.PORTAL_VISIBLE_LEFT
+          : PwBlockName.PORTAL_INVISIBLE_LEFT
       break
   }
   return createBlock(pwBlockName, [portalId.toString(), portalTarget.toString()])

@@ -1,12 +1,14 @@
 import { writeFile } from 'fs/promises'
 import { EELVL_BLOCKS } from '../eelvl/EelvlBlocks.ts'
 import { ListBlockResult } from 'pw-js-api'
+import { EER_BLOCKS } from '@/eer/EerBlocks.ts'
 
 await generateBlockEnumFiles()
 
 async function generateBlockEnumFiles() {
   await generatePwBlockNameEnum()
   await generateEelvlBlockIdEnum()
+  await generateEerBlockIdEnum()
 }
 
 async function generatePwBlockNameEnum() {
@@ -36,4 +38,18 @@ async function generateEelvlBlockIdEnum() {
   tsOutput += '}\n\nexport type EelvlBlockIdKeys = keyof typeof EelvlBlockId\r\n'
 
   await writeFile('./src/gen/EelvlBlockId.ts', tsOutput)
+}
+
+async function generateEerBlockIdEnum() {
+  const blocks = EER_BLOCKS
+
+  let tsOutput = 'export enum EerBlockId {\r\n'
+
+  for (let i = 0, len = blocks.length; i < len; i++) {
+    tsOutput += `  ${blocks[i].name} = ${blocks[i].id},\r\n`
+  }
+
+  tsOutput += '}\n\nexport type EerBlockIdKeys = keyof typeof EerBlockId\r\n'
+
+  await writeFile('./src/gen/EerBlockId.ts', tsOutput)
 }

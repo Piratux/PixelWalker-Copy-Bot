@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-07-28 Version 1.6.0
+- Website: Added an option to import Everybody Edits Rewritten (EER) worlds.
+
 2025-07-23 Version 1.5.1
 - Bot: Updated to work with PixelWalker version 0.23.1-alpha
 

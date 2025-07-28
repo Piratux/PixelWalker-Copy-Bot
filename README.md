@@ -108,7 +108,7 @@ After PixelWalker update, some blocks may change.
 
 If blocks change, the following needs to be performed:
 
-- Block names in `EelvlBlocks.ts` need to be updated
+- Block names in `EelvlBlocks.ts` and `EerBlocks.ts` need to be updated
 - The following needs to be run:
 
 ```

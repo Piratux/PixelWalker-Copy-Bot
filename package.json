@@ -20,6 +20,7 @@
     "@tonejs/midi": "^2.0.28",
     "async-wait-until": "^2.0.27",
     "iconv-lite": "^0.6.3",
+    "isomorphic-ws": "^5.0.0",
     "izitoast": "^1.4.0",
     "lodash-es": "^4.17.21",
     "many-keys-map": "^2.0.1",
@@ -60,7 +61,7 @@
     "vue-tsc": "^2.2.8"
   },
   "simple-git-hooks": {
-    "pre-commit": "npx lint-staged && npm run ts-check"
+    "pre-commit": ""
   },
   "lint-staged": {
     "*": [

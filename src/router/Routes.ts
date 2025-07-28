@@ -42,6 +42,12 @@ export const DevViewRoute = {
   component: () => import('@/view/DevView.vue'),
 }
 
+export const EERImportViewRoute = {
+  path: `${basePath}/import-eer`,
+  name: 'import-eer',
+  component: () => import('@/view/EERImportView.vue'),
+}
+
 export const NotFoundRoute = {
   path: '/:pathMatch(.*)*',
   name: 'notFound',

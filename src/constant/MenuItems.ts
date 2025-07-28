@@ -1,4 +1,5 @@
 import {
+  EERImportViewRoute,
   ExportEelvlViewRoute,
   HomeViewRoute,
   ImportEelvlViewRoute,
@@ -26,5 +27,9 @@ export const MENU_ITEMS = [
   {
     text: 'Import MIDI',
     link: MidiImportViewRoute.path,
+  },
+  {
+    text: 'Import EER',
+    link: EERImportViewRoute.path,
   },
 ]

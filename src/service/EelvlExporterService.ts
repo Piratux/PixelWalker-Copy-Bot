@@ -131,8 +131,8 @@ function getBlockEntryKey(eelvlBlockId: number, eelvlBlock: EelvlBlock, eelvlLay
 
 function getBlockArgs(eelvlBlockId: number, eelvlBlock: EelvlBlock): EelvlBlockEntry {
   switch (eelvlBlockId as EelvlBlockId) {
-    case EelvlBlockId.PORTAL:
-    case EelvlBlockId.PORTAL_INVISIBLE:
+    case EelvlBlockId.PORTAL_VISIBLE_LEFT:
+    case EelvlBlockId.PORTAL_INVISIBLE_LEFT:
       return [eelvlBlock.intParameter, eelvlBlock.portalId, eelvlBlock.portalTarget]
     case EelvlBlockId.SIGN_NORMAL:
       return [eelvlBlock.signText, eelvlBlock.signType]
@@ -151,7 +151,7 @@ function getBlockArgs(eelvlBlockId: number, eelvlBlock: EelvlBlock): EelvlBlockE
   }
 }
 
-function writePositionsByteArrays(bytes: ByteArray, positions: vec2[]) {
+export function writePositionsByteArrays(bytes: ByteArray, positions: vec2[]) {
   const positionsX: ByteArray = new ByteArray(0)
   const positionsY: ByteArray = new ByteArray(0)
 
@@ -210,12 +210,12 @@ function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock {
     case PwBlockName.PORTAL_VISIBLE_RIGHT:
     case PwBlockName.PORTAL_VISIBLE_UP:
     case PwBlockName.PORTAL_VISIBLE_DOWN:
-      return getPwToEelvlPortalBlock(pwBlock, EelvlBlockId.PORTAL)
+      return getPwToEelvlPortalBlock(pwBlock, EelvlBlockId.PORTAL_VISIBLE_LEFT)
     case PwBlockName.PORTAL_INVISIBLE_LEFT:
     case PwBlockName.PORTAL_INVISIBLE_RIGHT:
     case PwBlockName.PORTAL_INVISIBLE_UP:
     case PwBlockName.PORTAL_INVISIBLE_DOWN:
-      return getPwToEelvlPortalBlock(pwBlock, EelvlBlockId.PORTAL_INVISIBLE)
+      return getPwToEelvlPortalBlock(pwBlock, EelvlBlockId.PORTAL_INVISIBLE_LEFT)
     case PwBlockName.PORTAL_WORLD:
       return {
         blockId: EelvlBlockId.PORTAL_WORLD,

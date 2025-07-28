@@ -76,16 +76,15 @@ if (import.meta.hot) {
 function hotReload() {
   const client = getPwGameClient()
   if (!client) {
-    // this should basically never happen because the client should need to be connected for this code to be "hot"
-    console.error('Tried to hot-reload with no client connected.')
     return
   }
+
   for (const cb of callbacks) {
     client.removeCallback(cb.name)
     client.addCallback(cb.name, cb.fn)
   }
   const date = new Date(Date.now())
-  const message = `[${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}] Hot reloaded callbacks.`
+  const message = `[${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}] Hot reloaded.`
   console.log(message)
   sendGlobalChatMessage(message)
 }
