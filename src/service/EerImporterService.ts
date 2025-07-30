@@ -154,25 +154,17 @@ function getImportedFromEerAsEelvlData(eerWorld: EerWorld): Buffer {
     writePositionsByteArrays(bytes, positions)
     const blockArgs = getBlockArgs(eerBlockId, block)
 
-    try {
-      for (const blockArg of blockArgs) {
-        if (typeof blockArg === 'string') {
-          bytes.writeUTF(blockArg)
-        } else if (typeof blockArg === 'number') {
-          bytes.writeInt(blockArg)
-        } else {
-          console.error('block: ', block)
-          console.error(`EelvlBlockId: ${EelvlBlockId[eerBlockId as EelvlBlockId]}`)
-          console.error(`EerBlockId: ${EerBlockId[eerBlockId as EerBlockId]}`)
-          throw new GameError(`Unexpected type in key. Value: ${blockArg}, type: ${typeof blockArg}`)
-        }
+    for (const blockArg of blockArgs) {
+      if (typeof blockArg === 'string') {
+        bytes.writeUTF(blockArg)
+      } else if (typeof blockArg === 'number') {
+        bytes.writeInt(blockArg)
+      } else {
+        console.error('block: ', block)
+        console.error(`EelvlBlockId: ${EelvlBlockId[eerBlockId as EelvlBlockId]}`)
+        console.error(`EerBlockId: ${EerBlockId[eerBlockId as EerBlockId]}`)
+        throw new GameError(`Unexpected type in key. Value: ${blockArg}, type: ${typeof blockArg}`)
       }
-    } catch (e) {
-      console.error('Error while writing block args: ', e)
-      console.error('Block: ', block)
-      console.error(`EelvlBlockId: ${EelvlBlockId[eerBlockId as EelvlBlockId]}`)
-      console.error(`EerBlockId: ${EerBlockId[eerBlockId as EerBlockId]}`)
-      throw e
     }
   }
 
