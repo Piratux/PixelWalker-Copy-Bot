@@ -1,4 +1,6 @@
 import { EelvlBlockId } from '@/gen/EelvlBlockId.ts'
+import { ByteArray } from '@/class/ByteArray.ts'
+import { EelvlFileHeader } from '@/type/WorldData.ts'
 
 export function hasEelvlBlockOneIntParameter(eelvlBlockId: number): boolean {
   return [
@@ -177,4 +179,20 @@ export function isEelvlNpc(eelvlBlockId: number): boolean {
     EelvlBlockId.NPC_WALRUS,
     EelvlBlockId.NPC_CRAB,
   ].includes(eelvlBlockId)
+}
+
+export function writeEeelvlFileHeader(bytes: ByteArray, world: EelvlFileHeader) {
+  bytes.writeUTF(world.ownerName)
+  bytes.writeUTF(world.name)
+  bytes.writeInt(world.width)
+  bytes.writeInt(world.height)
+  bytes.writeFloat(world.gravMultiplier)
+  bytes.writeUnsignedInt(world.backgroundColor)
+  bytes.writeUTF(world.description)
+  bytes.writeBoolean(world.isCampaign)
+  bytes.writeUTF(world.crewId)
+  bytes.writeUTF(world.crewName)
+  bytes.writeInt(world.crewStatus)
+  bytes.writeBoolean(world.minimapEnabled)
+  bytes.writeUTF(world.ownerId)
 }

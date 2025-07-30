@@ -15,7 +15,7 @@ import { EelvlBlockEntry } from '@/type/EelvlBlockEntry.ts'
 import { getAllWorldBlocks } from '@/service/PWClientService.ts'
 import { GameError } from '@/class/GameError.ts'
 import { getEelvlBlocksById } from '@/store/EelvlClientStore.ts'
-import { hasEelvlBlockOneIntParameter, isEelvlNpc } from '@/service/EelvlUtilService.ts'
+import { hasEelvlBlockOneIntParameter, isEelvlNpc, writeEeelvlFileHeader } from '@/service/EelvlUtilService.ts'
 
 function addBlocksEntry(blocks: ManyKeysMap<EelvlBlockEntry, vec2[]>, key: EelvlBlockEntry, x: number, y: number) {
   if (!blocks.has(key)) {
@@ -43,19 +43,7 @@ export function getExportedToEelvlData(worldBlocks: DeserialisedStructure): [Buf
     ownerId: 'owner ID',
   }
   const bytes: ByteArray = new ByteArray(0)
-  bytes.writeUTF(world.ownerName)
-  bytes.writeUTF(world.name)
-  bytes.writeInt(world.width)
-  bytes.writeInt(world.height)
-  bytes.writeFloat(world.gravMultiplier)
-  bytes.writeUnsignedInt(world.backgroundColor)
-  bytes.writeUTF(world.description)
-  bytes.writeBoolean(world.isCampaign)
-  bytes.writeUTF(world.crewId)
-  bytes.writeUTF(world.crewName)
-  bytes.writeInt(world.crewStatus)
-  bytes.writeBoolean(world.minimapEnabled)
-  bytes.writeUTF(world.ownerId)
+  writeEeelvlFileHeader(bytes, world)
 
   const blocks = new ManyKeysMap<EelvlBlockEntry, vec2[]>()
   for (let pwLayer: number = 0; pwLayer < TOTAL_PW_LAYERS; pwLayer++) {
