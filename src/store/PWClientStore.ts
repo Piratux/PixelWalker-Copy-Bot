@@ -17,6 +17,7 @@ export const usePWClientStore = defineStore('PWClientStore', () => {
   const blocksByPwId = ref<Record<number, ListBlockResult>>({})
   const blocksByPwName = ref<Record<string, ListBlockResult>>({})
   const blocksByEelvlParameters = ref<ManyKeysMap<number[], ListBlockResult>>(new ManyKeysMap()) // Key consist of [LegacyId, LegacyMorph]
+  const blocksByEerParameters = ref<ManyKeysMap<number[], ListBlockResult>>(new ManyKeysMap()) // Key consist of [LegacyId, LegacyMorph]
   const isConnected = ref<boolean>(false)
 
   return {
@@ -32,6 +33,7 @@ export const usePWClientStore = defineStore('PWClientStore', () => {
     blocksByPwId,
     blocksByPwName,
     blocksByEelvlParameters,
+    blocksByEerParameters,
     isConnected,
   }
 })
@@ -64,4 +66,8 @@ export function getPwBlocksByPwName(): Record<string, ListBlockResult> {
 
 export function getPwBlocksByEelvlParameters(): ManyKeysMap<number[], ListBlockResult> {
   return usePWClientStore().blocksByEelvlParameters
+}
+
+export function getPwBlocksByEerParameters(): ManyKeysMap<number[], ListBlockResult> {
+  return usePWClientStore().blocksByEerParameters
 }

@@ -9,6 +9,7 @@ import { GameError } from '@/class/GameError.ts'
 import waitUntil, { TimeoutError } from 'async-wait-until'
 import { registerCallbacks } from '@/service/PacketHandlerService.ts'
 import ManyKeysMap from 'many-keys-map'
+import { EER_MAPPINGS } from '@/eer/EerMappings.ts'
 
 export async function pwAuthenticate(pwApiClient: PWApiClient): Promise<void> {
   const authenticationResult = await pwApiClient.authenticate()
@@ -63,6 +64,22 @@ function initPwBlocks(blocks: ListBlockResult[]) {
   })
 }
 
+function initEerBlocks(eerBlocks: ListBlockResult[]) {
+  eerBlocks.forEach((block) => {
+    if (block.LegacyId !== undefined) {
+      if (block.LegacyMorph !== undefined) {
+        block.LegacyMorph.forEach((morph) => {
+          // When there are multiple values in block.LegacyMorph, it means that multiple morph values represent exact same block.
+          // Only laser blocks in EELVL have multiple morphs.
+          usePWClientStore().blocksByEerParameters.set([block.LegacyId!, morph], block)
+        })
+      } else {
+        usePWClientStore().blocksByEerParameters.set([block.LegacyId], block)
+      }
+    }
+  })
+}
+
 export async function initPwClasses() {
   usePWClientStore().pwApiClient = new PWApiClient(usePWClientStore().email, usePWClientStore().password)
 
@@ -76,6 +93,7 @@ export async function initPwClasses() {
   await pwJoinWorld(getPwGameClient(), usePWClientStore().worldId)
 
   initPwBlocks(await getPwApiClient().getListBlocks())
+  initEerBlocks(EER_MAPPINGS)
 }
 
 export function pwCreateEmptyBlocks(pwGameWorldHelper: PWGameWorldHelper): DeserialisedStructure {

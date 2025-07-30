@@ -307,7 +307,7 @@ function createMissingBlockSign(message: string): Block {
   return createBlock(PwBlockName.SIGN_NORMAL, [message])
 }
 
-function createUnknownParameterBlockSign(message: string): Block {
+export function createUnknownParameterBlockSign(message: string): Block {
   return createBlock(PwBlockName.SIGN_GREEN, [message])
 }
 

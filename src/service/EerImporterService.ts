@@ -10,8 +10,13 @@ import { EelvlLayer } from '@/enum/EelvlLayer.ts'
 import { writePositionsByteArrays } from '@/service/EelvlExporterService.ts'
 import { EerLayer } from '@/enum/EerLayer.ts'
 import { EelvlFileHeader } from '@/type/WorldData.ts'
-import { importFromEelvl } from '@/service/EelvlImporterService.ts'
+import { createUnknownParameterBlockSign, importFromEelvl } from '@/service/EelvlImporterService.ts'
 import { writeEeelvlFileHeader } from '@/service/EelvlUtilService.ts'
+import { WorldBlock } from '@/type/WorldBlock.ts'
+import { Block } from 'pw-js-world'
+import { PwBlockName } from '@/gen/PwBlockName.ts'
+import { placeMultipleBlocks } from '@/service/WorldService.ts'
+import { getPwBlocksByEerParameters, getPwBlocksByPwName } from '@/store/PWClientStore.ts'
 
 interface EerBlock {
   type: number
@@ -64,6 +69,18 @@ async function getPIOClient() {
   return client
 }
 
+function getEerBlockIntParameter(eerBlock: EerBlock) {
+  if (eerBlock.rotation !== undefined) {
+    return eerBlock.rotation
+  } else if (eerBlock.goal !== undefined) {
+    return eerBlock.goal
+  } else if (eerBlock.id !== undefined) {
+    return eerBlock.id
+  } else {
+    return undefined
+  }
+}
+
 function getBlockArgs(eerBlockId: number, eerBlock: EerBlock): EerBlockEntry {
   switch (eerBlockId as EerBlockId) {
     case EerBlockId.PORTAL_VISIBLE_LEFT:
@@ -77,15 +94,11 @@ function getBlockArgs(eerBlockId: number, eerBlock: EerBlock): EerBlockEntry {
       return [eerBlock.text, eerBlock.text_color, eerBlock.wrapLength]
     default:
       if (hasEerBlockOneIntParameter(eerBlockId)) {
-        if (eerBlock.rotation !== undefined) {
-          return [eerBlock.rotation]
-        } else if (eerBlock.goal !== undefined) {
-          return [eerBlock.goal]
-        } else if (eerBlock.id !== undefined) {
-          return [eerBlock.id]
-        } else {
-          throw new GameError(`EER block ${EerBlockId[eerBlockId as EelvlBlockId]} has no parameters`)
+        const eerBlockIntParameter = getEerBlockIntParameter(eerBlock)
+        if (eerBlockIntParameter === undefined) {
+          throw new GameError(`EER block ${EerBlockId[eerBlockId as EerBlockId]} has no int parameter`)
         }
+        return [eerBlockIntParameter]
       } else if (isEerNpc(eerBlockId)) {
         return [eerBlock.name, eerBlock.mes1, eerBlock.mes2, eerBlock.mes3]
       } else {
@@ -110,7 +123,49 @@ function placeErrorBlockSign(bytes: ByteArray, eerBlockId: number, positions: ve
   bytes.writeInt(2)
 }
 
-function getImportedFromEerAsEelvlData(eerWorld: EerWorld): Buffer {
+// Take care of EER blocks that are not in EELVL, but are in PW.
+// Or not in PW, but we still want to place better alternative than sign claiming missing block.
+function tryConvertEerBlockToPwBlock(eerBlock: EerBlock): Block | null {
+  const eerBlockId = eerBlock.type as EerBlockId
+  const eerBlockIntParameter = getEerBlockIntParameter(eerBlock)
+  switch (eerBlockId) {
+    case EerBlockId.EFFECTS_GRAVITYFORCE:
+      const gravityForce = eerBlockIntParameter
+      switch (gravityForce) {
+        case 1:
+          return new Block(PwBlockName.EFFECTS_GRAVITYFORCE, [15])
+        case 2:
+          return new Block(PwBlockName.EFFECTS_GRAVITYFORCE, [150])
+        case 0:
+          return new Block(PwBlockName.EFFECTS_GRAVITYFORCE, [100])
+        default:
+          return createUnknownParameterBlockSign(
+            `Unknown block parameter. PalleteId: ${PwBlockName.EFFECTS_GRAVITYFORCE}, EER parameter: ${gravityForce}`,
+          )
+      }
+    default:
+      const pwBlock = getPwBlocksByEerParameters().get(
+        eerBlockIntParameter === undefined ? [eerBlockId] : [eerBlockId, eerBlockIntParameter],
+      )
+
+      if (pwBlock !== undefined) {
+        return new Block(pwBlock.PaletteId.toUpperCase())
+      }
+
+      const pwBlockMorph0 = getPwBlocksByEerParameters().get(
+        eerBlockIntParameter === undefined ? [eerBlockId] : [eerBlockId, 0],
+      )
+
+      if (pwBlockMorph0 !== undefined) {
+        return createUnknownParameterBlockSign(
+          `Unknown block parameter. PalleteId: ${pwBlockMorph0.PaletteId.toUpperCase()}, EER parameter: ${eerBlockIntParameter}`,
+        )
+      }
+      return null
+  }
+}
+
+function getImportedFromEerAsEelvlAndPwData(eerWorld: EerWorld): [Buffer, WorldBlock[]] {
   const world: EelvlFileHeader = {
     ownerName: eerWorld.owner ?? 'Unknown',
     name: eerWorld.name ?? 'Untitled world',
@@ -129,10 +184,24 @@ function getImportedFromEerAsEelvlData(eerWorld: EerWorld): Buffer {
   const bytes: ByteArray = new ByteArray(0)
   writeEeelvlFileHeader(bytes, world)
 
-  for (const block of eerWorld.worlddata) {
-    const eerBlockId: number = block.type
-    const eerLayer: number = block.layer
-    const positions = getPositionsAsVec2Array(block)
+  const worldBlocks: WorldBlock[] = []
+
+  for (const eerBlock of eerWorld.worlddata) {
+    const eerBlockId: number = eerBlock.type
+    const eerLayer: number = eerBlock.layer
+    const positions = getPositionsAsVec2Array(eerBlock)
+
+    const pwBlock = tryConvertEerBlockToPwBlock(eerBlock)
+    if (pwBlock !== null) {
+      const worldBlocksWithPositions: WorldBlock[] = positions.map((pos) => ({
+        block: pwBlock,
+        pos: pos,
+        layer: getPwBlocksByPwName()[pwBlock.name].Layer,
+      }))
+      worldBlocks.push(...worldBlocksWithPositions)
+      continue
+    }
+
     if (!(eerBlockId in EerBlockId)) {
       if ((eerLayer as EerLayer) === EerLayer.FOREGROUND) {
         placeUnknownBlockSign(bytes, eerBlockId, positions)
@@ -152,7 +221,7 @@ function getImportedFromEerAsEelvlData(eerWorld: EerWorld): Buffer {
     bytes.writeInt(eelvlBlockId)
     bytes.writeInt(eerLayer)
     writePositionsByteArrays(bytes, positions)
-    const blockArgs = getBlockArgs(eerBlockId, block)
+    const blockArgs = getBlockArgs(eerBlockId, eerBlock)
 
     for (const blockArg of blockArgs) {
       if (typeof blockArg === 'string') {
@@ -160,7 +229,7 @@ function getImportedFromEerAsEelvlData(eerWorld: EerWorld): Buffer {
       } else if (typeof blockArg === 'number') {
         bytes.writeInt(blockArg)
       } else {
-        console.error('block: ', block)
+        console.error('block: ', eerBlock)
         console.error(`EelvlBlockId: ${EelvlBlockId[eerBlockId as EelvlBlockId]}`)
         console.error(`EerBlockId: ${EerBlockId[eerBlockId as EerBlockId]}`)
         throw new GameError(`Unexpected type in key. Value: ${blockArg}, type: ${typeof blockArg}`)
@@ -170,7 +239,7 @@ function getImportedFromEerAsEelvlData(eerWorld: EerWorld): Buffer {
 
   bytes.compress()
 
-  return bytes.buffer
+  return [bytes.buffer, worldBlocks]
 }
 
 function getPositionsAsVec2Array(data: EerBlock): vec2[] {
@@ -195,6 +264,7 @@ export async function importFromEer(eerRoomId: string) {
   console.log('worldMeta: ', worldMeta)
 
   // TODO: check if worlddata exists, because if not, it means world has not been edited/saved?
-  const eelvlData = getImportedFromEerAsEelvlData(world)
+  const [eelvlData, pwData] = getImportedFromEerAsEelvlAndPwData(world)
   await importFromEelvl(eelvlData)
+  await placeMultipleBlocks(pwData)
 }
