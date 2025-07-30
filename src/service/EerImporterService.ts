@@ -72,8 +72,7 @@ function getBlockArgs(eerBlockId: number, eerBlock: EerBlock): EerBlockEntry {
     case EerBlockId.SIGN_NORMAL:
       return [eerBlock.text, eerBlock.signtype]
     case EerBlockId.PORTAL_WORLD:
-      // return [EerBlock.worldPortalTargetWorldId, EerBlock.worldPortalTargetSpawnPointId]
-      return ['test', 0]
+      return [eerBlock.target, eerBlock.id]
     case EerBlockId.LABEL:
       return [eerBlock.text, eerBlock.text_color, eerBlock.wrapLength]
     default:
@@ -201,6 +200,7 @@ export async function importFromEer(eerRoomId: string) {
   const client = await getPIOClient()
   const worldMeta = await client.bigDB.load('Worlds', eerRoomId)
   const world: EerWorld = worldMeta!.dbCurrent as EerWorld
+  console.log('worldMeta: ', worldMeta)
 
   // TODO: check if worlddata exists, because if not, it means world has not been edited/saved?
   const eelvlData = getImportedFromEerAsEelvlData(world)

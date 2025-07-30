@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-07-30 Version 1.6.2
+- Website: Fixed an issue where world portal wasn't importing properly in EER import.
+
 2025-07-29 Version 1.6.1
 - Website: Fixed an issue, where some positions of blocks would be ignored when importing EER worlds. Thanks John!
 
