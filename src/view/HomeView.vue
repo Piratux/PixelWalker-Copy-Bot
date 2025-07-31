@@ -25,6 +25,47 @@ const worldName = ref<string>(getPwGameWorldHelper()?.meta?.title ?? '') // TODO
       </v-row>
     </v-col>
   </PiCardContainer>
+  <PiCardContainer>
+    <v-col>
+      <v-row><h3>General info</h3></v-row>
+      <v-row>This page lets you host Copy Bot for PixelWalker.</v-row>
+      <v-row>In addition, it contains collection of useful tools.</v-row>
+      <v-row><br /></v-row>
+      <v-row><h3>Feature overview</h3></v-row>
+      <v-row>Features accessible via commands:</v-row>
+      <v-row>
+        <ul>
+          <li>Copy/paste selected region</li>
+          <li>Move selected region</li>
+          <li>Mask blocks when pasting (such as only pasting background blocks)</li>
+          <li>
+            Repeated paste of selected region
+            <ul>
+              <li>
+                Smart repeated paste - switches/portals/etc. get auto incremented based on placed pattern (useful for
+                building switch worlds)
+              </li>
+            </ul>
+          </li>
+          <li>Undo/redo blocks placed by bot</li>
+          <li>Import PixelWalker worlds via link</li>
+          <li>Replace all selected blocks</li>
+          <li>Perform math operations with selected block parameters (ex.: add 5 to all counters)</li>
+        </ul>
+      </v-row>
+      <v-row><br /></v-row>
+      <v-row>Features accessible via bot page:</v-row>
+      <v-row>
+        <ul>
+          <li>Export PixelWalker world to .eelvl file</li>
+          <li>Import .eelvl file</li>
+          <li>Import .midi file (piano notes only for now)</li>
+          <li>Import .png file</li>
+          <li>Import EER (Everybody Edits Rewritten) world</li>
+        </ul>
+      </v-row>
+    </v-col>
+  </PiCardContainer>
 </template>
 
 <style scoped>
