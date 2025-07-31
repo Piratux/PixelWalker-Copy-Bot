@@ -5,26 +5,6 @@ PixelWalker bot allowing to build worlds quicker.
 Hosted on GitHub pages at:\
 http://piratux.github.io/PixelWalker-Copy-Bot/
 
-## Feature overview
-
-Features accessible via commands:
-
-- Copy/paste selected region
-- Move selected region
-- Mask blocks when pasting (such as only pasting background blocks)
-- Repeated paste of selected region
-  - Smart repeated paste - switches/portals/etc. get auto incremented based on placed pattern (useful for building
-    switch worlds)
-- Undo/redo blocks placed by bot
-- Import PixelWalker worlds via link
-
-Features accessible via bot page:
-
-- Export PixelWalker world to .eelvl file
-- Import .eelvl file
-- Import .midi file (piano notes only for now)
-- Import .png file
-
 ## Requirements to run project
 
 Node.js >= 22.12.0
