@@ -125,7 +125,7 @@ function placeErrorBlockSign(bytes: ByteArray, eerBlockId: number, positions: ve
 
 // Take care of EER blocks that are not in EELVL, but are in PW.
 // Or not in PW, but we still want to place better alternative than sign claiming missing block.
-function tryConvertEerBlockToPwBlock(eerBlock: EerBlock): Block | null {
+function tryConvertEerBlockToPwBlock(eerBlock: EerBlock): Block[] | null {
   const eerBlockId = eerBlock.type as EerBlockId
   const eerBlockIntParameter = getEerBlockIntParameter(eerBlock)
   switch (eerBlockId) {
@@ -133,23 +133,99 @@ function tryConvertEerBlockToPwBlock(eerBlock: EerBlock): Block | null {
       const gravityForce = eerBlockIntParameter
       switch (gravityForce) {
         case 1:
-          return new Block(PwBlockName.EFFECTS_GRAVITYFORCE, [15])
+          return [new Block(PwBlockName.EFFECTS_GRAVITYFORCE, [15])]
         case 2:
-          return new Block(PwBlockName.EFFECTS_GRAVITYFORCE, [150])
+          return [new Block(PwBlockName.EFFECTS_GRAVITYFORCE, [150])]
         case 0:
-          return new Block(PwBlockName.EFFECTS_GRAVITYFORCE, [100])
+          return [new Block(PwBlockName.EFFECTS_GRAVITYFORCE, [100])]
         default:
-          return createUnknownParameterBlockSign(
+          return [createUnknownParameterBlockSign(
             `Unknown block parameter. PalleteId: ${PwBlockName.EFFECTS_GRAVITYFORCE}, EER parameter: ${gravityForce}`,
-          )
+          )]
       }
+    // BEGIN NEW PASTEL CODE
+    case EerBlockId.PASTEL_BLACK_BG:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x000000])] // Black
+    case EerBlockId.PASTEL_GRAY_BG:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x9c9c9c])] // Gray
+    case EerBlockId.PASTEL_WHITE_BG:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0xffffff])] // White
+    // END NEW PASTEL CODE
+    // BEGIN SOLID FOREGROUND CODE
+    case EerBlockId.SOLID_FOREGROUND_WHITE:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0xffffff]), new Block(PwBlockName.SECRET_INVISIBLE)]
+    case EerBlockId.SOLID_FOREGROUND_LIGHT_GRAY:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x808080]), new Block(PwBlockName.SECRET_INVISIBLE)]
+    case EerBlockId.SOLID_FOREGROUND_DARK_GRAY:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x5a5a5a]), new Block(PwBlockName.SECRET_INVISIBLE)]
+    case EerBlockId.SOLID_FOREGROUND_BLACK:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x000000]), new Block(PwBlockName.SECRET_INVISIBLE)]
+    case EerBlockId.SOLID_FOREGROUND_RED:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0xff0000]), new Block(PwBlockName.SECRET_INVISIBLE)]
+    case EerBlockId.SOLID_FOREGROUND_ORANGE:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0xff6a00]), new Block(PwBlockName.SECRET_INVISIBLE)]
+    case EerBlockId.SOLID_FOREGROUND_YELLOW:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0xffd400]), new Block(PwBlockName.SECRET_INVISIBLE)]
+    case EerBlockId.SOLID_FOREGROUND_LIME:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0xc0ff00]), new Block(PwBlockName.SECRET_INVISIBLE)]
+    case EerBlockId.SOLID_FOREGROUND_GREEN:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x56ff00]), new Block(PwBlockName.SECRET_INVISIBLE)]
+    case EerBlockId.SOLID_FOREGROUND_TEAL:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x00ff7e]), new Block(PwBlockName.SECRET_INVISIBLE)]
+    case EerBlockId.SOLID_FOREGROUND_CYAN:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x00ffe8]), new Block(PwBlockName.SECRET_INVISIBLE)]
+    case EerBlockId.SOLID_FOREGROUND_LIGHT_BLUE:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x00acff]), new Block(PwBlockName.SECRET_INVISIBLE)]
+    case EerBlockId.SOLID_FOREGROUND_DARK_BLUE:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x1300ff]), new Block(PwBlockName.SECRET_INVISIBLE)]
+    case EerBlockId.SOLID_FOREGROUND_PURPLE:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x7d00ff]), new Block(PwBlockName.SECRET_INVISIBLE)]
+    case EerBlockId.SOLID_FOREGROUND_MAGENTA:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0xe700ff]), new Block(PwBlockName.SECRET_INVISIBLE)]
+    case EerBlockId.SOLID_FOREGROUND_PINK:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0xff00ad]), new Block(PwBlockName.SECRET_INVISIBLE)]
+    // END SOLID FOREGROUND CODE
+    // BEGIN SOLID BACKGROUND CODE
+    case EerBlockId.SOLID_BACKGROUND_WHITE:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x7F7F7F])]
+    case EerBlockId.SOLID_BACKGROUND_LIGHT_GRAY:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x404040])]
+    case EerBlockId.SOLID_BACKGROUND_DARK_GRAY:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x2D2D2D])]
+    case EerBlockId.SOLID_BACKGROUND_BLACK:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x000000])]
+    case EerBlockId.SOLID_BACKGROUND_RED:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x7F0000])]
+    case EerBlockId.SOLID_BACKGROUND_ORANGE:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x7F3500])]
+    case EerBlockId.SOLID_BACKGROUND_YELLOW:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x7F6A00])]
+    case EerBlockId.SOLID_BACKGROUND_LIME:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x607F00])]
+    case EerBlockId.SOLID_BACKGROUND_GREEN:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x2B7F00])]
+    case EerBlockId.SOLID_BACKGROUND_TEAL:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x007F3F])]
+    case EerBlockId.SOLID_BACKGROUND_CYAN:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x007F74])]
+    case EerBlockId.SOLID_BACKGROUND_LIGHT_BLUE:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x00567F])]
+    case EerBlockId.SOLID_BACKGROUND_DARK_BLUE:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x09007F])]
+    case EerBlockId.SOLID_BACKGROUND_PURPLE:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x3E007F])]
+    case EerBlockId.SOLID_BACKGROUND_MAGENTA:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x73007F])]
+    case EerBlockId.SOLID_BACKGROUND_PINK:
+      return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x7F0056])]
+    // END SOLID BACKGROUND CODE
     default:
       const pwBlock = getPwBlocksByEerParameters().get(
         eerBlockIntParameter === undefined ? [eerBlockId] : [eerBlockId, eerBlockIntParameter],
       )
 
       if (pwBlock !== undefined) {
-        return new Block(pwBlock.PaletteId.toUpperCase())
+        return [new Block(pwBlock.PaletteId.toUpperCase())]
       }
 
       const pwBlockMorph0 = getPwBlocksByEerParameters().get(
@@ -157,9 +233,9 @@ function tryConvertEerBlockToPwBlock(eerBlock: EerBlock): Block | null {
       )
 
       if (pwBlockMorph0 !== undefined) {
-        return createUnknownParameterBlockSign(
+        return [createUnknownParameterBlockSign(
           `Unknown block parameter. PalleteId: ${pwBlockMorph0.PaletteId.toUpperCase()}, EER parameter: ${eerBlockIntParameter}`,
-        )
+        )]
       }
       return null
   }
@@ -191,13 +267,18 @@ function getImportedFromEerAsEelvlAndPwData(eerWorld: EerWorld): [Buffer, WorldB
     const eerLayer: number = eerBlock.layer
     const positions = getPositionsAsVec2Array(eerBlock)
 
-    const pwBlock = tryConvertEerBlockToPwBlock(eerBlock)
-    if (pwBlock !== null) {
-      const worldBlocksWithPositions: WorldBlock[] = positions.map((pos) => ({
-        block: pwBlock,
-        pos: pos,
-        layer: getPwBlocksByPwName()[pwBlock.name].Layer,
-      }))
+    const pwBlocks = tryConvertEerBlockToPwBlock(eerBlock)
+    if (pwBlocks !== null) {
+      const worldBlocksWithPositions: WorldBlock[] = []
+      for (const pos of positions) {
+        for (const block of pwBlocks) {
+          worldBlocksWithPositions.push({
+            block: block,
+            pos: pos,
+            layer: getPwBlocksByPwName()[block.name].Layer,
+          })
+        }
+      }
       worldBlocks.push(...worldBlocksWithPositions)
       continue
     }
