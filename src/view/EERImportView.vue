@@ -11,8 +11,7 @@ import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
 import { importFromEer } from '@/service/EerImporterService.ts'
 
 const loadingOverlay = ref(false)
-const eerRoomId = ref('PWvIah2iVBdEI') // all blocks
-// const eerRoomId = ref('PWOkI6DDRcdEI') // 25x25 test world
+const eerRoomId = ref('')
 
 async function onImportEerButtonClick() {
   await withLoading(loadingOverlay, async () => {

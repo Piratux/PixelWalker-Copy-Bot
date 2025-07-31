@@ -1,6 +1,6 @@
 import { ByteArray } from '@/class/ByteArray.ts'
 import { EelvlBlockId } from '@/gen/EelvlBlockId.ts'
-import type { BlockArg } from 'pw-js-world'
+import { BlockArg, LayerType } from 'pw-js-world'
 import { Block, DeserialisedStructure } from 'pw-js-world'
 import { EelvlBlock } from '@/type/EelvlBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
@@ -68,7 +68,27 @@ export function getImportedFromEelvlData(fileData: ArrayBuffer): DeserialisedStr
     }
   }
 
-  return new DeserialisedStructure(pwBlock3DArray, { width: pwMapWidth, height: pwMapHeight })
+  const deserialisedStructure = new DeserialisedStructure(pwBlock3DArray, { width: pwMapWidth, height: pwMapHeight })
+  applyWorldBackground(deserialisedStructure, pwMapWidth, pwMapHeight, world.backgroundColor)
+  return deserialisedStructure
+}
+
+function applyWorldBackground(
+  deserialisedStructure: DeserialisedStructure,
+  pwMapWidth: number,
+  pwMapHeight: number,
+  backgroundColor: number,
+) {
+  for (let x = 0; x < pwMapWidth; x++) {
+    for (let y = 0; y < pwMapHeight; y++) {
+      const hasBackground = deserialisedStructure.blocks[LayerType.Background][x][y].bId !== 0
+      if (!hasBackground) {
+        deserialisedStructure.blocks[LayerType.Background][x][y] = new Block(PwBlockName.CUSTOM_SOLID_BG, [
+          backgroundColor,
+        ])
+      }
+    }
+  }
 }
 
 export async function importFromEelvl(fileData: ArrayBuffer) {

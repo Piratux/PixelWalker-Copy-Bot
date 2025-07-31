@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-07-31 Version 1.6.3
+- Website: Improved EER/EELVL import, by placing PW hex backgrounds from world background color setting.
+
 2025-07-30 Version 1.6.2
 - Website: Fixed an issue where world portal wasn't importing properly in EER import.
 - Website: Improved EER import, by placing additional PW blocks that exist in EER. Thanks John!
