@@ -68,9 +68,14 @@ async function onPngFileChange(event: Event) {
           @click="quantizePng = !quantizePng"
         />
       </v-row>
-      <v-row>
-        <v-col> Import a PNG image as the world background.</v-col>
-      </v-row>
+    </v-col>
+  </PiCardContainer>
+  <PiCardContainer>
+    <v-col>
+      <v-row><h3>Import info</h3></v-row>
+      <v-row> PNG is a file format for images. </v-row>
+      <v-row> Here you can import a PNG to PixelWalker. </v-row>
+      <v-row> A single block will represent single pixel. </v-row>
     </v-col>
   </PiCardContainer>
 </template>

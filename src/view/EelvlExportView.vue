@@ -40,8 +40,17 @@ async function onExportEelvlButtonClick() {
   <PiCardContainer>
     <v-col>
       <v-row><h3>Export info</h3></v-row>
+      <v-row> EELVL is a file format that was used by Everybody Edits (EE). </v-row>
       <v-row>
-        EELVL doesn't have:
+        Here you can export EE worlds from PixelWalker to .eelvl file and open it up in Everybody Edits: Offline (EEO)
+        client.
+      </v-row>
+    </v-col>
+  </PiCardContainer>
+  <PiCardContainer>
+    <v-col>
+      <v-row>
+        Compared with PixelWalker, EELVL doesn't have:
         <ul>
           <li>Climbable horizontal chains and rope.</li>
           <li>
@@ -86,8 +95,8 @@ async function onExportEelvlButtonClick() {
       <v-row>All missing blocks are replaced with sign (except for backgrounds).</v-row>
       <v-row>
         <br />
-        Fun fact: Signs only let you enter 140 characters in EE: Offline. But it will happily accept EELVL file which
-        has sign with more than 140 characters and will correctly show in game.
+        Fun fact: Signs only let you enter 140 characters in EEO. But it will happily accept EELVL file which has sign
+        with more than 140 characters and will correctly show in game.
       </v-row>
     </v-col>
   </PiCardContainer>

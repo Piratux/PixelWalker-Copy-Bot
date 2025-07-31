@@ -31,7 +31,6 @@ async function onEelvlFileChange(event: Event) {
 
 <template>
   <PiOverlay :loading="loadingOverlay"></PiOverlay>
-
   <PiCardContainer>
     <v-col>
       <v-row>
@@ -57,8 +56,14 @@ async function onEelvlFileChange(event: Event) {
   <PiCardContainer>
     <v-col>
       <v-row><h3>Import info</h3></v-row>
+      <v-row> EELVL is a file format that was used by Everybody Edits (EE). </v-row>
+      <v-row> Here you can import EE worlds from .eelvl file to PixelWalker. </v-row>
+    </v-col>
+  </PiCardContainer>
+  <PiCardContainer>
+    <v-col>
       <v-row>
-        PixelWalker doesn't have:
+        Compared to EELVL, PixelWalker doesn't have:
         <ul>
           <li>Block for picked up gold/blue coin [110, 111].</li>
           <li>Timed gate/door [156, 157].</li>
@@ -73,7 +78,7 @@ async function onEelvlFileChange(event: Event) {
           <li>Zombie and curse effect duration is limited to 720 seconds, but in EELVL limit is 999 seconds.</li>
         </ul>
       </v-row>
-      <v-row>All missing blocks replaced with signs of block name.</v-row>
+      <v-row>All missing blocks are replaced with signs of block name.</v-row>
       <v-row>Note: Numbers in [] brackets represent EELVL block ids.</v-row>
     </v-col>
   </PiCardContainer>

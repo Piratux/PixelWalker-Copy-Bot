@@ -64,13 +64,17 @@ async function onMidiFileChange(event: Event) {
           color="green"
           hide-details
           style="margin-bottom: -1rem; margin-left: 1rem"
-          label="Show Colors"
+          label="DEV: Show Colors"
           @click="showColors = !showColors"
         />
       </v-row>
-      <v-row>
-        <v-col> Imports a MIDI file's piano tracks into a world.</v-col>
-      </v-row>
+    </v-col>
+  </PiCardContainer>
+  <PiCardContainer>
+    <v-col>
+      <v-row><h3>Import info</h3></v-row>
+      <v-row> MIDI is a file format that stores music note data. </v-row>
+      <v-row> Here you can import a MIDI file's piano tracks to PixelWalker.</v-row>
     </v-col>
   </PiCardContainer>
 </template>

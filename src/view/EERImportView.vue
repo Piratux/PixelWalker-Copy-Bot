@@ -42,6 +42,14 @@ async function onImportEerButtonClick() {
       </v-col>
     </v-form>
   </PiCardContainer>
+  <PiCardContainer>
+    <v-col>
+      <v-row><h3>Import info</h3></v-row>
+      <v-row> Everybody Edits Rewritten (EER) is a flash based continuation of Everybody Edits (EE). </v-row>
+      <v-row> Here you can import EER worlds to PixelWalker, by entering EER room id. </v-row>
+      <v-row> You can obtain it by joining EER world and typing /roomid in chat. </v-row>
+    </v-col>
+  </PiCardContainer>
 </template>
 
 <style scoped>
