@@ -6272,4 +6272,180 @@ export const EER_BLOCKS: EerBlock[] = [
     id: 1652,
     layer: 0,
   },
+  // EER exclusive blocks below
+  {
+    name: 'PASTEL_WHITE_BG',
+    id: 777,
+    layer: 1,
+  },
+  {
+    name: 'PASTEL_GRAY_BG',
+    id: 787,
+    layer: 1,
+  },
+  {
+    name: 'PASTEL_BLACK_BG',
+    id: 776,
+    layer: 1,
+  },
+  {
+    name: 'SOLID_FOREGROUND_WHITE',
+    id: 1142,
+    layer: 0,
+  },
+  {
+    name: 'SOLID_FOREGROUND_LIGHT_GRAY',
+    id: 1143,
+    layer: 0,
+  },
+  {
+    name: 'SOLID_FOREGROUND_DARK_GRAY',
+    id: 1144,
+    layer: 0,
+  },
+  {
+    name: 'SOLID_FOREGROUND_BLACK',
+    id: 1145,
+    layer: 0,
+  },
+  {
+    name: 'SOLID_FOREGROUND_RED',
+    id: 1182,
+    layer: 0,
+  },
+  {
+    name: 'SOLID_FOREGROUND_ORANGE',
+    id: 1147,
+    layer: 0,
+  },
+  {
+    name: 'SOLID_FOREGROUND_YELLOW',
+    id: 1148,
+    layer: 0,
+  },
+  {
+    name: 'SOLID_FOREGROUND_LIME',
+    id: 1149,
+    layer: 0,
+  },
+  {
+    name: 'SOLID_FOREGROUND_GREEN',
+    id: 1150,
+    layer: 0,
+  },
+  {
+    name: 'SOLID_FOREGROUND_TEAL',
+    id: 1151,
+    layer: 0,
+  },
+  {
+    name: 'SOLID_FOREGROUND_CYAN',
+    id: 1152,
+    layer: 0,
+  },
+  {
+    name: 'SOLID_FOREGROUND_LIGHT_BLUE',
+    id: 1153,
+    layer: 0,
+  },
+  {
+    name: 'SOLID_FOREGROUND_DARK_BLUE',
+    id: 1154,
+    layer: 0,
+  },
+  {
+    name: 'SOLID_FOREGROUND_PURPLE',
+    id: 1155,
+    layer: 0,
+  },
+  {
+    name: 'SOLID_FOREGROUND_MAGENTA',
+    id: 1156,
+    layer: 0,
+  },
+  {
+    name: 'SOLID_FOREGROUND_PINK',
+    id: 1157,
+    layer: 0,
+  },
+  {
+    name: 'SOLID_BACKGROUND_WHITE',
+    id: 791,
+    layer: 1,
+  },
+  {
+    name: 'SOLID_BACKGROUND_LIGHT_GRAY',
+    id: 792,
+    layer: 1,
+  },
+  {
+    name: 'SOLID_BACKGROUND_DARK_GRAY',
+    id: 793,
+    layer: 1,
+  },
+  {
+    name: 'SOLID_BACKGROUND_BLACK',
+    id: 794,
+    layer: 1,
+  },
+  {
+    name: 'SOLID_BACKGROUND_RED',
+    id: 795,
+    layer: 1,
+  },
+  {
+    name: 'SOLID_BACKGROUND_ORANGE',
+    id: 796,
+    layer: 1,
+  },
+  {
+    name: 'SOLID_BACKGROUND_YELLOW',
+    id: 797,
+    layer: 1,
+  },
+  {
+    name: 'SOLID_BACKGROUND_LIME',
+    id: 798,
+    layer: 1,
+  },
+  {
+    name: 'SOLID_BACKGROUND_GREEN',
+    id: 799,
+    layer: 1,
+  },
+  {
+    name: 'SOLID_BACKGROUND_TEAL',
+    id: 800,
+    layer: 1,
+  },
+  {
+    name: 'SOLID_BACKGROUND_CYAN',
+    id: 801,
+    layer: 1,
+  },
+  {
+    name: 'SOLID_BACKGROUND_LIGHT_BLUE',
+    id: 802,
+    layer: 1,
+  },
+  {
+    name: 'SOLID_BACKGROUND_DARK_BLUE',
+    id: 803,
+    layer: 1,
+  },
+  {
+    name: 'SOLID_BACKGROUND_PURPLE',
+    id: 804,
+    layer: 1,
+  },
+  {
+    name: 'SOLID_BACKGROUND_MAGENTA',
+    id: 805,
+    layer: 1,
+  },
+  {
+    name: 'SOLID_BACKGROUND_PINK',
+    id: 806,
+    layer: 1,
+  },
 ]
