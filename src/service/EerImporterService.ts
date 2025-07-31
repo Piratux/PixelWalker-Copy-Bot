@@ -143,6 +143,82 @@ function tryConvertEerBlockToPwBlock(eerBlock: EerBlock): Block | null {
             `Unknown block parameter. PalleteId: ${PwBlockName.EFFECTS_GRAVITYFORCE}, EER parameter: ${gravityForce}`,
           )
       }
+    // BEGIN NEW PASTEL CODE
+    case EerBlockId.PASTEL_BLACK_BG:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x000000]) // Black
+    case EerBlockId.PASTEL_GRAY_BG:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x9c9c9c]) // Gray
+    case EerBlockId.PASTEL_WHITE_BG:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0xffffff]) // White
+    // END NEW PASTEL CODE
+    // BEGIN SOLID FOREGROUND CODE
+    case EerBlockId.SOLID_FOREGROUND_WHITE:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0xffffff])
+    case EerBlockId.SOLID_FOREGROUND_LIGHT_GRAY:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x808080])
+    case EerBlockId.SOLID_FOREGROUND_DARK_GRAY:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x5a5a5a])
+    case EerBlockId.SOLID_FOREGROUND_BLACK:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x000000])
+    case EerBlockId.SOLID_FOREGROUND_RED:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0xff0000])
+    case EerBlockId.SOLID_FOREGROUND_ORANGE:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0xff6a00])
+    case EerBlockId.SOLID_FOREGROUND_YELLOW:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0xffd400])
+    case EerBlockId.SOLID_FOREGROUND_LIME:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0xc0ff00])
+    case EerBlockId.SOLID_FOREGROUND_GREEN:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x56ff00])
+    case EerBlockId.SOLID_FOREGROUND_TEAL:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x00ff7e])
+    case EerBlockId.SOLID_FOREGROUND_CYAN:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x00ffe8])
+    case EerBlockId.SOLID_FOREGROUND_LIGHT_BLUE:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x00acff])
+    case EerBlockId.SOLID_FOREGROUND_DARK_BLUE:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x1300ff])
+    case EerBlockId.SOLID_FOREGROUND_PURPLE:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x7d00ff])
+    case EerBlockId.SOLID_FOREGROUND_MAGENTA:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0xe700ff])
+    case EerBlockId.SOLID_FOREGROUND_PINK:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0xff00ad])
+    // END SOLID FOREGROUND CODE
+    // BEGIN SOLID BACKGROUND CODE
+    case EerBlockId.SOLID_BACKGROUND_WHITE:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x7F7F7F])
+    case EerBlockId.SOLID_BACKGROUND_LIGHT_GRAY:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x404040])
+    case EerBlockId.SOLID_BACKGROUND_DARK_GRAY:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x2D2D2D])
+    case EerBlockId.SOLID_BACKGROUND_BLACK:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x000000])
+    case EerBlockId.SOLID_BACKGROUND_RED:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x7F0000])
+    case EerBlockId.SOLID_BACKGROUND_ORANGE:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x7F3500])
+    case EerBlockId.SOLID_BACKGROUND_YELLOW:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x7F6A00])
+    case EerBlockId.SOLID_BACKGROUND_LIME:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x607F00]) //
+    case EerBlockId.SOLID_BACKGROUND_GREEN:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x2B7F00])
+    case EerBlockId.SOLID_BACKGROUND_TEAL:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x007F3F])
+    case EerBlockId.SOLID_BACKGROUND_CYAN:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x007F74])
+    case EerBlockId.SOLID_BACKGROUND_LIGHT_BLUE:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x00567F])
+    case EerBlockId.SOLID_BACKGROUND_DARK_BLUE:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x09007F])
+    case EerBlockId.SOLID_BACKGROUND_PURPLE:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x3E007F])
+    case EerBlockId.SOLID_BACKGROUND_MAGENTA:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x73007F])
+    case EerBlockId.SOLID_BACKGROUND_PINK:
+      return new Block(PwBlockName.CUSTOM_SOLID_BG, [0x7F0056])
+    // END SOLID BACKGROUND CODE
     default:
       const pwBlock = getPwBlocksByEerParameters().get(
         eerBlockIntParameter === undefined ? [eerBlockId] : [eerBlockId, eerBlockIntParameter],
