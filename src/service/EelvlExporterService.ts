@@ -215,9 +215,7 @@ function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock {
     case PwBlockName.SWITCH_LOCAL_ACTIVATOR:
       return getPwToEelvlSwitchActivatorBlock(pwBlock, EelvlBlockId.SWITCH_LOCAL_ACTIVATOR)
     case PwBlockName.SWITCH_LOCAL_RESETTER:
-      return createMissingBlockSign(
-        `${PwBlockName.SWITCH_LOCAL_RESETTER} switch state: ${pwBlock.args[0] === 1 ? 'ON' : 'OFF'}`,
-      )
+      return getPwToEelvlSwitchResetterBlock(pwBlock, true)
     case PwBlockName.SWITCH_LOCAL_DOOR:
       return { blockId: EelvlBlockId.SWITCH_LOCAL_DOOR, intParameter: pwBlock.args[0] as number }
     case PwBlockName.SWITCH_LOCAL_GATE:
@@ -227,9 +225,7 @@ function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock {
     case PwBlockName.SWITCH_GLOBAL_ACTIVATOR:
       return getPwToEelvlSwitchActivatorBlock(pwBlock, EelvlBlockId.SWITCH_GLOBAL_ACTIVATOR)
     case PwBlockName.SWITCH_GLOBAL_RESETTER:
-      return createMissingBlockSign(
-        `${PwBlockName.SWITCH_GLOBAL_RESETTER} switch state: ${pwBlock.args[0] === 1 ? 'ON' : 'OFF'}`,
-      )
+      return getPwToEelvlSwitchResetterBlock(pwBlock, false)
     case PwBlockName.SWITCH_GLOBAL_DOOR:
       return { blockId: EelvlBlockId.SWITCH_GLOBAL_DOOR, intParameter: pwBlock.args[0] as number }
     case PwBlockName.SWITCH_GLOBAL_GATE:
@@ -413,4 +409,15 @@ function getPwToEelvlSwitchActivatorBlock(pwBlock: Block, eelvlBlockId: EelvlBlo
         : PwBlockName.SWITCH_GLOBAL_ACTIVATOR
     return createMissingBlockSign(`${pwBlockName} switch id: ${switchIdArg}, switch state: ON`)
   }
+}
+
+function getPwToEelvlSwitchResetterBlock(pwBlock: Block, isLocal: boolean): EelvlBlock {
+  const switchStateArg = pwBlock.args[0] as number // 0 = OFF, 1 = ON
+  if (switchStateArg === 0) {
+    const eelvlBlockId = isLocal ? EelvlBlockId.SWITCH_LOCAL_ACTIVATOR : EelvlBlockId.SWITCH_GLOBAL_ACTIVATOR
+    return { blockId: eelvlBlockId, intParameter: 1000 }
+  }
+
+  const pwBlockName = isLocal ? PwBlockName.SWITCH_LOCAL_RESETTER : PwBlockName.SWITCH_GLOBAL_RESETTER
+  return createMissingBlockSign(`${pwBlockName} switch state: ON}`)
 }

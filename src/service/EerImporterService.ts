@@ -17,6 +17,7 @@ import { Block } from 'pw-js-world'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
 import { placeMultipleBlocks } from '@/service/WorldService.ts'
 import { getPwBlocksByEerParameters, getPwBlocksByPwName } from '@/store/PWClientStore.ts'
+import { uint32ToInt32 } from '@/util/Numbers.ts'
 
 interface EerBlock {
   type: number
@@ -92,6 +93,8 @@ function getBlockArgs(eerBlockId: number, eerBlock: EerBlock): EerBlockEntry {
       return [eerBlock.target, eerBlock.id]
     case EerBlockId.LABEL:
       return [eerBlock.text, eerBlock.text_color, eerBlock.wrapLength]
+    case EerBlockId.NOTE_PIANO:
+      return [uint32ToInt32(eerBlock.id!)]
     default:
       if (hasEerBlockOneIntParameter(eerBlockId)) {
         const eerBlockIntParameter = getEerBlockIntParameter(eerBlock)

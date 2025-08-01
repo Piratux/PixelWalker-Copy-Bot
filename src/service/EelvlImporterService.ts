@@ -225,7 +225,7 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
     case EelvlBlockId.SWITCH_LOCAL_TOGGLE:
       return createBlock(PwBlockName.SWITCH_LOCAL_TOGGLE, [eelvlBlock.intParameter!])
     case EelvlBlockId.SWITCH_LOCAL_ACTIVATOR:
-      return getEelvlToPwSwitchActivatorBlock(eelvlBlock, PwBlockName.SWITCH_LOCAL_ACTIVATOR)
+      return getEelvlToPwSwitchActivatorBlock(eelvlBlock, true)
     case EelvlBlockId.SWITCH_LOCAL_DOOR:
       return createBlock(PwBlockName.SWITCH_LOCAL_DOOR, [eelvlBlock.intParameter!])
     case EelvlBlockId.SWITCH_LOCAL_GATE:
@@ -233,7 +233,7 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
     case EelvlBlockId.SWITCH_GLOBAL_TOGGLE:
       return createBlock(PwBlockName.SWITCH_GLOBAL_TOGGLE, [eelvlBlock.intParameter!])
     case EelvlBlockId.SWITCH_GLOBAL_ACTIVATOR:
-      return getEelvlToPwSwitchActivatorBlock(eelvlBlock, PwBlockName.SWITCH_GLOBAL_ACTIVATOR)
+      return getEelvlToPwSwitchActivatorBlock(eelvlBlock, false)
     case EelvlBlockId.SWITCH_GLOBAL_DOOR:
       return createBlock(PwBlockName.SWITCH_GLOBAL_DOOR, [eelvlBlock.intParameter!])
     case EelvlBlockId.SWITCH_GLOBAL_GATE:
@@ -436,6 +436,13 @@ function getEelvlToPwNoteBlock(eelvlBlock: EelvlBlock, pwBlockName: PwBlockName)
   return createBlock(pwBlockName, [noteBuffer])
 }
 
-function getEelvlToPwSwitchActivatorBlock(eelvlBlock: EelvlBlock, pwBlockName: PwBlockName): Block {
+function getEelvlToPwSwitchActivatorBlock(eelvlBlock: EelvlBlock, isLocal: boolean): Block {
+  const switchId = eelvlBlock.intParameter as number
+  if (switchId === 1000) {
+    const pwBlockName = isLocal ? PwBlockName.SWITCH_LOCAL_RESETTER : PwBlockName.SWITCH_GLOBAL_RESETTER
+    return createBlock(pwBlockName, [0])
+  }
+
+  const pwBlockName = isLocal ? PwBlockName.SWITCH_LOCAL_ACTIVATOR : PwBlockName.SWITCH_GLOBAL_ACTIVATOR
   return createBlock(pwBlockName, [eelvlBlock.intParameter!, 0])
 }
