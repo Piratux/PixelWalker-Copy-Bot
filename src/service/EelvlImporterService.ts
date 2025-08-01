@@ -79,6 +79,10 @@ function applyWorldBackground(
   pwMapHeight: number,
   backgroundColor: number,
 ) {
+  if (backgroundColor === 0) {
+    return
+  }
+
   for (let x = 0; x < pwMapWidth; x++) {
     for (let y = 0; y < pwMapHeight; y++) {
       const hasBackground = deserialisedStructure.blocks[LayerType.Background][x][y].bId !== 0
