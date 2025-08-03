@@ -81,7 +81,13 @@ function initEerBlocks(eerBlocks: ListBlockResult[]) {
 }
 
 export async function initPwClasses() {
-  usePWClientStore().pwApiClient = new PWApiClient(usePWClientStore().email, usePWClientStore().password)
+  usePWClientStore().pwApiClient = new PWApiClient(usePWClientStore().email, usePWClientStore().password, {
+    endpoints: {
+      Api: import.meta.env.VITE_PW_API_URL,
+      GameHTTP: import.meta.env.VITE_PW_GAME_HTTP_URL,
+      GameWS: import.meta.env.VITE_PW_GAME_WS_URL,
+    },
+  })
 
   await pwAuthenticate(getPwApiClient())
 
