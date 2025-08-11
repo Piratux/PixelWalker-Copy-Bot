@@ -1,4 +1,3 @@
-import { ByteArray } from '@/class/ByteArray.ts'
 import { EelvlBlockId } from '@/gen/EelvlBlockId.ts'
 import { getPwBlocksByPwId, getPwGameWorldHelper, usePWClientStore } from '@/store/PWClientStore.ts'
 import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
@@ -16,6 +15,7 @@ import { getAllWorldBlocks } from '@/service/PWClientService.ts'
 import { GameError } from '@/class/GameError.ts'
 import { getEelvlBlocksById } from '@/store/EelvlClientStore.ts'
 import { hasEelvlBlockOneIntParameter, isEelvlNpc, writeEeelvlFileHeader } from '@/service/EelvlUtilService.ts'
+import { ByteArray } from 'playerioclient'
 
 function addBlocksEntry(blocks: ManyKeysMap<EelvlBlockEntry, vec2[]>, key: EelvlBlockEntry, x: number, y: number) {
   if (!blocks.has(key)) {

@@ -1,4 +1,4 @@
-import { ByteArray } from '@/class/ByteArray.ts'
+import { ByteArray } from 'playerioclient'
 import { EelvlBlockId } from '@/gen/EelvlBlockId.ts'
 import { BlockArg, LayerType } from 'pw-js-world'
 import { Block, DeserialisedStructure } from 'pw-js-world'
