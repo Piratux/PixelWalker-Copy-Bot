@@ -1,4 +1,3 @@
-import { PlayerIOClient } from '@/playerio-lib'
 import { EerBlockEntry } from '@/type/EerBlockEntry.ts'
 import { EerBlockId } from '@/gen/EerBlockId.ts'
 import { hasEerBlockOneIntParameter, isEerNpc } from '@/service/EerUtilService.ts'
@@ -18,6 +17,7 @@ import { PwBlockName } from '@/gen/PwBlockName.ts'
 import { placeMultipleBlocks } from '@/service/WorldService.ts'
 import { getPwBlocksByEerParameters, getPwBlocksByPwName } from '@/store/PWClientStore.ts'
 import { uint32ToInt32 } from '@/util/Numbers.ts'
+import PlayerIOClient from 'playerioclient'
 
 interface EerBlock {
   type: number

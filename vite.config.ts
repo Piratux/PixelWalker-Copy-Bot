@@ -14,7 +14,7 @@ export default defineConfig(() => {
       vue(),
       tsconfigPaths(),
       nodePolyfills(),
-      eslint({ exclude: ['src/playerio-lib/**'] }),
+      eslint(),
       checker({
         vueTsc: true,
       }),
