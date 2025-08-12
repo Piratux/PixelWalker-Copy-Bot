@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-08-12 Version 1.6.5
+- Bot: Fixed an issue where destination arguments would get ignored in .import command.
+
 2025-08-01 Version 1.6.4
 - Website: Fixed an issue where EER/EELVL import sometimes didn't work, when world had piano notes or switch resetters.
 - Website: Fixed an issue where EER/EELVL import would place black background even when world didn't have world background set.

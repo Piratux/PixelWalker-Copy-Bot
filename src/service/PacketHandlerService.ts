@@ -324,7 +324,7 @@ async function importCommandReceived(args: string[], playerId: number) {
 
       let allBlocks: WorldBlock[]
       if (partialImportUsed) {
-        allBlocks = convertDeserializedStructureToWorldBlocks(blocks)
+        allBlocks = convertDeserializedStructureToWorldBlocks(blocks, vec2(destToX, destToY))
       } else {
         const emptyBlocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
         const worldData = getImportedFromPwlvlData(blocks.toBuffer())
