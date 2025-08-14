@@ -65,7 +65,7 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
   }
 
   // 1. Group locations by color
-  const colorMap = new Map<number, Array<[number, number]>>()
+  const colorMap = new Map<number, [number, number][]>()
 
   for (let x = 0; x < pwMapWidth; x++) {
     for (let y = 0; y < pwMapHeight; y++) {

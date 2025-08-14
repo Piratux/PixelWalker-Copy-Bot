@@ -1,6 +1,6 @@
 import { WorldBlock } from '@/type/WorldBlock.ts'
 
-export type UndoRedoItem = {
+export interface UndoRedoItem {
   oldBlocks: WorldBlock[]
   newBlocks: WorldBlock[]
 }

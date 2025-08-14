@@ -4,7 +4,7 @@ import { WorldBlock } from '@/type/WorldBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { UndoRedoItem } from '@/type/UndoRedoItem.ts'
 
-export type BotData = {
+export interface BotData {
   botState: BotState
   selectedFromPos: Point
   selectedToPos: Point

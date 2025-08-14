@@ -46,9 +46,9 @@ export function getExportedToEelvlData(worldBlocks: DeserialisedStructure): [Buf
   writeEeelvlFileHeader(bytes, world)
 
   const blocks = new ManyKeysMap<EelvlBlockEntry, vec2[]>()
-  for (let pwLayer: number = 0; pwLayer < TOTAL_PW_LAYERS; pwLayer++) {
-    for (let y: number = 0; y < getPwGameWorldHelper().height; y++) {
-      for (let x: number = 0; x < getPwGameWorldHelper().width; x++) {
+  for (let pwLayer = 0; pwLayer < TOTAL_PW_LAYERS; pwLayer++) {
+    for (let y = 0; y < getPwGameWorldHelper().height; y++) {
+      for (let x = 0; x < getPwGameWorldHelper().width; x++) {
         const pwBlock = worldBlocks.blocks[pwLayer][x][y]
         // EELVL can't have foreground block and water block (or any other overlay block) on single block
         // We give priority to foreground block over other overlay blocks
@@ -85,7 +85,7 @@ export function getExportedToEelvlData(worldBlocks: DeserialisedStructure): [Buf
     bytes.writeInt(eelvlBlockId)
     bytes.writeInt(eelvlLayer)
     writePositionsByteArrays(bytes, positions)
-    for (let i: number = 2; i < keys.length; i++) {
+    for (let i = 2; i < keys.length; i++) {
       const key = keys[i]
       if (typeof key === 'string') {
         bytes.writeUTF(key)

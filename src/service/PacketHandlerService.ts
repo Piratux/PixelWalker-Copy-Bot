@@ -44,7 +44,7 @@ import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
 import type { WorldEventNames } from 'pw-js-api'
 import { Promisable } from '@/util/Promise'
 
-type CallbackEntry = {
+interface CallbackEntry {
   name: WorldEventNames
   // we disable any here because there is no reasonable way to represent the generic packet arguments that properly interfaces with pw-js-api
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -712,7 +712,7 @@ function editArithmeticCommand(args: string[], playerId: number, op: mathOp, opP
   const editedBlocks: WorldBlock[] = []
 
   getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map((world_block) => {
-    if (search_for === '' || world_block.block.name.indexOf(search_for) !== -1) {
+    if (search_for === '' || world_block.block.name.includes(search_for)) {
       if (world_block.block.args.length !== 0) {
         const deep_block = cloneDeep(world_block)
         if (deep_block.block.name === (PwBlockName.SWITCH_LOCAL_ACTIVATOR as string)) {
@@ -1131,8 +1131,7 @@ function blueCoinBlockPlaced(
     // We want to prevent paste happening when player accidentally uses fill or brush tool
     // But simultaneously, if player drags blue coin across the map, there could be multiple blue coins in single packet
     // This is not ideal, but good enough
-    for (let i = 0; i < data.positions.length; i++) {
-      const blockPos = data.positions[i]
+    for (const blockPos of data.positions) {
       pasteBlocks(botData, blockPos)
     }
   }

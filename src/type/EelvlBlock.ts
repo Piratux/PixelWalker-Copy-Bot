@@ -1,4 +1,4 @@
-export type EelvlBlock = {
+export interface EelvlBlock {
   blockId: number
   intParameter?: number
   portalId?: number

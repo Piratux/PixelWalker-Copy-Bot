@@ -1,6 +1,6 @@
 import { EelvlLayer } from '@/enum/EelvlLayer.ts'
 
-export type EelvlBlock = {
+export interface EelvlBlock {
   name: string
   id: number
   layer: EelvlLayer

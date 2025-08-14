@@ -165,7 +165,7 @@ function readPositionsByteArrays(bytes: ByteArray): vec2[] {
   length = bytes.readUnsignedInt()
   bytes.readBytes(positionsY, 0, length)
 
-  for (let i: number = 0; i < positionsX.length / 2; i++) {
+  for (let i = 0; i < positionsX.length / 2; i++) {
     positions.push(vec2(positionsX.readUnsignedShort(), positionsY.readUnsignedShort()))
   }
 
@@ -431,7 +431,7 @@ function getEelvlToPwPortalBlock(eelvlBlock: EelvlBlock): Block {
 }
 
 function getEelvlToPwNoteBlock(eelvlBlock: EelvlBlock, pwBlockName: PwBlockName): Block {
-  let noteValue = eelvlBlock.intParameter as number
+  let noteValue = eelvlBlock.intParameter!
   if (pwBlockName === PwBlockName.NOTE_PIANO) {
     noteValue += 27
   }
@@ -441,7 +441,7 @@ function getEelvlToPwNoteBlock(eelvlBlock: EelvlBlock, pwBlockName: PwBlockName)
 }
 
 function getEelvlToPwSwitchActivatorBlock(eelvlBlock: EelvlBlock, isLocal: boolean): Block {
-  const switchId = eelvlBlock.intParameter as number
+  const switchId = eelvlBlock.intParameter!
   if (switchId === 1000) {
     const pwBlockName = isLocal ? PwBlockName.SWITCH_LOCAL_RESETTER : PwBlockName.SWITCH_GLOBAL_RESETTER
     return createBlock(pwBlockName, [0])

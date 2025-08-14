@@ -1,6 +1,6 @@
 import { Block, LayerType, Point } from 'pw-js-world'
 
-export type WorldBlock = {
+export interface WorldBlock {
   pos: Point
   layer: LayerType
   block: Block

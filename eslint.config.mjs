@@ -6,5 +6,6 @@ import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescri
 export default defineConfigWithVueTs(
   pluginVue.configs['flat/recommended'],
   vueTsConfigs.recommendedTypeChecked,
+  vueTsConfigs.stylisticTypeChecked,
   eslintConfigPrettier,
 )

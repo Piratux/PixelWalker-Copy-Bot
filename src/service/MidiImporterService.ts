@@ -76,7 +76,7 @@ export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boole
 }
 
 function writeNotes(
-  notes: { [distance: number]: { type: string; notes: number[] } },
+  notes: Record<number, { type: string; notes: number[] }>,
   blocks: DeserialisedStructure,
   pwMapWidth: number,
   pwMapHeight: number,
@@ -86,8 +86,8 @@ function writeNotes(
   let last_x = 0
   // its worth noting that this doesnt account for time taken to travel between portals, but otherwise its pretty seamless.
   const entries = Object.entries(notes)
-  for (let entryIdx = 0; entryIdx < entries.length; entryIdx++) {
-    const [key, value] = entries[entryIdx]
+  for (const item of entries) {
+    const [key, value] = item
     const spot = Number(key) + 100 // This is the distance along the music track
 
     // Determine which column (x) and row (y) the block should go in
@@ -128,8 +128,8 @@ function writeNotes(
   return last_x
 }
 
-function processMidiFile(midi: Midi): { [distance: number]: { type: string; notes: number[] } } {
-  const write_notes: { [distance: number]: { type: string; notes: number[] } } = {}
+function processMidiFile(midi: Midi): Record<number, { type: string; notes: number[] }> {
+  const write_notes: Record<number, { type: string; notes: number[] }> = {}
   const default_speed = 13.55 // This is the default falling speed at 100% gravity in the form of pixels/tick.
   const multiplier = default_speed * (100 / 16) // This is the conversion rate from pixels/tick to blocks/second. (16 pixels = 1 block, 100 ticks = 1 second)
   let highest_time = 0
@@ -161,7 +161,7 @@ function processMidiFile(midi: Midi): { [distance: number]: { type: string; note
             return
           }
           // Only push if it doesn't already exist at that point. Prevents 2 of the same note at the same block.
-          if (entry.notes.indexOf(note.midi - 21) === -1) {
+          if (!entry.notes.includes(note.midi - 21)) {
             entry.notes.push(note.midi - 21)
           }
         }

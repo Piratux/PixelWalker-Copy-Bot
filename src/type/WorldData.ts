@@ -1,4 +1,4 @@
-export type EelvlFileHeader = {
+export interface EelvlFileHeader {
   ownerName: string
   name: string
   width: number

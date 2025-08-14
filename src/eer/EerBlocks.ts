@@ -1,6 +1,6 @@
 import { EerLayer } from '@/enum/EerLayer.ts'
 
-export type EerBlock = {
+export interface EerBlock {
   name: string
   id: number
   layer: EerLayer

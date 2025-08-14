@@ -9,7 +9,7 @@
 import type { VTextField } from 'vuetify/components'
 
 // https://stackoverflow.com/a/77201828
-type UnwrapReadonlyArray<A> = A extends Readonly<Array<infer I>> ? I : A
+type UnwrapReadonlyArray<A> = A extends readonly (infer I)[] ? I : A
 type ValidationRule = UnwrapReadonlyArray<VTextField['rules']>
 
 interface Props {

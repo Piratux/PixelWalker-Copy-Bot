@@ -1,4 +1,4 @@
-export type FileImportAsArrayBufferResult = {
+export interface FileImportAsArrayBufferResult {
   data: ArrayBuffer
   file: File
 }
