@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-08-12 Version 1.7.0
+- Bot: Improved .edit command, by immediately pasting changed blocks.
+
 2025-08-12 Version 1.6.5
 - Bot: Fixed an issue where destination arguments would get ignored in .import command.
 
