@@ -1,15 +1,15 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { getPwGameWorldHelper, usePWClientStore } from '@/store/PWClientStore.ts'
+import { getPwGameWorldHelper, usePwClientStore } from '@/store/PwClientStore.ts'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 
-const worldId = ref<string>(usePWClientStore().worldId)
+const worldId = ref<string>(usePwClientStore().worldId)
 const worldName = ref<string>(getPwGameWorldHelper()?.meta?.title ?? '') // TODO: find a way to not require using '?' in getPwGameWorldHelper()?
 </script>
 
 <template>
   <PiCardContainer>
-    <v-col v-if="usePWClientStore().isConnected">
+    <v-col v-if="usePwClientStore().isConnected">
       <v-row>
         <h3>Connected to {{ `'${worldName}'` }}</h3>
       </v-row>

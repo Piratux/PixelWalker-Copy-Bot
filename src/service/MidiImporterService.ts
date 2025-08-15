@@ -1,9 +1,9 @@
 import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
 import { placeWorldDataBlocks } from '@/service/WorldService.ts'
-import { getPwGameWorldHelper } from '@/store/PWClientStore.ts'
+import { getPwGameWorldHelper } from '@/store/PwClientStore.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
-import { pwCheckEditWhenImporting, pwCreateEmptyBlocks } from '@/service/PWClientService.ts'
+import { pwCheckEditWhenImporting, pwCreateEmptyBlocks } from '@/service/PwClientService.ts'
 import { MessageService } from '@/service/MessageService.ts'
 import { Midi } from '@tonejs/midi'
 import { PwBlockName } from '@/gen/PwBlockName'
@@ -55,8 +55,8 @@ export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boole
   if (Object.keys(notes).length === 0) {
     return null
   }
-  const last_x = writeNotes(notes, blocks, pwMapWidth, pwMapHeight, showColors)
-  for (let x = 0; x <= last_x; x++) {
+  const lastX = writeNotes(notes, blocks, pwMapWidth, pwMapHeight, showColors)
+  for (let x = 0; x <= lastX; x++) {
     if (x < pwMapWidth - 1) {
       if (x !== 0) {
         blocks.blocks[LayerType.Foreground][x][0] = new Block(PwBlockName.PORTAL_VISIBLE_DOWN, [
@@ -83,8 +83,8 @@ function writeNotes(
   showColors: boolean,
 ): number {
   const columnHeight = pwMapHeight - 3 // Leave 1 block at top and bottom
-  let last_x = 0
-  // its worth noting that this doesnt account for time taken to travel between portals, but otherwise its pretty seamless.
+  let lastX = 0
+  // its worth noting that this doesn't account for time taken to travel between portals, but otherwise it's pretty seamless.
   const entries = Object.entries(notes)
   for (const item of entries) {
     const [key, value] = item
@@ -109,7 +109,7 @@ function writeNotes(
       // Shows each note's colors, can only be turned on in dev mode
       if (showColors) {
         value.notes.forEach((note, idx) => {
-          const [r, g, b] = getRGBfromNote(note)
+          const [r, g, b] = getRGBFromNote(note)
           if (y + idx < pwMapHeight) {
             blocks.blocks[LayerType.Background][x][y + idx] = new Block(PwBlockName.CUSTOM_SOLID_BG, [
               b + (g << 8) + (r << 16),
@@ -117,7 +117,7 @@ function writeNotes(
           }
         })
       }
-      last_x = Math.max(last_x, x)
+      lastX = Math.max(lastX, x)
     } else {
       const message = `ERROR! Note at x=${x}, y=${y} is out of bounds. Stopping.`
       sendGlobalChatMessage(message)
@@ -125,14 +125,14 @@ function writeNotes(
       break
     }
   }
-  return last_x
+  return lastX
 }
 
 function processMidiFile(midi: Midi): Record<number, { type: string; notes: number[] }> {
-  const write_notes: Record<number, { type: string; notes: number[] }> = {}
-  const default_speed = 13.55 // This is the default falling speed at 100% gravity in the form of pixels/tick.
-  const multiplier = default_speed * (100 / 16) // This is the conversion rate from pixels/tick to blocks/second. (16 pixels = 1 block, 100 ticks = 1 second)
-  let highest_time = 0
+  const writeNotes: Record<number, { type: string; notes: number[] }> = {}
+  const defaultSpeed = 13.55 // This is the default falling speed at 100% gravity in the form of pixels/tick.
+  const multiplier = defaultSpeed * (100 / 16) // This is the conversion rate from pixels/tick to blocks/second. (16 pixels = 1 block, 100 ticks = 1 second)
+  let highestTime = 0
 
   midi.tracks.map((track) => {
     const notes = track.notes
@@ -141,21 +141,21 @@ function processMidiFile(midi: Midi): Record<number, { type: string; notes: numb
     // guitars are not supported (yet) because it requires strange note mappings.
     if (family === 'piano') {
       notes.forEach((note) => {
-        if (highest_time <= note.time) {
-          highest_time = note.time
+        if (highestTime <= note.time) {
+          highestTime = note.time
         }
         // Notes beyond these points don't exist on normal 88-note keyboards, such as in pixelwalker.
         if (note.midi < 21 || note.midi > 108) return
 
         const distance = Math.round(note.time * multiplier)
 
-        if (!write_notes[distance]) {
-          write_notes[distance] = {
+        if (!writeNotes[distance]) {
+          writeNotes[distance] = {
             type: family,
             notes: [note.midi - 21],
           }
         } else {
-          const entry = write_notes[distance]
+          const entry = writeNotes[distance]
           if (entry.type !== family) {
             console.warn(`Block type conflict at distance ${distance}`)
             return
@@ -171,10 +171,10 @@ function processMidiFile(midi: Midi): Record<number, { type: string; notes: numb
     }
   })
 
-  return write_notes
+  return writeNotes
 }
 
-function getRGBfromNote(note: number): [number, number, number] {
+function getRGBFromNote(note: number): [number, number, number] {
   const hue = (note % 12) * (360 / 13)
   const saturation = 100
   const lightness = Math.floor(note / 12) * (65 / 8) + 15

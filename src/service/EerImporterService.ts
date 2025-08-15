@@ -15,7 +15,7 @@ import { WorldBlock } from '@/type/WorldBlock.ts'
 import { Block } from 'pw-js-world'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
 import { placeMultipleBlocks } from '@/service/WorldService.ts'
-import { getPwBlocksByEerParameters, getPwBlocksByPwName } from '@/store/PWClientStore.ts'
+import { getPwBlocksByEerParameters, getPwBlocksByPwName } from '@/store/PwClientStore.ts'
 import { uint32ToInt32 } from '@/util/Numbers.ts'
 import PlayerIOClient from 'playerioclient'
 
@@ -31,6 +31,7 @@ interface EerBlock {
   rotation?: number
   text?: string
   signtype?: number
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   text_color?: string
   wrapLength?: number
   id?: number

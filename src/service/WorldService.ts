@@ -12,8 +12,8 @@ import {
   getPwBlocksByPwName,
   getPwGameClient,
   getPwGameWorldHelper,
-  usePWClientStore,
-} from '@/store/PWClientStore.ts'
+  usePwClientStore,
+} from '@/store/PwClientStore.ts'
 import { WorldBlock } from '@/type/WorldBlock.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
 import { sleep } from '@/util/Sleep.ts'
@@ -59,29 +59,29 @@ export async function placeLayerDataBlocks(
 
 async function placePackets(packets: SendableBlockPacket[], blockCount: number): Promise<boolean> {
   // TODO: use packet count instead of block count
-  usePWClientStore().totalBlocksLeftToReceiveFromWorldImport = blockCount
-  let lastTotalBlocksLeftToReceiveFromWorldImportValue = usePWClientStore().totalBlocksLeftToReceiveFromWorldImport
+  usePwClientStore().totalBlocksLeftToReceiveFromWorldImport = blockCount
+  let lastTotalBlocksLeftToReceiveFromWorldImportValue = usePwClientStore().totalBlocksLeftToReceiveFromWorldImport
 
   for (const packet of packets) {
     placeBlockPacket(packet)
   }
 
   const TOTAL_WAIT_ATTEMPTS_BEFORE_ASSUMING_ERROR = 5
-  let total_attempts = 0
-  while (total_attempts < TOTAL_WAIT_ATTEMPTS_BEFORE_ASSUMING_ERROR) {
-    if (usePWClientStore().totalBlocksLeftToReceiveFromWorldImport === 0) {
+  let totalAttempts = 0
+  while (totalAttempts < TOTAL_WAIT_ATTEMPTS_BEFORE_ASSUMING_ERROR) {
+    if (usePwClientStore().totalBlocksLeftToReceiveFromWorldImport === 0) {
       return true
     }
 
     if (
-      usePWClientStore().totalBlocksLeftToReceiveFromWorldImport === lastTotalBlocksLeftToReceiveFromWorldImportValue
+      usePwClientStore().totalBlocksLeftToReceiveFromWorldImport === lastTotalBlocksLeftToReceiveFromWorldImportValue
     ) {
-      total_attempts++
+      totalAttempts++
     } else {
-      total_attempts = 0
+      totalAttempts = 0
     }
 
-    lastTotalBlocksLeftToReceiveFromWorldImportValue = usePWClientStore().totalBlocksLeftToReceiveFromWorldImport
+    lastTotalBlocksLeftToReceiveFromWorldImportValue = usePwClientStore().totalBlocksLeftToReceiveFromWorldImport
 
     await sleep(1000)
   }

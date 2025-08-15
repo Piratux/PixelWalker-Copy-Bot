@@ -1,8 +1,8 @@
 import {
-  EERImportViewRoute,
-  ExportEelvlViewRoute,
+  EerImportViewRoute,
+  EelvlExportViewRoute,
   HomeViewRoute,
-  ImportEelvlViewRoute,
+  EelvlImportViewRoute,
   MidiImportViewRoute,
   PngImportViewRoute,
 } from '@/router/Routes.ts'
@@ -14,11 +14,11 @@ export const MENU_ITEMS = [
   },
   {
     text: 'Import EELVL',
-    link: ImportEelvlViewRoute.path,
+    link: EelvlImportViewRoute.path,
   },
   {
     text: 'Export EELVL',
-    link: ExportEelvlViewRoute.path,
+    link: EelvlExportViewRoute.path,
   },
   {
     text: 'Import PNG',
@@ -30,6 +30,6 @@ export const MENU_ITEMS = [
   },
   {
     text: 'Import EER',
-    link: EERImportViewRoute.path,
+    link: EerImportViewRoute.path,
   },
 ]

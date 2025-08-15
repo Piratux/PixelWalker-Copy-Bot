@@ -12,13 +12,13 @@ export const HomeViewRoute = {
   component: () => import('@/view/HomeView.vue'),
 }
 
-export const ImportEelvlViewRoute = {
+export const EelvlImportViewRoute = {
   path: `${basePath}/import-eelvl`,
   name: 'import-eelvl',
   component: () => import('@/view/EelvlImportView.vue'),
 }
 
-export const ExportEelvlViewRoute = {
+export const EelvlExportViewRoute = {
   path: `${basePath}/export-eelvl`,
   name: 'export-eelvl',
   component: () => import('@/view/EelvlExportView.vue'),
@@ -42,13 +42,13 @@ export const DevViewRoute = {
   component: () => import('@/view/DevView.vue'),
 }
 
-export const EERImportViewRoute = {
+export const EerImportViewRoute = {
   path: `${basePath}/import-eer`,
   name: 'import-eer',
-  component: () => import('@/view/EERImportView.vue'),
+  component: () => import('@/view/EerImportView.vue'),
 }
 
-export const NotFoundRoute = {
+export const NotFoundViewRoute = {
   path: '/:pathMatch(.*)*',
   name: 'notFound',
   component: () => import('@/view/NotFoundView.vue'),

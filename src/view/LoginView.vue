@@ -5,9 +5,9 @@ import PiTextField from '@/component/PiTextField.vue'
 import PiButton from '@/component/PiButton.vue'
 import { VForm } from 'vuetify/components'
 import { useRouter } from 'vue-router'
-import { usePWClientStore } from '@/store/PWClientStore.ts'
+import { usePwClientStore } from '@/store/PwClientStore.ts'
 import { getWorldIdIfUrl } from '@/service/WorldIdExtractorService.ts'
-import { initPwClasses } from '@/service/PWClientService.ts'
+import { initPwClasses } from '@/service/PwClientService.ts'
 import { HomeViewRoute } from '@/router/Routes.ts'
 import { withLoading } from '@/service/LoaderProxyService.ts'
 import PiOverlay from '@/component/PiOverlay.vue'
@@ -34,15 +34,15 @@ async function onConnectButtonClick() {
       return
     }
 
-    usePWClientStore().worldId = worldId.value
-    usePWClientStore().email = email.value
-    usePWClientStore().password = password.value
-    usePWClientStore().secretEditKey = secretEditKey.value
+    usePwClientStore().worldId = worldId.value
+    usePwClientStore().email = email.value
+    usePwClientStore().password = password.value
+    usePwClientStore().secretEditKey = secretEditKey.value
 
     await initPwClasses()
 
     await router.push({ name: HomeViewRoute.name })
-    usePWClientStore().isConnected = true
+    usePwClientStore().isConnected = true
   })
 }
 

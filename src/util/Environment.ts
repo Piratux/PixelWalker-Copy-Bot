@@ -1,4 +1,4 @@
-import { getPwGameWorldHelper } from '@/store/PWClientStore.ts'
+import { getPwGameWorldHelper } from '@/store/PwClientStore.ts'
 
 export function getEnvDefaultWorldId() {
   if (!import.meta.env.VITE_DEFAULT_WORLD_ID) {
@@ -19,11 +19,11 @@ export function isDeveloper(playerId: number) {
   if (!player) {
     return false
   }
-  let dev_username = 'PIRATUX'
+  let devUsername = 'PIRATUX'
   if (import.meta.env.VITE_DEV_USERNAME) {
-    dev_username = import.meta.env.VITE_DEV_USERNAME.toUpperCase()
+    devUsername = import.meta.env.VITE_DEV_USERNAME.toUpperCase()
   } else {
     console.log('VITE_DEV_USERNAME is not defined in environment variables, assuming "PIRATUX"')
   }
-  return player.username === dev_username
+  return player.username === devUsername
 }

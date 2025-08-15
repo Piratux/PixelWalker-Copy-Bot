@@ -6,7 +6,7 @@ import { getImportedFromEelvlData } from '@/service/EelvlImporterService.ts'
 import { placeWorldDataBlocks } from '@/service/WorldService.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { GameError } from '@/class/GameError.ts'
-import { pwClearWorld } from '@/service/PWClientService.ts'
+import { pwClearWorld } from '@/service/PwClientService.ts'
 import { getImportedFromPngData } from '@/service/PngImporterService.ts'
 import { getImportedFromMidiData } from '@/service/MidiImporterService.ts'
 

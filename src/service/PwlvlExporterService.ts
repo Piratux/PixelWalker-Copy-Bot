@@ -1,7 +1,7 @@
-import { getPwGameWorldHelper, usePWClientStore } from '@/store/PWClientStore.ts'
+import { getPwGameWorldHelper, usePwClientStore } from '@/store/PwClientStore.ts'
 import { downloadFile } from '@/service/FileService.ts'
 import { EelvlFileHeader } from '@/type/WorldData.ts'
-import { getAllWorldBlocks } from '@/service/PWClientService.ts'
+import { getAllWorldBlocks } from '@/service/PwClientService.ts'
 
 export function getExportedToPwlvlData(): [Buffer, string] {
   const worldMeta = getPwGameWorldHelper().meta!
@@ -23,7 +23,7 @@ export function getExportedToPwlvlData(): [Buffer, string] {
 
   const worldData = getAllWorldBlocks(getPwGameWorldHelper())
 
-  const worldId = usePWClientStore().worldId
+  const worldId = usePwClientStore().worldId
   const fileName = `${world.name} - ${world.width}x${world.height} - ${worldId}.pwlvl`
 
   return [worldData.toBuffer(), fileName]

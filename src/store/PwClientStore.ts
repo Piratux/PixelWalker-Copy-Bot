@@ -4,7 +4,7 @@ import { PWGameWorldHelper } from 'pw-js-world'
 import { Raw, ref } from 'vue'
 import ManyKeysMap from 'many-keys-map'
 
-export const usePWClientStore = defineStore('PWClientStore', () => {
+export const usePwClientStore = defineStore('PwClientStore', () => {
   const pwGameClient = ref<Raw<PWGameClient> | undefined>(undefined)
   const pwApiClient = ref<Raw<PWApiClient> | undefined>(undefined)
   const pwGameWorldHelper = ref<Raw<PWGameWorldHelper> | undefined>(undefined)
@@ -39,35 +39,35 @@ export const usePWClientStore = defineStore('PWClientStore', () => {
 })
 
 export function getPwGameClient(): PWGameClient {
-  return usePWClientStore().pwGameClient!
+  return usePwClientStore().pwGameClient!
 }
 
 export function getPwApiClient(): PWApiClient {
-  return usePWClientStore().pwApiClient!
+  return usePwClientStore().pwApiClient!
 }
 
 export function getPwGameWorldHelper(): PWGameWorldHelper {
-  return usePWClientStore().pwGameWorldHelper!
+  return usePwClientStore().pwGameWorldHelper!
 }
 
 export function getPwBlocks(): ListBlockResult[] {
-  return usePWClientStore().blocks
+  return usePwClientStore().blocks
 }
 
 // TODO: Think what to do about blockid = 0 as there is more than 1 entry
 export function getPwBlocksByPwId(): Record<number, ListBlockResult> {
-  return usePWClientStore().blocksByPwId
+  return usePwClientStore().blocksByPwId
 }
 
 // TODO: Think what to do about blockname = EMPTY as there is more than 1 entry
 export function getPwBlocksByPwName(): Record<string, ListBlockResult> {
-  return usePWClientStore().blocksByPwName
+  return usePwClientStore().blocksByPwName
 }
 
 export function getPwBlocksByEelvlParameters(): ManyKeysMap<number[], ListBlockResult> {
-  return usePWClientStore().blocksByEelvlParameters
+  return usePwClientStore().blocksByEelvlParameters
 }
 
 export function getPwBlocksByEerParameters(): ManyKeysMap<number[], ListBlockResult> {
-  return usePWClientStore().blocksByEerParameters
+  return usePwClientStore().blocksByEerParameters
 }

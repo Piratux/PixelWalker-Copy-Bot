@@ -1,5 +1,5 @@
 import { EelvlBlockId } from '@/gen/EelvlBlockId.ts'
-import { getPwBlocksByPwId, getPwGameWorldHelper, usePWClientStore } from '@/store/PWClientStore.ts'
+import { getPwBlocksByPwId, getPwGameWorldHelper, usePwClientStore } from '@/store/PwClientStore.ts'
 import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
 import { EelvlBlock } from '@/type/EelvlBlock.ts'
 import { downloadFile } from '@/service/FileService.ts'
@@ -11,7 +11,7 @@ import { getBlockName, portalIdToNumber } from '@/service/WorldService.ts'
 import { EelvlLayer } from '@/enum/EelvlLayer.ts'
 import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
 import { EelvlBlockEntry } from '@/type/EelvlBlockEntry.ts'
-import { getAllWorldBlocks } from '@/service/PWClientService.ts'
+import { getAllWorldBlocks } from '@/service/PwClientService.ts'
 import { GameError } from '@/class/GameError.ts'
 import { getEelvlBlocksById } from '@/store/EelvlClientStore.ts'
 import { hasEelvlBlockOneIntParameter, isEelvlNpc, writeEeelvlFileHeader } from '@/service/EelvlUtilService.ts'
@@ -97,7 +97,7 @@ export function getExportedToEelvlData(worldBlocks: DeserialisedStructure): [Buf
     }
   }
   bytes.compress()
-  const worldId = usePWClientStore().worldId
+  const worldId = usePwClientStore().worldId
   const fileName = `${world.name} - ${world.width}x${world.height} - ${worldId}.eelvl`
 
   return [bytes.buffer, fileName]

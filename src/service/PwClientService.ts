@@ -3,7 +3,7 @@ import { GENERAL_CONSTANTS, TOTAL_PW_LAYERS } from '@/constant/General.ts'
 import { Block, DeserialisedStructure, PWGameWorldHelper } from 'pw-js-world'
 import { placeWorldDataBlocks } from '@/service/WorldService.ts'
 import { vec2 } from '@basementuniverse/vec'
-import { getPwApiClient, getPwGameClient, getPwGameWorldHelper, usePWClientStore } from '@/store/PWClientStore.ts'
+import { getPwApiClient, getPwGameClient, getPwGameWorldHelper, usePwClientStore } from '@/store/PwClientStore.ts'
 import { sendGlobalChatMessage, sendPrivateChatMessage } from '@/service/ChatMessageService.ts'
 import { GameError } from '@/class/GameError.ts'
 import waitUntil, { TimeoutError } from 'async-wait-until'
@@ -41,24 +41,24 @@ function initPwBlocks(blocks: ListBlockResult[]) {
       PaletteId: block.PaletteId.toUpperCase(),
     }))
 
-  usePWClientStore().blocks = []
-  usePWClientStore().blocksByPwId = {}
-  usePWClientStore().blocksByPwName = {}
-  usePWClientStore().blocksByEelvlParameters = new ManyKeysMap()
+  usePwClientStore().blocks = []
+  usePwClientStore().blocksByPwId = {}
+  usePwClientStore().blocksByPwName = {}
+  usePwClientStore().blocksByEelvlParameters = new ManyKeysMap()
 
   blocks.forEach((block) => {
-    usePWClientStore().blocks.push(block)
-    usePWClientStore().blocksByPwId[block.Id] = block
-    usePWClientStore().blocksByPwName[block.PaletteId] = block
+    usePwClientStore().blocks.push(block)
+    usePwClientStore().blocksByPwId[block.Id] = block
+    usePwClientStore().blocksByPwName[block.PaletteId] = block
     if (block.LegacyId !== undefined) {
       if (block.LegacyMorph !== undefined) {
         block.LegacyMorph.forEach((morph) => {
           // When there are multiple values in block.LegacyMorph, it means that multiple morph values represent exact same block.
           // Only laser blocks in EELVL have multiple morphs.
-          usePWClientStore().blocksByEelvlParameters.set([block.LegacyId!, morph], block)
+          usePwClientStore().blocksByEelvlParameters.set([block.LegacyId!, morph], block)
         })
       } else {
-        usePWClientStore().blocksByEelvlParameters.set([block.LegacyId], block)
+        usePwClientStore().blocksByEelvlParameters.set([block.LegacyId], block)
       }
     }
   })
@@ -71,17 +71,17 @@ function initEerBlocks(eerBlocks: ListBlockResult[]) {
         block.LegacyMorph.forEach((morph) => {
           // When there are multiple values in block.LegacyMorph, it means that multiple morph values represent exact same block.
           // Only laser blocks in EELVL have multiple morphs.
-          usePWClientStore().blocksByEerParameters.set([block.LegacyId!, morph], block)
+          usePwClientStore().blocksByEerParameters.set([block.LegacyId!, morph], block)
         })
       } else {
-        usePWClientStore().blocksByEerParameters.set([block.LegacyId], block)
+        usePwClientStore().blocksByEerParameters.set([block.LegacyId], block)
       }
     }
   })
 }
 
 export async function initPwClasses() {
-  usePWClientStore().pwApiClient = new PWApiClient(usePWClientStore().email, usePWClientStore().password, {
+  usePwClientStore().pwApiClient = new PWApiClient(usePwClientStore().email, usePwClientStore().password, {
     endpoints: {
       Api: import.meta.env.VITE_PW_API_URL,
       GameHTTP: import.meta.env.VITE_PW_GAME_HTTP_URL,
@@ -91,12 +91,12 @@ export async function initPwClasses() {
 
   await pwAuthenticate(getPwApiClient())
 
-  usePWClientStore().pwGameClient = new PWGameClient(getPwApiClient())
-  usePWClientStore().pwGameWorldHelper = new PWGameWorldHelper()
+  usePwClientStore().pwGameClient = new PWGameClient(getPwApiClient())
+  usePwClientStore().pwGameWorldHelper = new PWGameWorldHelper()
 
   registerCallbacks()
 
-  await pwJoinWorld(getPwGameClient(), usePWClientStore().worldId)
+  await pwJoinWorld(getPwGameClient(), usePwClientStore().worldId)
 
   initPwBlocks(await getPwApiClient().getListBlocks())
   initEerBlocks(EER_MAPPINGS)

@@ -3,8 +3,8 @@ import {
   getPwBlocksByPwId,
   getPwGameClient,
   getPwGameWorldHelper,
-  usePWClientStore,
-} from '@/store/PWClientStore.ts'
+  usePwClientStore,
+} from '@/store/PwClientStore.ts'
 import { Block, ComponentTypeHeader, IPlayer, LayerType, Point, PWGameWorldHelper } from 'pw-js-world'
 import { cloneDeep, isEqual } from 'lodash-es'
 import { BotData, createBotData } from '@/type/BotData.ts'
@@ -34,7 +34,7 @@ import {
   pwCreateEmptyBlocks,
   pwEnterEditKey,
   pwJoinWorld,
-} from '@/service/PWClientService.ts'
+} from '@/service/PwClientService.ts'
 import { isDeveloper } from '@/util/Environment'
 import { getImportedFromPwlvlData } from '@/service/PwlvlImporterService.ts'
 import { getWorldIdIfUrl } from '@/service/WorldIdExtractorService.ts'
@@ -207,7 +207,7 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
       if (idx >= sortedListBlocks.length) {
         const success = await placeMultipleBlocks(worldBlocks)
         if (success) {
-          sendPrivateChatMessage('Succesfully placed all blocks', playerId)
+          sendPrivateChatMessage('Successfully placed all blocks', playerId)
         } else {
           sendPrivateChatMessage('ERROR! Failed to place all blocks', playerId)
         }
@@ -296,7 +296,7 @@ async function importCommandReceived(args: string[], playerId: number) {
     }
   }
 
-  const pwApiClient = new PWApiClient(usePWClientStore().email, usePWClientStore().password)
+  const pwApiClient = new PWApiClient(usePwClientStore().email, usePwClientStore().password)
 
   try {
     await pwAuthenticate(pwApiClient)
@@ -600,45 +600,45 @@ function editCommandReceived(args: string[], playerId: number) {
 }
 
 function editNameCommand(args: string[], playerId: number): WorldBlock[] {
-  let search_for = args[2]
-  let replace_with = args[3]
-  if (!search_for || !replace_with) {
+  let searchFor = args[2]
+  let replaceWith = args[3]
+  if (!searchFor || !replaceWith) {
     sendPrivateChatMessage(`ERROR! Correct usage is .edit name find replace`, playerId)
     return []
   }
-  search_for = search_for.toUpperCase()
-  replace_with = replace_with.toUpperCase()
+  searchFor = searchFor.toUpperCase()
+  replaceWith = replaceWith.toUpperCase()
   let counter = 0
-  const copy_names_found: Set<string> = new Set<string>()
+  const copyNamesFound: Set<string> = new Set<string>()
   let warning = ''
 
   const editedBlocks: WorldBlock[] = []
 
-  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map((world_block) => {
-    const copy_name = world_block.block.name.replace(search_for, replace_with)
-    if (world_block.block.name !== copy_name && copy_name != '') {
-      copy_names_found.add(copy_name)
-      const poss_block_id = getBlockIdFromString(copy_name)
-      if (poss_block_id !== undefined && !isNaN(poss_block_id)) {
-        const deepblock = cloneDeep(world_block)
-        if (getBlockLayer(poss_block_id) !== getBlockLayer(world_block.block.bId)) {
+  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map((worldBlock) => {
+    const copyName = worldBlock.block.name.replace(searchFor, replaceWith)
+    if (worldBlock.block.name !== copyName && copyName != '') {
+      copyNamesFound.add(copyName)
+      const possBlockId = getBlockIdFromString(copyName)
+      if (possBlockId !== undefined && !isNaN(possBlockId)) {
+        const deepBlock = cloneDeep(worldBlock)
+        if (getBlockLayer(possBlockId) !== getBlockLayer(worldBlock.block.bId)) {
           warning = '.edit name does not support changing layers'
-          return world_block
+          return worldBlock
         }
-        deepblock.block = new Block(poss_block_id, world_block.block.args)
+        deepBlock.block = new Block(possBlockId, worldBlock.block.args)
         counter++
-        editedBlocks.push(deepblock)
-        return deepblock
+        editedBlocks.push(deepBlock)
+        return deepBlock
       }
     }
-    return world_block
+    return worldBlock
   })
-  if (!warning && counter == 0 && copy_names_found.size == 1) {
-    // some blocks are confusingly named, if theyre trying to edit a single block type let them know that its not valid.
-    sendPrivateChatMessage(`${counter} blocks changed. ${[...copy_names_found][0]} is not a valid block.`, playerId)
+  if (!warning && counter == 0 && copyNamesFound.size == 1) {
+    // some blocks are confusingly named, if they're trying to edit a single block type let them know that it's not valid.
+    sendPrivateChatMessage(`${counter} blocks changed. ${[...copyNamesFound][0]} is not a valid block.`, playerId)
     return editedBlocks
   }
-  sendPrivateChatMessage(`${counter} blocks changed ${search_for} to ${replace_with}`, playerId)
+  sendPrivateChatMessage(`${counter} blocks changed ${searchFor} to ${replaceWith}`, playerId)
   if (warning) {
     sendPrivateChatMessage(`Warning: ${warning}`, playerId)
   }
@@ -647,34 +647,34 @@ function editNameCommand(args: string[], playerId: number): WorldBlock[] {
 }
 
 function editIdCommand(args: string[], playerId: number): WorldBlock[] {
-  const search_for_id = Number(args[2])
-  const replace_with_id = Number(args[3])
-  if (isNaN(search_for_id) || isNaN(replace_with_id)) {
+  const searchForId = Number(args[2])
+  const replaceWithId = Number(args[3])
+  if (isNaN(searchForId) || isNaN(replaceWithId)) {
     sendPrivateChatMessage(`ERROR! Correct usage is .edit id find_id replace_id`, playerId)
     return []
   }
 
   const blocksById = getPwBlocksByPwId()
-  if (!(search_for_id in blocksById) || !(replace_with_id in blocksById)) {
+  if (!(searchForId in blocksById) || !(replaceWithId in blocksById)) {
     sendPrivateChatMessage(`ERROR! Invalid id specified`, playerId)
     return []
   }
 
-  if (search_for_id === 0 || replace_with_id === 0) {
+  if (searchForId === 0 || replaceWithId === 0) {
     sendPrivateChatMessage(`ERROR! find or replace id=0 is not allowed`, playerId)
     return []
   }
 
-  const search_for_block = blocksById[search_for_id]
-  const replace_with_block = blocksById[replace_with_id]
-  if (search_for_block.Layer !== replace_with_block.Layer) {
+  const searchForBlock = blocksById[searchForId]
+  const replaceWithBlock = blocksById[replaceWithId]
+  if (searchForBlock.Layer !== replaceWithBlock.Layer) {
     sendPrivateChatMessage(`ERROR! find and replace block layers must match`, playerId)
     return []
   }
 
   if (
-    (search_for_block.BlockDataArgs !== undefined || replace_with_block.BlockDataArgs !== undefined) &&
-    !isEqual(search_for_block.BlockDataArgs, replace_with_block.BlockDataArgs)
+    (searchForBlock.BlockDataArgs !== undefined || replaceWithBlock.BlockDataArgs !== undefined) &&
+    !isEqual(searchForBlock.BlockDataArgs, replaceWithBlock.BlockDataArgs)
   ) {
     sendPrivateChatMessage(`ERROR! find and replace block arguments must match`, playerId)
     return []
@@ -683,18 +683,18 @@ function editIdCommand(args: string[], playerId: number): WorldBlock[] {
   const editedBlocks: WorldBlock[] = []
 
   let counter = 0
-  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map((world_block) => {
-    if (world_block.block.bId !== search_for_id) {
-      return world_block
+  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map((worldBlock) => {
+    if (worldBlock.block.bId !== searchForId) {
+      return worldBlock
     } else {
-      const deepBlock = cloneDeep(world_block)
-      deepBlock.block = new Block(replace_with_id, world_block.block.args)
+      const deepBlock = cloneDeep(worldBlock)
+      deepBlock.block = new Block(replaceWithId, worldBlock.block.args)
       counter++
       editedBlocks.push(deepBlock)
       return deepBlock
     }
   })
-  sendPrivateChatMessage(`${counter} blocks changed ${search_for_id} to ${replace_with_id}`, playerId)
+  sendPrivateChatMessage(`${counter} blocks changed ${searchForId} to ${replaceWithId}`, playerId)
   return editedBlocks
 }
 
@@ -706,21 +706,21 @@ function editArithmeticCommand(args: string[], playerId: number, op: mathOp, opP
     sendPrivateChatMessage(`ERROR! Correct usage is .edit math_op number [name_find]`, playerId)
     return []
   }
-  const search_for = args[3]?.toUpperCase() ?? ''
+  const searchFor = args[3]?.toUpperCase() ?? ''
   let counter = 0
 
   const editedBlocks: WorldBlock[] = []
 
-  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map((world_block) => {
-    if (search_for === '' || world_block.block.name.includes(search_for)) {
-      if (world_block.block.args.length !== 0) {
-        const deep_block = cloneDeep(world_block)
-        if (deep_block.block.name === (PwBlockName.SWITCH_LOCAL_ACTIVATOR as string)) {
-          deep_block.block.args[0] = Math.floor(op(deep_block.block.args[0] as number, amount))
-          editedBlocks.push(deep_block)
-          return deep_block
+  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map((worldBlock) => {
+    if (searchFor === '' || worldBlock.block.name.includes(searchFor)) {
+      if (worldBlock.block.args.length !== 0) {
+        const deepBlock = cloneDeep(worldBlock)
+        if (deepBlock.block.name === (PwBlockName.SWITCH_LOCAL_ACTIVATOR as string)) {
+          deepBlock.block.args[0] = Math.floor(op(deepBlock.block.args[0] as number, amount))
+          editedBlocks.push(deepBlock)
+          return deepBlock
         }
-        deep_block.block.args = deep_block.block.args.map((arg) => {
+        deepBlock.block.args = deepBlock.block.args.map((arg) => {
           if (typeof arg === 'number') {
             counter++
             return Math.floor(op(arg, amount))
@@ -728,11 +728,11 @@ function editArithmeticCommand(args: string[], playerId: number, op: mathOp, opP
             return arg
           }
         })
-        editedBlocks.push(deep_block)
-        return deep_block
+        editedBlocks.push(deepBlock)
+        return deepBlock
       }
     }
-    return world_block
+    return worldBlock
   })
   sendPrivateChatMessage(`${counter} blocks ${opPast} by ${amount}`, playerId)
   return editedBlocks
@@ -764,7 +764,7 @@ function editSubCommand(args: string[], playerId: number): WorldBlock[] {
 
 function playerInitPacketReceived() {
   getPwGameClient().send('playerInitReceived')
-  void pwEnterEditKey(getPwGameClient(), usePWClientStore().secretEditKey)
+  void pwEnterEditKey(getPwGameClient(), usePwClientStore().secretEditKey)
 }
 
 function applySmartTransformForBlocks(
@@ -835,19 +835,19 @@ function getSelectedAreaAsEmptyBlocks(botData: BotData) {
 }
 
 // Merges blocks into bigger WorldBlock[], but gives priority to blocks_top
-function mergeWorldBlocks(blocks_bottom: WorldBlock[], blocks_top: WorldBlock[]) {
+function mergeWorldBlocks(blocksBottom: WorldBlock[], blocksTop: WorldBlock[]) {
   const emptyBlocksMap = new Map<string, WorldBlock>()
-  for (const emptyBlock of blocks_top) {
+  for (const emptyBlock of blocksTop) {
     const key = `${emptyBlock.pos.x},${emptyBlock.pos.y},${emptyBlock.layer}`
     emptyBlocksMap.set(key, emptyBlock)
   }
 
-  const filtered_blocks_bottom = blocks_bottom.filter((block) => {
+  const filteredBlocksBottom = blocksBottom.filter((block) => {
     const key = `${block.pos.x},${block.pos.y},${block.layer}`
     return !emptyBlocksMap.has(key)
   })
 
-  return filtered_blocks_bottom.concat(blocks_top)
+  return filteredBlocksBottom.concat(blocksTop)
 }
 
 function applyMoveMode(botData: BotData, allBlocks: WorldBlock[]) {
@@ -1009,10 +1009,10 @@ function selectBlocks(botData: BotData, blockPos: Point, playerId: number) {
 
 function updateWorldImportFinished(data: ProtoGen.WorldBlockPlacedPacket) {
   // Not really reliable, but good enough
-  if (usePWClientStore().totalBlocksLeftToReceiveFromWorldImport > 0) {
-    usePWClientStore().totalBlocksLeftToReceiveFromWorldImport -= data.positions.length
-    if (usePWClientStore().totalBlocksLeftToReceiveFromWorldImport <= 0) {
-      usePWClientStore().totalBlocksLeftToReceiveFromWorldImport = 0
+  if (usePwClientStore().totalBlocksLeftToReceiveFromWorldImport > 0) {
+    usePwClientStore().totalBlocksLeftToReceiveFromWorldImport -= data.positions.length
+    if (usePwClientStore().totalBlocksLeftToReceiveFromWorldImport <= 0) {
+      usePwClientStore().totalBlocksLeftToReceiveFromWorldImport = 0
     }
   }
 }

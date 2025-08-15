@@ -7,7 +7,7 @@ import { withLoading } from '@/service/LoaderProxyService.ts'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'
 import PiOverlay from '@/component/PiOverlay.vue'
-import { usePWClientStore } from '@/store/PWClientStore.ts'
+import { usePwClientStore } from '@/store/PwClientStore.ts'
 import { isEnvDevViewEnabled } from '@/util/Environment.ts'
 
 const loadingOverlay = ref(false)
@@ -41,11 +41,11 @@ async function onMidiFileChange(event: Event) {
     <v-col>
       <v-row class="align-center" style="gap: 0.5rem; flex-wrap: nowrap; white-space: nowrap">
         <input ref="importMidiFileInput" accept=".mid" style="display: none" type="file" @change="onMidiFileChange" />
-        <v-tooltip :disabled="usePWClientStore().isConnected" location="bottom" text="Requires connecting the bot">
+        <v-tooltip :disabled="usePwClientStore().isConnected" location="bottom" text="Requires connecting the bot">
           <template #activator="{ props }">
             <div style="width: 100%; display: flex; gap: 0.5rem" v-bind="props">
               <PiButton
-                :disabled="!usePWClientStore().isConnected"
+                :disabled="!usePwClientStore().isConnected"
                 color="blue"
                 style="flex: 1 1 auto; min-width: 0; display: inline-flex"
                 @click="onImportMidiButtonClick"
@@ -60,7 +60,7 @@ async function onMidiFileChange(event: Event) {
         <v-checkbox
           v-if="devViewEnabled"
           v-model="showColors"
-          :disabled="!usePWClientStore().isConnected"
+          :disabled="!usePwClientStore().isConnected"
           color="green"
           hide-details
           style="margin-bottom: -1rem; margin-left: 1rem"

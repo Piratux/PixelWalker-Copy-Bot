@@ -2,7 +2,7 @@ import { MessageService } from '@/service/MessageService.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
 import { GENERAL_CONSTANTS } from '@/constant/General.ts'
 import { GameError } from '@/class/GameError.ts'
-import { usePWClientStore } from '@/store/PWClientStore.ts'
+import { usePwClientStore } from '@/store/PwClientStore.ts'
 
 export function getExceptionDescription(exception: unknown): string {
   if (exception instanceof Error) {
@@ -18,7 +18,7 @@ export function handleException(exception: unknown): void {
   MessageService.error(exceptionDescription)
 
   if (exception instanceof GameError) {
-    if (usePWClientStore().isConnected) {
+    if (usePwClientStore().isConnected) {
       sendGlobalChatMessage(GENERAL_CONSTANTS.GENERIC_ERROR)
     }
   }

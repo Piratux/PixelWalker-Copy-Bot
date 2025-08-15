@@ -1,9 +1,9 @@
 import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
 import { placeLayerDataBlocks } from '@/service/WorldService.ts'
-import { getPwGameWorldHelper } from '@/store/PWClientStore.ts'
+import { getPwGameWorldHelper } from '@/store/PwClientStore.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
-import { pwCheckEditWhenImporting, pwCreateEmptyBlocks } from '@/service/PWClientService.ts'
+import { pwCheckEditWhenImporting, pwCreateEmptyBlocks } from '@/service/PwClientService.ts'
 import { MessageService } from '@/service/MessageService.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
 import { PNG } from 'pngjs'
@@ -42,25 +42,25 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
   const pwMapHeight = getPwGameWorldHelper().height
 
   // optimizing the color-palette here could be improved a LOT, but it works.
-  let quantize_amt = 1
+  let quantizeAmt = 1
   if (quantize) {
     const MAX_COLORS = 1024
     const uniqueColors = new Set<number>()
-    while (quantize_amt <= 64) {
+    while (quantizeAmt <= 64) {
       uniqueColors.clear()
       for (let x = 0; x < png.width; x++) {
         for (let y = 0; y < png.height; y++) {
           const idx = (png.width * y + x) << 2
           const alpha = png.data[idx + 3]
-          const r = quantizeAndClamp(png.data[idx], quantize_amt, alpha)
-          const g = quantizeAndClamp(png.data[idx + 1], quantize_amt, alpha)
-          const b = quantizeAndClamp(png.data[idx + 2], quantize_amt, alpha)
+          const r = quantizeAndClamp(png.data[idx], quantizeAmt, alpha)
+          const g = quantizeAndClamp(png.data[idx + 1], quantizeAmt, alpha)
+          const b = quantizeAndClamp(png.data[idx + 2], quantizeAmt, alpha)
           const hex = b + (g << 8) + (r << 16)
           uniqueColors.add(hex)
         }
       }
       if (uniqueColors.size <= MAX_COLORS) break
-      quantize_amt *= 2
+      quantizeAmt *= 2
     }
   }
 
@@ -72,9 +72,9 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
       if (x < png.width && y < png.height) {
         const idx = (png.width * y + x) << 2
         const alpha = png.data[idx + 3]
-        const r = quantizeAndClamp(png.data[idx], quantize_amt, alpha)
-        const g = quantizeAndClamp(png.data[idx + 1], quantize_amt, alpha)
-        const b = quantizeAndClamp(png.data[idx + 2], quantize_amt, alpha)
+        const r = quantizeAndClamp(png.data[idx], quantizeAmt, alpha)
+        const g = quantizeAndClamp(png.data[idx + 1], quantizeAmt, alpha)
+        const b = quantizeAndClamp(png.data[idx + 2], quantizeAmt, alpha)
         const hex = b + (g << 8) + (r << 16)
 
         if (!colorMap.has(hex)) {
@@ -97,8 +97,8 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
   return blocks
 }
 
-function quantizeAndClamp(value: number, quantize_amt: number, alpha: number): number {
+function quantizeAndClamp(value: number, quantizeAmt: number, alpha: number): number {
   // Blend with black based on alpha
   const blended = Math.round((value * alpha) / 255)
-  return Math.max(0, Math.min(255, Math.round(blended / quantize_amt) * quantize_amt))
+  return Math.max(0, Math.min(255, Math.round(blended / quantizeAmt) * quantizeAmt))
 }

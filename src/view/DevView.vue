@@ -9,7 +9,7 @@ import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'
 import { createAsyncCallback } from '@/util/Promise.ts'
 import PiOverlay from '@/component/PiOverlay.vue'
-import { usePWClientStore } from '@/store/PWClientStore.ts'
+import { usePwClientStore } from '@/store/PwClientStore.ts'
 
 const loadingOverlay = ref(false)
 
@@ -45,10 +45,10 @@ async function onPwlvlFileChange(event: Event) {
   <PiCardContainer>
     <v-col>
       <v-row>
-        <v-tooltip :disabled="usePWClientStore().isConnected" location="bottom" text="Requires connecting the bot">
+        <v-tooltip :disabled="usePwClientStore().isConnected" location="bottom" text="Requires connecting the bot">
           <template #activator="{ props }">
             <div style="width: 100%" v-bind="props">
-              <PiButton :disabled="!usePWClientStore().isConnected" color="blue" @click="onExportPwlvlButtonClick">
+              <PiButton :disabled="!usePwClientStore().isConnected" color="blue" @click="onExportPwlvlButtonClick">
                 Export to PWLVL
               </PiButton>
             </div>
@@ -63,10 +63,10 @@ async function onPwlvlFileChange(event: Event) {
           type="file"
           @change="onPwlvlFileChange"
         />
-        <v-tooltip :disabled="usePWClientStore().isConnected" location="bottom" text="Requires connecting the bot">
+        <v-tooltip :disabled="usePwClientStore().isConnected" location="bottom" text="Requires connecting the bot">
           <template #activator="{ props }">
             <div style="width: 100%" v-bind="props">
-              <PiButton :disabled="!usePWClientStore().isConnected" color="blue" @click="onImportPwlvlButtonClick">
+              <PiButton :disabled="!usePwClientStore().isConnected" color="blue" @click="onImportPwlvlButtonClick">
                 Import from PWLVL
               </PiButton>
             </div>

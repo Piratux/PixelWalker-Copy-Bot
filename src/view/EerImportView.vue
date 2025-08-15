@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'
 import PiOverlay from '@/component/PiOverlay.vue'
-import { usePWClientStore } from '@/store/PWClientStore.ts'
+import { usePwClientStore } from '@/store/PwClientStore.ts'
 import PiTextField from '@/component/PiTextField.vue'
 import { VForm } from 'vuetify/components'
 import { withLoading } from '@/service/LoaderProxyService.ts'
@@ -30,10 +30,10 @@ async function onImportEerButtonClick() {
         <v-row>
           <PiTextField v-model="eerRoomId" :required="true" label="EER Room ID (type /roomid to get it)"></PiTextField>
         </v-row>
-        <v-tooltip :disabled="usePWClientStore().isConnected" location="bottom" text="Requires connecting the bot">
+        <v-tooltip :disabled="usePwClientStore().isConnected" location="bottom" text="Requires connecting the bot">
           <template #activator="{ props }">
             <div style="width: 100%" v-bind="props">
-              <PiButton :disabled="!usePWClientStore().isConnected" color="green" type="submit"
+              <PiButton :disabled="!usePwClientStore().isConnected" color="green" type="submit"
                 >Import from EER
               </PiButton>
             </div>

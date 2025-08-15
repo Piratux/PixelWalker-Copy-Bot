@@ -3,7 +3,7 @@
   <v-app-bar color="primary">
     <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
     <v-toolbar-title>PixelWalker copy bot</v-toolbar-title>
-    <v-btn v-if="!usePWClientStore().isConnected" icon @click="handleRouting(LoginViewRoute.name)">
+    <v-btn v-if="!usePwClientStore().isConnected" icon @click="handleRouting(LoginViewRoute.name)">
       <v-icon icon="mdi-login"></v-icon>
       <v-tooltip activator="parent">Connect</v-tooltip>
     </v-btn>
@@ -39,7 +39,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { DevViewRoute, LoginViewRoute } from '@/router/Routes.ts'
 import { isEnvDevViewEnabled } from '@/util/Environment.ts'
 import { withLoading } from '@/service/LoaderProxyService.ts'
-import { getPwGameClient, usePWClientStore } from '@/store/PWClientStore.ts'
+import { getPwGameClient, usePwClientStore } from '@/store/PwClientStore.ts'
 import { resetAllStores } from '@/plugin/ResetStore.ts'
 import PiOverlay from '@/component/PiOverlay.vue'
 

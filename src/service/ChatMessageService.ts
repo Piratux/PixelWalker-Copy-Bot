@@ -1,4 +1,4 @@
-import { getPwGameClient } from '@/store/PWClientStore.ts'
+import { getPwGameClient } from '@/store/PwClientStore.ts'
 
 export function sendPrivateChatMessage(message: string, playerId: number) {
   sendMessage(`/pm #${playerId} [BOT] ${message}`)
