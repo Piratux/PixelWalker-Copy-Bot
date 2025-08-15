@@ -1,10 +1,12 @@
+import { bufferToArrayBuffer } from '@/util/Buffers.ts'
+
 export interface FileImportAsArrayBufferResult {
   data: ArrayBuffer
   file: File
 }
 
 export function downloadFile(buffer: Buffer, fileName: string) {
-  const blob = new Blob([buffer])
+  const blob = new Blob([bufferToArrayBuffer(buffer)])
   const url = window.URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

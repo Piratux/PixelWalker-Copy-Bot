@@ -43,6 +43,7 @@ import { GameError } from '@/class/GameError.ts'
 import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
 import type { WorldEventNames } from 'pw-js-api'
 import { Promisable } from '@/util/Promise'
+import { bufferToArrayBuffer } from '@/util/Buffers.ts'
 
 interface CallbackEntry {
   name: WorldEventNames
@@ -327,7 +328,7 @@ async function importCommandReceived(args: string[], playerId: number) {
         allBlocks = convertDeserializedStructureToWorldBlocks(blocks, vec2(destToX, destToY))
       } else {
         const emptyBlocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
-        const worldData = getImportedFromPwlvlData(blocks.toBuffer())
+        const worldData = getImportedFromPwlvlData(bufferToArrayBuffer(blocks.toBuffer()))
         const emptyBlocksWorldBlocks = convertDeserializedStructureToWorldBlocks(emptyBlocks)
         const worldDataWorldBlocks = convertDeserializedStructureToWorldBlocks(worldData)
         allBlocks = mergeWorldBlocks(emptyBlocksWorldBlocks, worldDataWorldBlocks)

@@ -18,6 +18,7 @@ import { placeMultipleBlocks } from '@/service/WorldService.ts'
 import { getPwBlocksByEerParameters, getPwBlocksByPwName } from '@/store/PwClientStore.ts'
 import { uint32ToInt32 } from '@/util/Numbers.ts'
 import PlayerIOClient from 'playerioclient'
+import { bufferToArrayBuffer } from '@/util/Buffers.ts'
 
 interface EerBlock {
   type: number
@@ -352,6 +353,6 @@ export async function importFromEer(eerRoomId: string) {
 
   // TODO: check if worlddata exists, because if not, it means world has not been edited/saved?
   const [eelvlData, pwData] = getImportedFromEerAsEelvlAndPwData(world)
-  await importFromEelvl(eelvlData)
+  await importFromEelvl(bufferToArrayBuffer(eelvlData))
   await placeMultipleBlocks(pwData)
 }

@@ -22,6 +22,7 @@ import { getPwGameClient, getPwGameWorldHelper, usePwClientStore } from '@/store
 import { CustomBotEvents, PWApiClient, PWGameClient, WorldEventNames } from 'pw-js-api'
 import { PWGameWorldHelper } from 'pw-js-world'
 import waitUntil from 'async-wait-until'
+import { bufferToArrayBuffer } from '@/util/Buffers.ts'
 
 export async function performRuntimeTests() {
   sendGlobalChatMessage('[TEST] Performing runtime tests...')
@@ -62,7 +63,7 @@ async function testEelvlExportWithEelvlData() {
   const expectedData = await getDataFromPwlvlFile(everyBlockExportedEelvlPwlvlFile)
 
   const [exportEelvlDataBuffer] = getExportedToEelvlData(expectedData)
-  const receivedData = getImportedFromEelvlData(exportEelvlDataBuffer)
+  const receivedData = getImportedFromEelvlData(bufferToArrayBuffer(exportEelvlDataBuffer))
 
   compareDeserialisedStructureData(receivedData, expectedData)
 }
@@ -71,7 +72,7 @@ async function testEelvlExportWithPwlvlData() {
   const pwlvlData = await getDataFromPwlvlFile(everyBlockOriginalPwlvlFile)
 
   const [exportPwlvlDataBuffer] = getExportedToEelvlData(pwlvlData)
-  const receivedData = getImportedFromEelvlData(exportPwlvlDataBuffer)
+  const receivedData = getImportedFromEelvlData(bufferToArrayBuffer(exportPwlvlDataBuffer))
 
   const expectedData = await getDataFromPwlvlFile(everyBlockExportedEelvlPwlvlFile)
 
