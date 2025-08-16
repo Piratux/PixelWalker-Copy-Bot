@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-08-16 Version 1.7.1
+- Bot: Updated to work with PixelWalker version 0.24.0-alpha
+
 2025-08-12 Version 1.7.0
 - Bot: Improved .edit command, by immediately pasting changed blocks.
 
