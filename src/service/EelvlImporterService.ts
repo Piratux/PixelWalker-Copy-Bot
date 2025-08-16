@@ -252,30 +252,6 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
       return getEelvlToPwNoteBlock(eelvlBlock, PwBlockName.NOTE_PIANO)
     case EelvlBlockId.NOTE_GUITAR:
       return getEelvlToPwNoteBlock(eelvlBlock, PwBlockName.NOTE_GUITAR)
-    // TODO: Awaiting fix
-    case EelvlBlockId.BORDER_GLOW_CUP_LEFT:
-      switch (eelvlBlock.intParameter) {
-        case 1:
-          return createBlock(PwBlockName.BORDER_GLOW_CUP_RIGHT)
-        case 2:
-          return createBlock(PwBlockName.BORDER_GLOW_CUP_BOTTOM)
-        case 3:
-          return createBlock(PwBlockName.BORDER_GLOW_CUP_LEFT)
-        case 0:
-          return createBlock(PwBlockName.BORDER_GLOW_CUP_TOP)
-        default:
-          return createBlock(PwBlockName.EMPTY)
-      }
-    // TODO: Awaiting fix
-    case EelvlBlockId.BORDER_GLOW_STRAIGHT_HORIZONTAL:
-      switch (eelvlBlock.intParameter) {
-        case 1:
-          return createBlock(PwBlockName.BORDER_GLOW_STRAIGHT_HORIZONTAL)
-        case 0:
-          return createBlock(PwBlockName.BORDER_GLOW_STRAIGHT_VERTICAL)
-        default:
-          return createBlock(PwBlockName.EMPTY)
-      }
     // NOTE: PW Devs will not fix this
     case EelvlBlockId.CHRISTMAS_GIFT_HALF_RED:
       return createBlock(PwBlockName.CHRISTMAS_GIFT_HALF_RED)

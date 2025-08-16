@@ -255,24 +255,6 @@ function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock {
     // NOTE: PW Devs will not fix this
     case PwBlockName.CHRISTMAS_GIFT_HALF_YELLOW:
       return { blockId: EelvlBlockId.CHRISTMAS_GIFT_HALF_YELLOW, intParameter: 1 }
-    // TODO: Awaiting fix
-    case PwBlockName.BORDER_GLOW_CUP_LEFT:
-      return { blockId: EelvlBlockId.BORDER_GLOW_CUP_LEFT, intParameter: 3 }
-    // TODO: Awaiting fix
-    case PwBlockName.BORDER_GLOW_CUP_RIGHT:
-      return { blockId: EelvlBlockId.BORDER_GLOW_CUP_LEFT, intParameter: 1 }
-    // TODO: Awaiting fix
-    case PwBlockName.BORDER_GLOW_CUP_TOP:
-      return { blockId: EelvlBlockId.BORDER_GLOW_CUP_LEFT, intParameter: 0 }
-    // TODO: Awaiting fix
-    case PwBlockName.BORDER_GLOW_CUP_BOTTOM:
-      return { blockId: EelvlBlockId.BORDER_GLOW_CUP_LEFT, intParameter: 2 }
-    // TODO: Awaiting fix
-    case PwBlockName.BORDER_GLOW_STRAIGHT_HORIZONTAL:
-      return { blockId: EelvlBlockId.BORDER_GLOW_STRAIGHT_HORIZONTAL, intParameter: 1 }
-    // TODO: Awaiting fix
-    case PwBlockName.BORDER_GLOW_STRAIGHT_VERTICAL:
-      return { blockId: EelvlBlockId.BORDER_GLOW_STRAIGHT_HORIZONTAL, intParameter: 0 }
     default: {
       const mappedPwBlock = getPwBlocksByPwId()[pwBlock.bId]
 
