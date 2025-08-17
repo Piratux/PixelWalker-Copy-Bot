@@ -1,6 +1,6 @@
 import { getPwGameWorldHelper, usePwClientStore } from '@/store/PwClientStore.ts'
 import { downloadFile } from '@/service/FileService.ts'
-import { EelvlFileHeader } from '@/type/WorldData.ts'
+import { EelvlFileHeader } from '@/type/EelvlFileHeader.ts'
 import { getAllWorldBlocks } from '@/service/PwClientService.ts'
 
 export function getExportedToPwlvlData(): [Buffer, string] {
