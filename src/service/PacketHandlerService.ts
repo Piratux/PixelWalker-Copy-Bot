@@ -661,13 +661,18 @@ function editIdCommand(args: string[], playerId: number): WorldBlock[] {
     return []
   }
 
-  if (searchForId === 0 || replaceWithId === 0) {
-    sendPrivateChatMessage(`ERROR! find or replace id=0 is not allowed`, playerId)
+  if (searchForId === 0) {
+    sendPrivateChatMessage(`ERROR! find id=0 is not allowed`, playerId)
     return []
   }
 
   const searchForBlock = blocksById[searchForId]
   const replaceWithBlock = blocksById[replaceWithId]
+
+  if (replaceWithId === 0) {
+    replaceWithBlock.Layer = searchForBlock.Layer
+  }
+
   if (searchForBlock.Layer !== replaceWithBlock.Layer) {
     sendPrivateChatMessage(`ERROR! find and replace block layers must match`, playerId)
     return []

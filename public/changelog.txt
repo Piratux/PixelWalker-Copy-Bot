@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-08-21 Version 1.7.2
+- Bot: Allow .edit id to replace blocks to air (empty).
+
 2025-08-16 Version 1.7.1
 - Bot: Updated to work with PixelWalker version 0.24.0-alpha
 
