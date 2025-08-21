@@ -19,6 +19,7 @@
     "@mdi/font": "^7.4.47",
     "@tonejs/midi": "^2.0.28",
     "async-wait-until": "^2.0.27",
+    "eslint-plugin-vue": "^10.4.0",
     "iconv-lite": "^0.6.3",
     "izitoast": "^1.4.0",
     "lodash-es": "^4.17.21",
