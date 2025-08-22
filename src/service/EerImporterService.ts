@@ -92,7 +92,7 @@ function getBlockArgs(eerBlockId: number, eerBlock: EerBlock): EerBlockEntry {
     case EerBlockId.SIGN_NORMAL:
       return [eerBlock.text, eerBlock.signtype]
     case EerBlockId.PORTAL_WORLD:
-      return [eerBlock.target, eerBlock.id]
+      return [eerBlock.target, eerBlock.id ?? 0] // For unknown reason id might be missing
     case EerBlockId.LABEL:
       return [eerBlock.text, eerBlock.text_color, eerBlock.wrapLength]
     case EerBlockId.NOTE_PIANO:
