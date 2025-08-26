@@ -41,16 +41,9 @@ import { getWorldIdIfUrl } from '@/service/WorldIdExtractorService.ts'
 import { handleException } from '@/util/Exception.ts'
 import { GameError } from '@/class/GameError.ts'
 import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
-import type { WorldEventNames } from 'pw-js-api'
-import { Promisable } from '@/util/Promise'
 import { bufferToArrayBuffer } from '@/util/Buffers.ts'
+import { CallbackEntry } from '@/type/CallbackEntry.ts'
 
-interface CallbackEntry {
-  name: WorldEventNames
-  // we disable any here because there is no reasonable way to represent the generic packet arguments that properly interfaces with pw-js-api
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  fn: (...args: any) => Promisable<void | 'STOP'>
-}
 const callbacks: CallbackEntry[] = [
   { name: 'playerInitPacket', fn: playerInitPacketReceived },
   { name: 'worldBlockPlacedPacket', fn: worldBlockPlacedPacketReceived },
@@ -108,6 +101,9 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
   switch (args[0].toLowerCase()) {
     case '.placeall':
       await placeallCommandReceived(args, playerId)
+      break
+    case '.placeallbombot':
+      await placeallbombotCommandReceived(args, playerId)
       break
     case '.ping':
       sendPrivateChatMessage('pong', playerId)
@@ -236,6 +232,69 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
         }
       }
     }
+  }
+}
+
+async function placeallbombotCommandReceived(_args: string[], playerId: number) {
+  if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+    return
+  }
+
+  if (!isDeveloper(playerId)) {
+    sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
+    return
+  }
+
+  const startPos = vec2(20, 361)
+  const endPos = vec2(389, 361)
+  const currentPos = cloneDeep(startPos)
+  const sortedListBlocks = getPwBlocks()
+  const worldBlocks = []
+  // let i = 0
+  for (const singleBlock of sortedListBlocks) {
+    // i += 1
+    // const total = 2
+    // if (i > total) {
+    //   sendPrivateChatMessage(`Successfully placed ${total} bombot non background blocks`, playerId)
+    //   break
+    // }
+
+    if ((singleBlock.Layer as LayerType) === LayerType.Background) {
+      continue
+    }
+    if (currentPos.x >= endPos.x) {
+      currentPos.x = startPos.x
+      currentPos.y += 3
+    }
+
+    const pos = cloneDeep(currentPos)
+    let worldBlock: WorldBlock
+    if ((singleBlock.PaletteId as PwBlockName) === PwBlockName.PORTAL_WORLD) {
+      worldBlock = {
+        block: new Block(singleBlock.Id, ['ewki341n7ve153l', 0]),
+        layer: singleBlock.Layer,
+        pos,
+      }
+    } else if (blockIsPortal(singleBlock.PaletteId)) {
+      worldBlock = { block: new Block(singleBlock.Id, ['0', '0']), layer: singleBlock.Layer, pos }
+    } else {
+      worldBlock = { block: new Block(singleBlock.Id), layer: singleBlock.Layer, pos }
+    }
+    worldBlocks.push(worldBlock)
+    currentPos.x += 1
+
+    for (let layer = 0; layer < TOTAL_PW_LAYERS; layer++) {
+      if (layer !== singleBlock.Layer) {
+        worldBlocks.push({ block: new Block(0), layer, pos })
+      }
+    }
+  }
+
+  const success = await placeMultipleBlocks(worldBlocks)
+  if (success) {
+    sendPrivateChatMessage('Successfully placed all bombot non background blocks', playerId)
+  } else {
+    sendPrivateChatMessage('ERROR! Failed to place all blocks', playerId)
   }
 }
 

@@ -22,6 +22,9 @@
       <v-list-item v-if="devViewEnabled" link @click="handleRouting(DevViewRoute.path)">
         <v-list-item-title>Developer tools</v-list-item-title>
       </v-list-item>
+      <v-list-item v-if="devViewEnabled" link @click="handleRouting(HostBombotViewRoute.path)">
+        <v-list-item-title>Host Bombot</v-list-item-title>
+      </v-list-item>
       <v-list-item link @click="openChangelog">
         <v-list-item-title>Changelog</v-list-item-title>
       </v-list-item>
@@ -36,7 +39,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { MENU_ITEMS } from '@/constant/MenuItems.ts'
 import { useRoute, useRouter } from 'vue-router'
-import { DevViewRoute, LoginViewRoute } from '@/router/Routes.ts'
+import { DevViewRoute, HostBombotViewRoute, LoginViewRoute } from '@/router/Routes.ts'
 import { isEnvDevViewEnabled } from '@/util/Environment.ts'
 import { withLoading } from '@/service/LoaderProxyService.ts'
 import { getPwGameClient, usePwClientStore } from '@/store/PwClientStore.ts'

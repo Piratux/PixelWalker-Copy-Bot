@@ -7,7 +7,7 @@ import { getPwApiClient, getPwGameClient, getPwGameWorldHelper, usePwClientStore
 import { sendGlobalChatMessage, sendPrivateChatMessage } from '@/service/ChatMessageService.ts'
 import { GameError } from '@/class/GameError.ts'
 import waitUntil, { TimeoutError } from 'async-wait-until'
-import { registerCallbacks } from '@/service/PacketHandlerService.ts'
+import { registerCallbacks } from '@/service/CopyToolsPacketHandlerService.ts'
 import ManyKeysMap from 'many-keys-map'
 import { EER_MAPPINGS } from '@/eer/EerMappings.ts'
 
