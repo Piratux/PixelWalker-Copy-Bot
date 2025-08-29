@@ -1,5 +1,4 @@
 import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
-import { vec2 } from '@basementuniverse/vec'
 import { placeWorldDataBlocks } from '@/service/WorldService.ts'
 import { getPwGameWorldHelper } from '@/store/PwClientStore.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
@@ -24,7 +23,7 @@ export async function importFromMidi(fileData: ArrayBuffer, showColors: boolean)
     return
   }
 
-  const success = await placeWorldDataBlocks(worldData, vec2(0, 0))
+  const success = await placeWorldDataBlocks(worldData)
 
   if (success) {
     message = 'Finished importing midi.'

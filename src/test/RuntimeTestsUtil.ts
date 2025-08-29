@@ -4,7 +4,6 @@ import { deepStrictEqual } from 'node:assert'
 import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
 import { getImportedFromEelvlData } from '@/service/EelvlImporterService.ts'
 import { placeWorldDataBlocks } from '@/service/WorldService.ts'
-import { vec2 } from '@basementuniverse/vec'
 import { GameError } from '@/class/GameError.ts'
 import { pwClearWorld } from '@/service/PwClientService.ts'
 import { getImportedFromPngData } from '@/service/PngImporterService.ts'
@@ -62,7 +61,7 @@ export async function placePwLvlblocks(fileUrl: string): Promise<DeserialisedStr
   await pwClearWorld()
 
   const expectedData = await getDataFromPwlvlFile(fileUrl)
-  const success = await placeWorldDataBlocks(expectedData, vec2(0, 0))
+  const success = await placeWorldDataBlocks(expectedData)
   if (!success) {
     throw new GameError('Failed to place all blocks')
   }

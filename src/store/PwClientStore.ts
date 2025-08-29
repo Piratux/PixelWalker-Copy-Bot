@@ -3,6 +3,7 @@ import { ListBlockResult, PWApiClient, PWGameClient } from 'pw-js-api'
 import { PWGameWorldHelper } from 'pw-js-world'
 import { Raw, ref } from 'vue'
 import ManyKeysMap from 'many-keys-map'
+import { BotType } from '@/enum/BotType.ts'
 
 export const usePwClientStore = defineStore('PwClientStore', () => {
   const pwGameClient = ref<Raw<PWGameClient> | undefined>(undefined)
@@ -12,6 +13,7 @@ export const usePwClientStore = defineStore('PwClientStore', () => {
   const email = ref<string>('')
   const password = ref<string>('')
   const secretEditKey = ref<string>('')
+  const botType = ref<BotType>(BotType.COPY_BOT)
   const totalBlocksLeftToReceiveFromWorldImport = ref<number>(0)
   const blocks = ref<ListBlockResult[]>([]) // sorted and uppercased blocks
   const blocksByPwId = ref<Record<number, ListBlockResult>>({})
@@ -28,6 +30,7 @@ export const usePwClientStore = defineStore('PwClientStore', () => {
     email,
     password,
     secretEditKey,
+    botType,
     totalBlocksLeftToReceiveFromWorldImport,
     blocks,
     blocksByPwId,
@@ -70,4 +73,8 @@ export function getPwBlocksByEelvlParameters(): ManyKeysMap<number[], ListBlockR
 
 export function getPwBlocksByEerParameters(): ManyKeysMap<number[], ListBlockResult> {
   return usePwClientStore().blocksByEerParameters
+}
+
+export function getPwBotType(): BotType {
+  return usePwClientStore().botType
 }

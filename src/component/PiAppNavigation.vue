@@ -23,7 +23,7 @@
         <v-list-item-title>Developer tools</v-list-item-title>
       </v-list-item>
       <v-list-item v-if="devViewEnabled" link @click="handleRouting(HostBombotViewRoute.path)">
-        <v-list-item-title>Host Bombot</v-list-item-title>
+        <v-list-item-title>Host BomBot</v-list-item-title>
       </v-list-item>
       <v-list-item link @click="openChangelog">
         <v-list-item-title>Changelog</v-list-item-title>

@@ -12,12 +12,18 @@ import { HomeViewRoute } from '@/router/Routes.ts'
 import { withLoading } from '@/service/LoaderProxyService.ts'
 import PiOverlay from '@/component/PiOverlay.vue'
 import { getEnvDefaultWorldId } from '@/util/Environment.ts'
+import { BotType } from '@/enum/BotType.ts'
 
 const loadingOverlay = ref(false)
 const email = ref('')
 const password = ref('')
 const worldId = ref('')
 const secretEditKey = ref('')
+const botType = ref(BotType.COPY_BOT)
+const botTypeItems = [
+  { title: 'Copy Bot', value: BotType.COPY_BOT },
+  { title: 'BomBot', value: BotType.BOM_BOT },
+]
 const form = ref<VForm>()
 
 const router = useRouter()
@@ -38,8 +44,9 @@ async function onConnectButtonClick() {
     usePwClientStore().email = email.value
     usePwClientStore().password = password.value
     usePwClientStore().secretEditKey = secretEditKey.value
+    usePwClientStore().botType = botType.value
 
-    await initPwClasses()
+    await initPwClasses(botType.value)
 
     await router.push({ name: HomeViewRoute.name })
     usePwClientStore().isConnected = true
@@ -68,6 +75,9 @@ function setDefaultWorldIdButtonClicked() {
         <v-row>
           <PiTextField v-model="secretEditKey" label="Secret Edit Key (Optional)"></PiTextField>
         </v-row>
+        <v-row v-if="devViewEnabled">
+          <v-select v-model="botType" :items="botTypeItems" label="Bot type"></v-select>
+        </v-row>
         <v-row> To use this bot, you need to use PixelWalker login credentials.</v-row>
         <v-row>
           Although this site does not collect login credential information, to feel safer, you can create second
@@ -76,10 +86,8 @@ function setDefaultWorldIdButtonClicked() {
         <v-row>
           <PiButton color="green" type="submit">Connect</PiButton>
         </v-row>
-        <v-row>
-          <PiButton v-if="devViewEnabled" color="blue" @click="setDefaultWorldIdButtonClicked"
-            >Set default world id
-          </PiButton>
+        <v-row v-if="devViewEnabled">
+          <PiButton color="blue" @click="setDefaultWorldIdButtonClicked">Set default world id </PiButton>
         </v-row>
       </v-col>
     </v-form>
