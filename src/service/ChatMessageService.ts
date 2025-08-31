@@ -1,17 +1,18 @@
 import { getPwGameClient } from '@/store/PwClientStore.ts'
 
 export function sendPrivateChatMessage(message: string, playerId: number) {
-  sendMessage(`/pm #${playerId} [BOT] ${message}`)
+  sendRawMessage(`/pm #${playerId} [BOT] ${message}`)
 }
 
 export function sendGlobalChatMessage(message: string) {
-  sendMessage(`[BOT] ${message}`)
+  sendRawMessage(`[BOT] ${message}`)
 }
 
-function sendMessage(message: string) {
+export function sendRawMessage(message: string) {
+  // TODO: Check how message length is calculated with UTF symbols now being allowed
   let finalMessage = message
-  if (finalMessage.length > 120) {
-    console.error(`ERROR! Trying to send message '${message}'. Message too long. Max message length is 120 characters`)
+  if (finalMessage.length > 150) {
+    console.error(`ERROR! Trying to send message '${message}'. Message too long. Max message length is 150 characters`)
     finalMessage = 'ERROR! Message too long!'
   }
   getPwGameClient().send('playerChatPacket', {

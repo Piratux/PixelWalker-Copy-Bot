@@ -180,13 +180,7 @@ export function portalIdToNumber(portalId: string): number | undefined {
   return portalIdIsInteger && portalIdHasNoLeadingZeros ? parseInt(portalId) : undefined
 }
 
-export async function getAnotherWorldBlocks(
-  worldId: string,
-  startX?: number,
-  startY?: number,
-  endX?: number,
-  endY?: number,
-): Promise<DeserialisedStructure | null> {
+export async function getAnotherWorldBlocks(worldId: string): Promise<DeserialisedStructure | null> {
   const pwApiClient = new PWApiClient(usePwClientStore().email, usePwClientStore().password)
 
   try {
@@ -202,15 +196,11 @@ export async function getAnotherWorldBlocks(
   let copyFromAnotherWorldFinished = false
   let blocksResult: DeserialisedStructure | null = null
 
-  const partialImportUsed = startX !== undefined && startY !== undefined && endX !== undefined && endY !== undefined
-
   pwGameClient.addHook(pwGameWorldHelper.receiveHook).addCallback('playerInitPacket', () => {
     try {
       pwGameClient.send('playerInitReceived')
 
-      blocksResult = partialImportUsed
-        ? pwGameWorldHelper.sectionBlocks(startX, startY, endX, endY)
-        : getAllWorldBlocks(pwGameWorldHelper)
+      blocksResult = getAllWorldBlocks(pwGameWorldHelper)
     } catch (e) {
       handleException(e)
     } finally {
@@ -228,4 +218,48 @@ export async function getAnotherWorldBlocks(
 
   await waitUntil(() => copyFromAnotherWorldFinished, { timeout: 10000, intervalBetweenAttempts: 1000 })
   return blocksResult
+}
+
+// Inclusive on both ends
+export function getDeserialisedStructureSection(
+  blocks: DeserialisedStructure,
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+): DeserialisedStructure {
+  if (startX > endX) {
+    throw new Error('Starting X is greater than ending X')
+  }
+  if (startY > endY) {
+    throw new Error('Starting Y is greater than ending Y')
+  }
+
+  const blocksResult = new DeserialisedStructure([[], [], []], { width: endX - startX + 1, height: endY - startY + 1 })
+  for (let l = 0; l < TOTAL_PW_LAYERS; l++) {
+    for (let x = startX, width = Math.min(endX, blocks.blocks[l].length); x <= width; x++) {
+      blocksResult.blocks[l][x - startX] = []
+      for (let y = startY, height = Math.min(endY, blocks.blocks[l][x].length); y <= height; y++) {
+        blocksResult.blocks[l][x - startX][y - startY] = blocks.blocks[l][x][y].clone()
+      }
+    }
+  }
+  return blocksResult
+}
+
+// Inclusive on both ends
+export function getDeserialisedStructureSectionVec2(
+  blocks: DeserialisedStructure,
+  startPos: vec2,
+  endPos: vec2,
+): DeserialisedStructure {
+  return getDeserialisedStructureSection(blocks, startPos.x, startPos.y, endPos.x, endPos.y)
+}
+
+export function applyPosOffsetForBlocks(offsetPos: Point, worldBlocks: WorldBlock[]) {
+  return worldBlocks.map((worldBlock) => {
+    const clonedBlock = cloneDeep(worldBlock)
+    clonedBlock.pos = vec2.add(clonedBlock.pos, offsetPos)
+    return clonedBlock
+  })
 }

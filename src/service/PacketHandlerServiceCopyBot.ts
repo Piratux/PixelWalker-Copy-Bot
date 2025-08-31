@@ -15,6 +15,7 @@ import { WorldBlock } from '@/type/WorldBlock.ts'
 import { sendGlobalChatMessage, sendPrivateChatMessage } from '@/service/ChatMessageService.ts'
 import { vec2 } from '@basementuniverse/vec'
 import {
+  applyPosOffsetForBlocks,
   blockIsPortal,
   convertDeserializedStructureToWorldBlocks,
   getAnotherWorldBlocks,
@@ -22,6 +23,7 @@ import {
   getBlockIdFromString,
   getBlockLayer,
   getBlockName,
+  getDeserialisedStructureSection,
   placeMultipleBlocks,
   portalIdToNumber,
 } from '@/service/WorldService.ts'
@@ -30,8 +32,8 @@ import { PwBlockName } from '@/gen/PwBlockName.ts'
 import { performRuntimeTests } from '@/test/RuntimeTests.ts'
 import { ProtoGen } from 'pw-js-api'
 import {
+  commonPlayerInitPacketReceived,
   hotReloadCallbacks,
-  playerInitPacketReceived,
   pwCheckEdit,
   pwCreateEmptyBlocks,
 } from '@/service/PwClientService.ts'
@@ -46,7 +48,7 @@ import { CallbackEntry } from '@/type/CallbackEntry.ts'
 import { BotType } from '@/enum/BotType.ts'
 
 const callbacks: CallbackEntry[] = [
-  { name: 'playerInitPacket', fn: playerInitPacketReceived },
+  { name: 'playerInitPacket', fn: commonPlayerInitPacketReceived },
   { name: 'worldBlockPlacedPacket', fn: worldBlockPlacedPacketReceived },
   { name: 'playerChatPacket', fn: playerChatPacketReceived },
   { name: 'playerJoinedPacket', fn: playerJoinedPacketReceived },
@@ -281,14 +283,13 @@ async function importCommandReceived(args: string[], playerId: number) {
 
   sendGlobalChatMessage(`Importing world from ${worldId}`)
 
-  const blocks = partialImportUsed
-    ? await getAnotherWorldBlocks(worldId, srcFromX, srcFromY, srcToX, srcToY)
-    : await getAnotherWorldBlocks(worldId)
-
-  if (!blocks) {
+  const blocksFromAnotherWorld = await getAnotherWorldBlocks(worldId)
+  if (!blocksFromAnotherWorld) {
     sendGlobalChatMessage('ERROR! Failed to get blocks from another world.')
     return
   }
+
+  const blocks = getDeserialisedStructureSection(blocksFromAnotherWorld, srcFromX, srcFromY, srcToX, srcToY)
 
   let allBlocks: WorldBlock[]
   if (partialImportUsed) {
@@ -1097,14 +1098,6 @@ function blueCoinBlockPlaced(
       pasteBlocks(botData, blockPos)
     }
   }
-}
-
-function applyPosOffsetForBlocks(offsetPos: Point, worldBlocks: WorldBlock[]) {
-  return worldBlocks.map((worldBlock) => {
-    const clonedBlock = cloneDeep(worldBlock)
-    clonedBlock.pos = vec2.add(clonedBlock.pos, offsetPos)
-    return clonedBlock
-  })
 }
 
 function getMinMaxPos(pos1: Point, pos2: Point) {

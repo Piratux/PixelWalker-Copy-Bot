@@ -202,7 +202,7 @@ export function hotReloadCallbacks(callbacks: CallbackEntry[]) {
   sendGlobalChatMessage(message)
 }
 
-export function playerInitPacketReceived() {
+export function commonPlayerInitPacketReceived() {
   getPwGameClient().send('playerInitReceived')
   void pwEnterEditKey(getPwGameClient(), usePwClientStore().secretEditKey)
 }

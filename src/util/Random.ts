@@ -14,3 +14,8 @@ export function sleep(ms = 0): Promise<void> {
 export function setCustomTimeout(callback: () => void, ms = 0): void {
   workerSetTimeout(callback, ms)
 }
+
+// [min, max)
+export function getRandomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * max) + min
+}
