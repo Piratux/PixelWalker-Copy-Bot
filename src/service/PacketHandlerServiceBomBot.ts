@@ -54,7 +54,7 @@ export function registerBomBotCallbacks() {
   const helper = getPwGameWorldHelper()
   client.addHook(helper.receiveHook)
   client.addCallback('debug', console.log)
-  client.addCallback('error', handleException)
+  client.addCallback('error', handleBombotError)
   for (const cb of callbacks) {
     client.addCallback(cb.name, cb.fn)
   }
@@ -64,8 +64,10 @@ if (import.meta.hot) {
   import.meta.hot.on('vite:afterUpdate', ({}) => {
     if (getPwBotType() === BotType.BOM_BOT) {
       hotReloadCallbacks(callbacks)
+      if (useBomBotWorldStore().currentState !== BomBotState.STOPPED) {
+        void restartBomBot()
+      }
     }
-    // TODO: add hot reload for every second callback
   })
 }
 
@@ -81,6 +83,11 @@ function playerInitPacketReceived() {
 
 function removePlayerFromPlayersInGame(playerId: number) {
   useBomBotRoundStore().playersInGame = useBomBotRoundStore().playersInGame.filter((p) => p.playerId !== playerId)
+}
+
+async function handleBombotError(e: unknown) {
+  handleException(e)
+  await restartBomBot()
 }
 
 function playerMovedPacketReceived(data: ProtoGen.PlayerMovedPacket) {
@@ -148,7 +155,7 @@ function performBombAction(posX: number) {
   useBomBotRoundStore().lastBombPos = bombPos
   useBomBotRoundStore().secondsLeftBeforeBombMustBeRemoved = 2
 
-  updateavailablePlayerSpawnPositions()
+  updateAvailablePlayerSpawnPositions()
 }
 
 function disqualifyPlayerFromRound(playerId: number) {
@@ -198,7 +205,7 @@ function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
   if (!playerId) {
     return
   }
-  sendPrivateChatMessage('BomBot is here!', playerId)
+  sendPrivateChatMessage('BomBot is here! Type .start to start the round', playerId)
 }
 
 async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
@@ -394,8 +401,12 @@ function stopCommandReceived(_args: string[], playerId: number) {
     return
   }
 
+  stopBomBot()
+}
+
+function stopBomBot() {
+  sendGlobalChatMessage('Stopping BomBot...')
   useBomBotWorldStore().currentState = BomBotState.STOPPED
-  sendPrivateChatMessage('Stopping BomBot...', playerId)
   sendGlobalChatMessage('BomBot stopped!')
 }
 
@@ -414,17 +425,20 @@ async function startCommandReceived(_args: string[], playerId: number, loadWorld
     return
   }
 
+  await startBomBot(loadWorld)
+}
+
+async function startBomBot(loadWorld: boolean) {
   sendGlobalChatMessage('Starting Bombot...')
 
   useBomBotWorldStore().$reset()
-  useBomBotRoundStore().$reset()
 
   if (loadWorld) {
     await placeBomBotWorld()
   }
   await loadBomBotData()
 
-  useBomBotWorldStore().currentState = BomBotState.AWAITING_PLAYERS
+  useBomBotWorldStore().currentState = BomBotState.RESET_STORE
 
   sendGlobalChatMessage('Bombot started!')
   void everySecondUpdate()
@@ -435,8 +449,7 @@ async function everySecondUpdate(): Promise<void> {
     await everySecondBomBotUpdate()
   } catch (e) {
     handleException(e)
-    // TODO: auto restart
-    useBomBotWorldStore().currentState = BomBotState.STOPPED
+    await restartBomBot()
     return
   }
 
@@ -466,12 +479,12 @@ function playerWinRound(playerId: number) {
   sendRawMessage(`/givecrown #${playerId}`)
   sendRawMessage(`/team #${playerId} none`)
   sendGlobalChatMessage(`${getPwGameWorldHelper().getPlayer(playerId)?.username} wins!`)
-  useBomBotWorldStore().currentState = BomBotState.AWAITING_PLAYERS
+  useBomBotWorldStore().currentState = BomBotState.RESET_STORE
 }
 
 function abandonRoundDueToNoPlayersLeft() {
   sendGlobalChatMessage('No players left, ending round')
-  useBomBotWorldStore().currentState = BomBotState.AWAITING_PLAYERS
+  useBomBotWorldStore().currentState = BomBotState.RESET_STORE
 }
 
 function selectRandomBomber(): number {
@@ -494,20 +507,29 @@ async function everySecondBomBotUpdate() {
   switch (useBomBotWorldStore().currentState) {
     case BomBotState.STOPPED:
       return
+    case BomBotState.RESET_STORE:
+      useBomBotRoundStore().$reset()
+      useBomBotWorldStore().currentState = BomBotState.AWAITING_PLAYERS
+      return
     case BomBotState.AWAITING_PLAYERS: {
-      // sendGlobalChatMessage('[DEBUG] AWAITING_PLAYERS')
       const minimumPlayerCountRequiredToStartGame = 2
       const activePlayerCount = getActivePlayerCount()
-      // sendGlobalChatMessage(`[DEBUG] activePlayerCount: ${activePlayerCount}`)
       if (activePlayerCount >= minimumPlayerCountRequiredToStartGame) {
+        sendGlobalChatMessage(`A total of ${activePlayerCount} active players were found. Starting round...`)
         useBomBotWorldStore().currentState = BomBotState.PREPARING_FOR_NEXT_ROUND
         return
+      }
+
+      if (!useBomBotRoundStore().waitingForMorePlayersMessagePrintedOnce) {
+        useBomBotRoundStore().waitingForMorePlayersMessagePrintedOnce = true
+        sendGlobalChatMessage(
+          `Waiting for more players. Minimum of ${minimumPlayerCountRequiredToStartGame} active players are required to start the game`,
+        )
       }
       break
     }
     case BomBotState.PREPARING_FOR_NEXT_ROUND: {
-      sendGlobalChatMessage('[DEBUG] PREPARING_FOR_NEXT_ROUND')
-      useBomBotRoundStore().$reset()
+      // sendGlobalChatMessage('[DEBUG] PREPARING_FOR_NEXT_ROUND')
       if (!useBomBotWorldStore().playedOnce) {
         await placeBomBotMap(useBomBotWorldStore().bomBotMaps[0])
         useBomBotWorldStore().playedOnce = true
@@ -516,7 +538,7 @@ async function everySecondBomBotUpdate() {
         await placeBomBotMap(map)
       }
 
-      updateavailablePlayerSpawnPositions()
+      updateAvailablePlayerSpawnPositions()
 
       const activePlayers = getActivePlayers()
 
@@ -661,10 +683,11 @@ function disqualifyPlayerFromRoundBecauseAfk(playerId: number) {
   const afkPos = vec2(43, 58)
   sendRawMessage(`/tp #${playerId} ${afkPos.x} ${afkPos.y}`)
   sendRawMessage(`/team #${playerId} 1`)
+  sendPrivateChatMessage('You were disqualified from the round for being AFK', playerId)
   removePlayerFromPlayersInGame(playerId)
 }
 
-function updateavailablePlayerSpawnPositions() {
+function updateAvailablePlayerSpawnPositions() {
   // sendGlobalChatMessage('[DEBUG] Updating available spawn positions')
   const spawnAreaBottomRight = vec2.add(mapTopLeftPos, mapSize)
   const availablePlayerSpawnPositions: vec2[] = []
@@ -737,4 +760,10 @@ function loadBlockTypes(bombotBlocks: DeserialisedStructure) {
       }
     }
   }
+}
+
+async function restartBomBot() {
+  sendGlobalChatMessage('Restarting bombot...')
+  stopBomBot()
+  await startBomBot(false)
 }

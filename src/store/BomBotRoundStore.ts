@@ -18,6 +18,7 @@ export const useBomBotRoundStore = defineStore('BomBotRoundStore', () => {
   const secondsLeftBeforeBomberCanBomb = ref<number>(0) // prevent bomber from being to immediately place bombs
   const lastBombPos = ref<vec2>(vec2(0, 0))
   const bombAvailable = ref<boolean>(false) // prevent placing multiple bombs per bomber
+  const waitingForMorePlayersMessagePrintedOnce = ref<boolean>(false)
 
   return {
     availablePlayerSpawnPositions,
@@ -34,5 +35,6 @@ export const useBomBotRoundStore = defineStore('BomBotRoundStore', () => {
     secondsLeftBeforeBomberCanBomb,
     lastBombPos,
     bombAvailable,
+    waitingForMorePlayersMessagePrintedOnce,
   }
 })
