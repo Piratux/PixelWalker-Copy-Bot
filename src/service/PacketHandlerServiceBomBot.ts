@@ -17,7 +17,7 @@ import {
   placeMultipleBlocks,
   placeWorldDataBlocks,
 } from '@/service/WorldService.ts'
-import { GENERAL_CONSTANTS, TOTAL_PW_LAYERS } from '@/constant/General.ts'
+import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
 import { getWorldIdIfUrl } from '@/service/WorldIdExtractorService.ts'
 import { BotType } from '@/enum/BotType.ts'
 import { useBomBotWorldStore } from '@/store/BomBotWorldStore.ts'
@@ -54,6 +54,7 @@ export function registerBomBotCallbacks() {
   const helper = getPwGameWorldHelper()
   client.addHook(helper.receiveHook)
   client.addCallback('debug', console.log)
+  client.addCallback('error', handleException)
   for (const cb of callbacks) {
     client.addCallback(cb.name, cb.fn)
   }
@@ -204,66 +205,59 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
   const args = data.message.split(' ')
   const playerId = data.playerId!
 
-  try {
-    switch (args[0].toLowerCase()) {
-      case '.start':
-        await startCommandReceived(args, playerId, true)
-        break
-      case '.quickstart':
-        await startCommandReceived(args, playerId, false)
-        break
-      case '.stop':
-        stopCommandReceived(args, playerId)
-        break
-      case '.placeallbombot':
-        await placeallbombotCommandReceived(args, playerId)
-        break
-      case '.testcommand': {
-        if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
-          return
-        }
-
-        if (!isDeveloper(playerId)) {
-          sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
-          return
-        }
-        const roundStartTopLeftPos = vec2(35, 40)
-        sendRawMessage(`/tp piratux ${roundStartTopLeftPos.x} ${roundStartTopLeftPos.y}`)
-        break
+  switch (args[0].toLowerCase()) {
+    case '.start':
+      await startCommandReceived(args, playerId, true)
+      break
+    case '.quickstart':
+      await startCommandReceived(args, playerId, false)
+      break
+    case '.stop':
+      stopCommandReceived(args, playerId)
+      break
+    case '.placeallbombot':
+      await placeallbombotCommandReceived(args, playerId)
+      break
+    case '.testcommand': {
+      if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+        return
       }
-      case '.showspawnablepositions': {
-        if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
-          return
-        }
 
-        if (!isDeveloper(playerId)) {
-          sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
-          return
-        }
-
-        if (useBomBotRoundStore().availablePlayerSpawnPositions.length === 0) {
-          sendPrivateChatMessage('ERROR! No available spawn positions found', playerId)
-          return
-        }
-
-        const blocks: WorldBlock[] = useBomBotRoundStore().availablePlayerSpawnPositions.map((pos) => ({
-          pos: pos,
-          block: new Block(PwBlockName.TOOL_CHECKPOINT),
-          layer: LayerType.Foreground,
-        }))
-        await placeMultipleBlocks(blocks)
-        break
+      if (!isDeveloper(playerId)) {
+        sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
+        return
       }
-      default:
-        if (args[0].startsWith('.')) {
-          sendPrivateChatMessage('ERROR! Unrecognised command', playerId)
-        }
+      const roundStartTopLeftPos = vec2(35, 40)
+      sendRawMessage(`/tp piratux ${roundStartTopLeftPos.x} ${roundStartTopLeftPos.y}`)
+      break
     }
-  } catch (e) {
-    handleException(e)
-    sendPrivateChatMessage(GENERAL_CONSTANTS.GENERIC_ERROR, playerId)
-    useBomBotWorldStore().currentState = BomBotState.STOPPED
-    return
+    case '.showspawnablepositions': {
+      if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+        return
+      }
+
+      if (!isDeveloper(playerId)) {
+        sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
+        return
+      }
+
+      if (useBomBotRoundStore().availablePlayerSpawnPositions.length === 0) {
+        sendPrivateChatMessage('ERROR! No available spawn positions found', playerId)
+        return
+      }
+
+      const blocks: WorldBlock[] = useBomBotRoundStore().availablePlayerSpawnPositions.map((pos) => ({
+        pos: pos,
+        block: new Block(PwBlockName.TOOL_CHECKPOINT),
+        layer: LayerType.Foreground,
+      }))
+      await placeMultipleBlocks(blocks)
+      break
+    }
+    default:
+      if (args[0].startsWith('.')) {
+        sendPrivateChatMessage('ERROR! Unrecognised command', playerId)
+      }
   }
 }
 
@@ -441,7 +435,7 @@ async function everySecondUpdate(): Promise<void> {
     await everySecondBomBotUpdate()
   } catch (e) {
     handleException(e)
-    sendGlobalChatMessage(GENERAL_CONSTANTS.GENERIC_ERROR)
+    // TODO: auto restart
     useBomBotWorldStore().currentState = BomBotState.STOPPED
     return
   }

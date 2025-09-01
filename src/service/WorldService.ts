@@ -183,12 +183,7 @@ export function portalIdToNumber(portalId: string): number | undefined {
 export async function getAnotherWorldBlocks(worldId: string): Promise<DeserialisedStructure | null> {
   const pwApiClient = new PWApiClient(usePwClientStore().email, usePwClientStore().password)
 
-  try {
-    await pwAuthenticate(pwApiClient)
-  } catch (e) {
-    handleException(e)
-    return null
-  }
+  await pwAuthenticate(pwApiClient)
 
   const pwGameClient = new PWGameClient(pwApiClient)
   const pwGameWorldHelper = new PWGameWorldHelper()
@@ -209,12 +204,7 @@ export async function getAnotherWorldBlocks(worldId: string): Promise<Deserialis
     }
   })
 
-  try {
-    await pwJoinWorld(pwGameClient, worldId)
-  } catch (e) {
-    handleException(e)
-    return null
-  }
+  await pwJoinWorld(pwGameClient, worldId)
 
   await waitUntil(() => copyFromAnotherWorldFinished, { timeout: 10000, intervalBetweenAttempts: 1000 })
   return blocksResult

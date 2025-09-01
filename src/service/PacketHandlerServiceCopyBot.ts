@@ -59,6 +59,7 @@ export function registerCopyBotCallbacks() {
   const helper = getPwGameWorldHelper()
   client.addHook(helper.receiveHook)
   client.addCallback('debug', console.log)
+  client.addCallback('error', handleException)
   for (const cb of callbacks) {
     client.addCallback(cb.name, cb.fn)
   }
