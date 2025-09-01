@@ -99,7 +99,7 @@ function playerMovedPacketReceived(data: ProtoGen.PlayerMovedPacket) {
     performBombAction(clamp(Math.floor(data.position!.x / 16), mapTopLeftPos.x, mapTopLeftPos.x + mapSize.x - 1))
   }
 
-  if (getPwGameWorldHelper().getPlayer(data.playerId!)!.states.teamId === 1) {
+  if (getPwGameWorldHelper().getPlayer(data.playerId!)?.states?.teamId === 1) {
     sendRawMessage(`/team #${data.playerId} none`)
   }
 }
@@ -138,7 +138,7 @@ function performBombAction(posX: number) {
     return
   }
 
-  if (useBomBotRoundStore().secondsLeftBeforeBomberCanBomb <= 0) {
+  if (useBomBotRoundStore().secondsLeftBeforeBomberCanBomb > 0) {
     return
   }
 
@@ -322,7 +322,7 @@ async function placeallbombotCommandReceived(_args: string[], playerId: number) 
 }
 
 async function placeBomBotWorld() {
-  sendGlobalChatMessage('[DEBUG] Loading BomBot world')
+  sendGlobalChatMessage('Loading BomBot world')
   const bomBotMapWorldId = getWorldIdIfUrl('r3796a7103bb687')
   const blocks = await getAnotherWorldBlocks(bomBotMapWorldId)
   if (!blocks) {
@@ -339,7 +339,7 @@ async function placeBomBotMap(mapEntry: BomBotMapEntry) {
 }
 
 async function loadBomBotData() {
-  sendGlobalChatMessage('[DEBUG] Loading BomBot data')
+  sendGlobalChatMessage('Loading BomBot data')
   const bomBotDataWorldId = getWorldIdIfUrl('lbsz7864s3a3yih')
   const bombotBlocks = await getAnotherWorldBlocks(bomBotDataWorldId)
   if (!bombotBlocks) {
@@ -355,6 +355,8 @@ async function loadBomBotData() {
   const bombWorldBlocks = convertDeserializedStructureToWorldBlocks(bombBlocks)
   useBomBotWorldStore().bombBlocks = bombWorldBlocks.filter((wb) => wb.layer !== LayerType.Background)
 
+  loadBlockTypes(bombotBlocks)
+
   const totalMapCount = vec2(15, 21)
   const mapSpacing = vec2.add(mapSize, vec2(4, 6))
   const topLeftMapOffset = vec2(3, 5)
@@ -362,11 +364,16 @@ async function loadBomBotData() {
   for (let x = 0; x < totalMapCount.x; x++) {
     for (let y = 0; y < totalMapCount.y; y++) {
       const sectionTopLeft = vec2.add(topLeftMapOffset, vec2.mul(vec2(x, y), mapSpacing))
-      const sectionBlocks = getDeserialisedStructureSectionVec2(
+      const mapBlocks = getDeserialisedStructureSectionVec2(
         bombotBlocks,
         sectionTopLeft,
         vec2.add(vec2.add(sectionTopLeft, mapSize), vec2(-1, -1)),
       )
+
+      if (!isBomBotMapValid(bombotBlocks, mapBlocks, sectionTopLeft)) {
+        continue
+      }
+
       const mapInfoSignPos = vec2.add(sectionTopLeft, mapInfoSignOffset)
       const mapInfoSignBlock = bombotBlocks.blocks[LayerType.Foreground][mapInfoSignPos.x][mapInfoSignPos.y]
       const signBlockText = mapInfoSignBlock.args[0] as string
@@ -374,14 +381,14 @@ async function loadBomBotData() {
       const mapName = signBlockTextLines[0].trim()
       const authorName = signBlockTextLines[2].trim()
       useBomBotWorldStore().bomBotMaps.push({
-        blocks: sectionBlocks,
+        blocks: mapBlocks,
         mapName: mapName,
         authorName: authorName,
       })
     }
   }
 
-  loadBlockTypes(bombotBlocks)
+  sendGlobalChatMessage(`Total of ${useBomBotWorldStore().bomBotMaps.length} maps loaded`)
 
   // TODO: validate (map has only allowed blocks, sign block has 3 lines, there is at least 1 spawn position)
 }
@@ -529,7 +536,6 @@ async function everySecondBomBotUpdate() {
       break
     }
     case BomBotState.PREPARING_FOR_NEXT_ROUND: {
-      // sendGlobalChatMessage('[DEBUG] PREPARING_FOR_NEXT_ROUND')
       if (!useBomBotWorldStore().playedOnce) {
         await placeBomBotMap(useBomBotWorldStore().bomBotMaps[0])
         useBomBotWorldStore().playedOnce = true
@@ -552,7 +558,6 @@ async function everySecondBomBotUpdate() {
       break
     }
     case BomBotState.WAITING_FOR_ALL_PLAYERS_TO_BE_TELEPORTED_TO_MAP: {
-      // sendGlobalChatMessage('[DEBUG] WAITING_FOR_ALL_PLAYERS_TO_BE_TELEPORTED_TO_MAP')
       if (
         useBomBotRoundStore().totalPlayersTeleportedToMapLastSeenValue !==
         useBomBotRoundStore().totalPlayersTeleportedToMap
@@ -588,7 +593,6 @@ async function everySecondBomBotUpdate() {
       break
     }
     case BomBotState.PLAYING: {
-      // sendGlobalChatMessage('[DEBUG] PLAYING')
       const playerIdsInGame = getPlayerIdsInGame()
 
       if (playerIdsInGame.length === 0) {
@@ -648,7 +652,7 @@ async function everySecondBomBotUpdate() {
           `/tp #${useBomBotRoundStore().bomberPlayerId} ${bomberAreaTopLeft.x + getRandomInt(0, mapSize.x)} ${bomberAreaTopLeft.y}`,
         )
         useBomBotRoundStore().bombAvailable = true
-        useBomBotRoundStore().secondsLeftBeforeBomberCanBomb = 2
+        useBomBotRoundStore().secondsLeftBeforeBomberCanBomb = 1
       } else {
         if (useBomBotRoundStore().secondsLeftBeforeBombMustBeRemoved <= 0) {
           useBomBotRoundStore().secondsSpentByBomber++
@@ -687,20 +691,18 @@ function disqualifyPlayerFromRoundBecauseAfk(playerId: number) {
   removePlayerFromPlayersInGame(playerId)
 }
 
-function updateAvailablePlayerSpawnPositions() {
-  // sendGlobalChatMessage('[DEBUG] Updating available spawn positions')
-  const spawnAreaBottomRight = vec2.add(mapTopLeftPos, mapSize)
+function getAvailableSpawnPositions(blocks: DeserialisedStructure) {
   const availablePlayerSpawnPositions: vec2[] = []
-  for (let x = mapTopLeftPos.x; x < spawnAreaBottomRight.x; x++) {
-    for (let y = mapTopLeftPos.y; y < spawnAreaBottomRight.y - 1; y++) {
-      const blockForeground = getPwGameWorldHelper().getBlockAt(vec2(x, y), LayerType.Foreground)
-      const blockOverlay = getPwGameWorldHelper().getBlockAt(vec2(x, y), LayerType.Overlay)
+  for (let x = 0; x < mapSize.x; x++) {
+    for (let y = 0; y < mapSize.y - 1; y++) {
+      const blockForeground = blocks.blocks[LayerType.Foreground][x][y]
+      const blockOverlay = blocks.blocks[LayerType.Overlay][x][y]
       const posOkayForSpawn =
         useBomBotWorldStore().blockTypes[blockForeground.bId] === BomBotBlockType.NON_SOLID &&
         useBomBotWorldStore().blockTypes[blockOverlay.bId] === BomBotBlockType.NON_SOLID
 
-      const blockBelowForeground = getPwGameWorldHelper().getBlockAt(vec2(x, y + 1), LayerType.Foreground)
-      const blockBelowOverlay = getPwGameWorldHelper().getBlockAt(vec2(x, y + 1), LayerType.Overlay)
+      const blockBelowForeground = blocks.blocks[LayerType.Foreground][x][y + 1]
+      const blockBelowOverlay = blocks.blocks[LayerType.Overlay][x][y + 1]
       const blockBelowIsSolid =
         useBomBotWorldStore().blockTypes[blockBelowForeground.bId] === BomBotBlockType.SOLID ||
         useBomBotWorldStore().blockTypes[blockBelowOverlay.bId] === BomBotBlockType.SOLID
@@ -710,8 +712,17 @@ function updateAvailablePlayerSpawnPositions() {
       }
     }
   }
-  // sendGlobalChatMessage('[DEBUG] Found ' + availablePlayerSpawnPositions.length + ' available spawn positions')
-  useBomBotRoundStore().availablePlayerSpawnPositions = availablePlayerSpawnPositions
+  return availablePlayerSpawnPositions
+}
+
+function updateAvailablePlayerSpawnPositions() {
+  const blocks = getPwGameWorldHelper().sectionBlocks(
+    mapTopLeftPos.x,
+    mapTopLeftPos.y,
+    mapTopLeftPos.x + mapSize.x - 1,
+    mapTopLeftPos.y + mapSize.y - 1,
+  )
+  useBomBotRoundStore().availablePlayerSpawnPositions = getAvailableSpawnPositions(blocks)
 }
 
 function getRandomAvailablePlayerSpawnPosition(): vec2 {
@@ -720,11 +731,11 @@ function getRandomAvailablePlayerSpawnPosition(): vec2 {
     return mapTopLeftPos
   }
   const randomIndex = getRandomInt(0, availablePlayerSpawnPositions.length)
-  return availablePlayerSpawnPositions[randomIndex]
+  return vec2.add(mapTopLeftPos, availablePlayerSpawnPositions[randomIndex])
 }
 
 function loadBlockTypes(bombotBlocks: DeserialisedStructure) {
-  sendGlobalChatMessage('[DEBUG] Loading BomBot block types')
+  sendGlobalChatMessage('Loading BomBot block types')
   const bomBotIndicatorBgBlockIllegal = bombotBlocks.blocks[LayerType.Background][11][360]
   const bomBotIndicatorBgBlockSolid = bombotBlocks.blocks[LayerType.Background][13][360]
   const bomBotIndicatorBgBlockSemiSolid = bombotBlocks.blocks[LayerType.Background][15][360]
@@ -766,4 +777,40 @@ async function restartBomBot() {
   sendGlobalChatMessage('Restarting bombot...')
   stopBomBot()
   await startBomBot(false)
+}
+
+function isBomBotMapValid(
+  bombotBlocks: DeserialisedStructure,
+  mapBlocks: DeserialisedStructure,
+  sectionTopLeft: vec2,
+): boolean {
+  const mapFinishedIndicatorBlock = bombotBlocks.blocks[LayerType.Foreground][8][366]
+  const checkBlock = bombotBlocks.blocks[LayerType.Foreground][sectionTopLeft.x - 1][sectionTopLeft.y - 1]
+  const mapIndicatedWithFinishedBlock = checkBlock.bId === mapFinishedIndicatorBlock.bId
+  if (!mapIndicatedWithFinishedBlock) {
+    return false
+  }
+
+  const worldBlocks = convertDeserializedStructureToWorldBlocks(mapBlocks)
+  const hasIllegalBlocks = worldBlocks.some((wb) => {
+    if (useBomBotWorldStore().blockTypes[wb.block.bId] === BomBotBlockType.ILLEGAL) {
+      console.error(
+        `Illegal block found at local pos: ${wb.pos.x}, ${wb.pos.y}; in map pos ${sectionTopLeft.x}, ${sectionTopLeft.y}`,
+      )
+      return true
+    } else {
+      return false
+    }
+  })
+  if (hasIllegalBlocks) {
+    return false
+  }
+
+  const hasAvailableSpawnPositions = getAvailableSpawnPositions(mapBlocks).length > 0
+  if (!hasAvailableSpawnPositions) {
+    console.error(`No available spawn positions found in map pos ${sectionTopLeft.x}, ${sectionTopLeft.y}`)
+    return false
+  }
+
+  return true
 }
