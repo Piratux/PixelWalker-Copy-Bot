@@ -101,7 +101,7 @@ function playerMovedPacketReceived(data: ProtoGen.PlayerMovedPacket) {
     useBomBotWorldStore().currentState === BomBotState.PLAYING &&
     data.playerId === useBomBotRoundStore().bomberPlayerId
   ) {
-    performBombAction(clamp(Math.floor(data.position!.x / 16), mapTopLeftPos.x, mapTopLeftPos.x + mapSize.x - 1))
+    performBombAction(clamp(Math.round(data.position!.x / 16), mapTopLeftPos.x, mapTopLeftPos.x + mapSize.x - 1))
   }
 
   const player = getPwGameWorldHelper().getPlayer(data.playerId!)
