@@ -219,7 +219,7 @@ function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
   if (!playerId) {
     return
   }
-  sendPrivateChatMessage('BomBot is here! Type .start to start the round', playerId)
+  sendPrivateChatMessage('BomBot is here! Type .start to start the round. Type .help to see commands', playerId)
 }
 
 async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
@@ -227,6 +227,12 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
   const playerId = data.playerId!
 
   switch (args[0].toLowerCase()) {
+    case '.help':
+      helpCommandReceived(args, playerId)
+      break
+    case '.ping':
+      sendPrivateChatMessage('pong', playerId)
+      break
     case '.start':
       await startCommandReceived(args, playerId, true)
       break
@@ -236,60 +242,74 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
     case '.stop':
       stopCommandReceived(args, playerId)
       break
+    case '.afk':
+      afkCommandReceived(args, playerId)
+      break
     case '.placeallbombot':
       await placeallbombotCommandReceived(args, playerId)
       break
-    case '.testcommand': {
-      if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
-        return
-      }
-
-      if (!isDeveloper(playerId)) {
-        sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
-        return
-      }
-      const roundStartTopLeftPos = vec2(35, 40)
-      sendRawMessage(`/tp piratux ${roundStartTopLeftPos.x} ${roundStartTopLeftPos.y}`)
-      break
-    }
-    case '.showspawnablepositions': {
-      if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
-        return
-      }
-
-      if (!isDeveloper(playerId)) {
-        sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
-        return
-      }
-
-      if (useBomBotRoundStore().availablePlayerSpawnPositions.length === 0) {
-        sendPrivateChatMessage('ERROR! No available spawn positions found', playerId)
-        return
-      }
-
-      const blocks: WorldBlock[] = useBomBotRoundStore().availablePlayerSpawnPositions.map((pos) => ({
-        pos: pos,
-        block: new Block(PwBlockName.TOOL_CHECKPOINT),
-        layer: LayerType.Foreground,
-      }))
-      await placeMultipleBlocks(blocks)
-      break
-    }
-    case '.simulatecrash': {
-      if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
-        return
-      }
-
-      if (!isDeveloper(playerId)) {
-        sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
-        return
-      }
-      throw new Error('error')
-    }
     default:
       if (args[0].startsWith('.')) {
         sendPrivateChatMessage('ERROR! Unrecognised command', playerId)
       }
+  }
+}
+
+function afkCommandReceived(_: string[], playerId: number) {
+  const player = getPwGameWorldHelper().getPlayer(playerId)!
+
+  const playerIdsInGame = getPlayerIdsInGame()
+  if (player.states.teamId !== TEAM_RED) {
+    if (playerIdsInGame.includes(playerId)) {
+      disqualifyPlayerFromRoundBecauseAfk(playerId)
+    }
+    disqualifyPlayerFromRound(playerId)
+    sendRawMessage(`/team #${playerId} ${TEAM_RED}`)
+    sendPrivateChatMessage(
+      'You are now marked as AFK. You can move at any time to unmark yourself or type .afk again',
+      playerId,
+    )
+  } else {
+    sendRawMessage(`/team #${playerId} ${TEAM_NONE}`)
+  }
+}
+
+function helpCommandReceived(args: string[], playerId: number) {
+  if (args.length == 1) {
+    sendPrivateChatMessage('Commands: .help .ping .start .quickstart .stop', playerId)
+    sendPrivateChatMessage('See more info about each command via .help [command]', playerId)
+    // TODO:
+    // sendPrivateChatMessage('You can also host BomBot yourself at: piratux.github.io/PixelWalker-Copy-Bot/', playerId)
+    return
+  }
+
+  switch (args[1]) {
+    case 'ping':
+      sendPrivateChatMessage('.ping - check if bot is alive by pinging it.', playerId)
+      sendPrivateChatMessage(`Example usage: .ping`, playerId)
+      break
+    case 'help':
+      sendPrivateChatMessage(
+        '.help [command] - get general help, or if command is specified, get help about command.',
+        playerId,
+      )
+      sendPrivateChatMessage(`Example usage: .help wins`, playerId)
+      break
+    case 'start':
+      sendPrivateChatMessage('.start - starts BomBot game.', playerId)
+      break
+    case 'quickstart':
+      sendPrivateChatMessage('.start - starts BomBot game faster by not placing BomBot world', playerId)
+      sendPrivateChatMessage('This can be used to customise BomBot world', playerId)
+      break
+    case 'stop':
+      sendPrivateChatMessage('.stop - stops BomBot game.', playerId)
+      break
+    case 'afk':
+      sendPrivateChatMessage(".afk - tells bot that you're afk or not.", playerId)
+      break
+    default:
+      sendPrivateChatMessage(`ERROR! Unrecognised command ${args[1]}`, playerId)
   }
 }
 

@@ -89,14 +89,14 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
   const playerId = data.playerId!
 
   switch (args[0].toLowerCase()) {
+    case '.help':
+      helpCommandReceived(args, playerId)
+      break
     case '.placeall':
       await placeallCommandReceived(args, playerId)
       break
     case '.ping':
       sendPrivateChatMessage('pong', playerId)
-      break
-    case '.help':
-      helpCommandReceived(args, playerId)
       break
     case '.edit':
       editCommandReceived(args, playerId)
@@ -346,14 +346,16 @@ function helpCommandReceived(args: string[], playerId: number) {
     return
   }
 
+  if (args[1].startsWith('.')) {
+    args[1] = args[1].substring(1)
+  }
+
   switch (args[1]) {
     case 'ping':
-    case '.ping':
       sendPrivateChatMessage('.ping - check if bot is alive by pinging it.', playerId)
       sendPrivateChatMessage(`Example usage: .ping`, playerId)
       break
     case 'help':
-    case '.help':
       sendPrivateChatMessage(
         '.help [command] - get general help, or if command is specified, get help about command.',
         playerId,
@@ -361,7 +363,6 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage(`Example usage: .help paste`, playerId)
       break
     case 'edit':
-    case '.edit':
       sendPrivateChatMessage(
         '.edit name find replace - edits selected block name substrings from "find" to "replace".',
         playerId,
@@ -375,14 +376,12 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage('name_find - restricts to blocks with this substring in their name', playerId)
       break
     case 'paste':
-    case '.paste':
       sendPrivateChatMessage('.paste x_times y_times [x_spacing y_spacing] - repeat next paste (x/y)_times.', playerId)
       sendPrivateChatMessage('(x/y)_spacing - gap size to leave between pastes.', playerId)
       sendPrivateChatMessage(`Example usage 1: .paste 2 3`, playerId)
       sendPrivateChatMessage(`Example usage 2: .paste 2 3 4 1`, playerId)
       break
     case 'smartpaste':
-    case '.smartpaste':
       sendPrivateChatMessage(
         '.smartpaste - same as .paste, but increments special block arguments, when using repeated paste.',
         playerId,
@@ -401,24 +400,20 @@ function helpCommandReceived(args: string[], playerId: number) {
       )
       break
     case 'undo':
-    case '.undo':
       sendPrivateChatMessage('.undo [count] - undoes last paste performed by bot "count" times', playerId)
       sendPrivateChatMessage(`Example usage 1: .undo`, playerId)
       sendPrivateChatMessage(`Example usage 2: .undo 3`, playerId)
       break
     case 'redo':
-    case '.redo':
       sendPrivateChatMessage('.redo [count] - redoes last paste performed by bot "count" times', playerId)
       sendPrivateChatMessage(`Example usage 1: .redo`, playerId)
       sendPrivateChatMessage(`Example usage 2: .redo 3`, playerId)
       break
     case 'move':
-    case '.move':
       sendPrivateChatMessage('.move - enabled move mode, which deletes blocks in last selected area', playerId)
       sendPrivateChatMessage('Move mode lasts until next area selection', playerId)
       break
     case 'mask':
-    case '.mask':
       sendPrivateChatMessage('.mask [all | background | foreground | overlay] - masks layers when pasting', playerId)
       sendPrivateChatMessage(
         `Example usage 1: .mask foreground background (only pastes foreground and background blocks)`,
@@ -427,7 +422,6 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage(`Example usage 2: .mask all (resets to default mask)`, playerId)
       break
     case 'import':
-    case '.import':
       sendPrivateChatMessage('.import world_id [src_from_x src_from_y src_to_x src_to_y dest_to_x dest_to_y]', playerId)
       sendPrivateChatMessage('Copies blocks from world with "world_id" and places them into current world', playerId)
       sendPrivateChatMessage('src_from_(x/y) - top left corner position to copy from', playerId)
