@@ -204,7 +204,31 @@ function playerCountersUpdatePacketReceived(data: ProtoGen.PlayerCountersUpdateP
     throw new Error('ERROR! Coins should not be placed in this world!')
   }
   disqualifyPlayerFromRound(data.playerId!)
+
+  // checkIfPlayerDiedFromBomb(data.playerId!)
 }
+
+// function checkIfPlayerDiedFromBomb(playerId: number) {
+//   const player = getPwGameWorldHelper().getPlayer(playerId)
+//   if (!player) {
+//     return
+//   }
+//
+//   const playerDeathPos = ??? // no way to calculate this yet
+//   const lastBombPos = useBomBotRoundStore().lastBombPos
+//   if (lastBombPos.x === -1 && lastBombPos.y === -1) {
+//     return
+//   }
+//
+//   const bombExplosionRange = 1
+//   const playerDiedFromBomb =
+//     Math.abs(playerPos.y - lastBombPos.y) <= bombExplosionRange ||
+//     Math.abs(playerPos.x - lastBombPos.x) <= bombExplosionRange
+//
+//   if (playerDiedFromBomb) {
+//     useBomBotRoundStore().playerWasKilledByLastBomb = true
+//   }
+// }
 
 function playerTeamUpdatePacketReceived(data: ProtoGen.PlayerTeamUpdatePacket) {
   if (useBomBotWorldStore().currentState === BomBotState.WAITING_FOR_ALL_PLAYERS_TO_BE_TELEPORTED_TO_MAP) {
@@ -708,11 +732,21 @@ async function everySecondBomBotUpdate() {
           bombRemoveBlocks = filterBlocksOutsideMapArea(bombRemoveBlocks)
           void placeMultipleBlocks(bombRemoveBlocks)
 
+          // const MAX_TIMES_BOMBER_CAN_CONTINUE_BOMBING_AFTER_KILLING_SOMEONE_IN_A_ROW = 2
+          //
+          // if (
+          //   useBomBotRoundStore().playerWasKilledByLastBomb &&
+          //   useBomBotRoundStore().totalTimesBomberKilledSomeoneInARow <
+          //     MAX_TIMES_BOMBER_CAN_CONTINUE_BOMBING_AFTER_KILLING_SOMEONE_IN_A_ROW
+          // ) {
+          //   prepareBomberVariables()
+          // } else {
           const randomPos = getRandomAvailablePlayerSpawnPosition()
           sendRawMessage(`/tp #${useBomBotRoundStore().bomberPlayerId} ${randomPos.x} ${randomPos.y}`)
 
           useBomBotRoundStore().previousBomberPlayerId = useBomBotRoundStore().bomberPlayerId
           useBomBotRoundStore().bomberPlayerId = 0
+          // }
         }
       }
 
@@ -720,7 +754,6 @@ async function everySecondBomBotUpdate() {
         !playerIdsInGame.includes(useBomBotRoundStore().bomberPlayerId) ||
         useBomBotRoundStore().secondsSpentByBomber >= mapSize.x
       ) {
-        useBomBotRoundStore().secondsSpentByBomber = 0
         if (useBomBotRoundStore().bomberPlayerId !== 0) {
           disqualifyPlayerFromRoundBecauseAfk(useBomBotRoundStore().bomberPlayerId)
         }
@@ -739,8 +772,7 @@ async function everySecondBomBotUpdate() {
         sendRawMessage(
           `/tp #${useBomBotRoundStore().bomberPlayerId} ${bomberAreaTopLeft.x + getRandomInt(0, mapSize.x)} ${bomberAreaTopLeft.y}`,
         )
-        useBomBotRoundStore().bombAvailable = true
-        useBomBotRoundStore().secondsLeftBeforeBomberCanBomb = 1
+        prepareBomberVariables()
       } else {
         if (useBomBotRoundStore().secondsLeftBeforeBombMustBeRemoved <= 0) {
           useBomBotRoundStore().secondsSpentByBomber++
@@ -754,6 +786,14 @@ async function everySecondBomBotUpdate() {
     default:
       throw new Error('Unknown BomBotState: ' + useBomBotWorldStore().currentState)
   }
+}
+
+function prepareBomberVariables() {
+  useBomBotRoundStore().secondsSpentByBomber = 0
+  useBomBotRoundStore().bombAvailable = true
+  useBomBotRoundStore().secondsLeftBeforeBomberCanBomb = 1
+  // useBomBotRoundStore().totalTimesBomberKilledSomeoneInARow = 0
+  // useBomBotRoundStore().playerWasKilledByLastBomb = false
 }
 
 function updateBomberTimeIndication() {
