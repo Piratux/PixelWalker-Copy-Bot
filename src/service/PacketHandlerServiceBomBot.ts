@@ -43,6 +43,7 @@ const mapInfoSignOffset = vec2(10, -2)
 // NOTE: it's not a good idea to rely on these being constant, but it will do for now
 const TEAM_NONE = 0
 const TEAM_RED = 1
+const TEAM_GREEN = 2
 
 const callbacks: CallbackEntry[] = [
   { name: 'playerInitPacket', fn: playerInitPacketReceived },
@@ -232,7 +233,10 @@ function playerCountersUpdatePacketReceived(data: ProtoGen.PlayerCountersUpdateP
 // }
 
 function playerTeamUpdatePacketReceived(data: ProtoGen.PlayerTeamUpdatePacket) {
-  if (useBomBotWorldStore().currentState === BomBotState.WAITING_FOR_ALL_PLAYERS_TO_BE_TELEPORTED_TO_MAP) {
+  if (
+    useBomBotWorldStore().currentState === BomBotState.WAITING_FOR_ALL_PLAYERS_TO_BE_TELEPORTED_TO_MAP &&
+    data.teamId === TEAM_GREEN
+  ) {
     const randomPos = getRandomAvailablePlayerSpawnPosition()
     const playerId = data.playerId!
 
@@ -323,13 +327,9 @@ function afkCommandReceived(_: string[], playerId: number) {
   if (player.states.teamId !== TEAM_RED) {
     if (playerIdsInGame.includes(playerId)) {
       disqualifyPlayerFromRoundBecauseAfk(playerId)
+    } else {
+      makePlayerAfk(playerId)
     }
-    disqualifyPlayerFromRound(playerId)
-    sendRawMessage(`/team #${playerId} ${TEAM_RED}`)
-    sendPrivateChatMessage(
-      'You are now marked as AFK. You can move at any time to unmark yourself or type .afk again',
-      playerId,
-    )
   } else {
     sendRawMessage(`/team #${playerId} ${TEAM_NONE}`)
   }
@@ -823,9 +823,16 @@ function updateBomberTimeIndication() {
 function disqualifyPlayerFromRoundBecauseAfk(playerId: number) {
   const afkPos = vec2(43, 58)
   sendRawMessage(`/tp #${playerId} ${afkPos.x} ${afkPos.y}`)
+  makePlayerAfk(playerId)
+}
+
+function makePlayerAfk(playerId: number) {
   sendRawMessage(`/team #${playerId} ${TEAM_RED}`)
-  sendPrivateChatMessage('You were disqualified from the round for being AFK', playerId)
   removePlayerFromPlayersInGame(playerId)
+  sendPrivateChatMessage(
+    'You are now marked as AFK. You can move at any time to unmark yourself or type .afk again',
+    playerId,
+  )
 }
 
 function getAvailableSpawnPositions(blocks: DeserialisedStructure) {
