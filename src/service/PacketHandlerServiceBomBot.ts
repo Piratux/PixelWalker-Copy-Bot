@@ -30,7 +30,7 @@ import { useBomBotRoundStore } from '@/store/BomBotRoundStore.ts'
 import { getRandomInt } from '@/util/Random.ts'
 import { clamp } from '@/util/Numbers.ts'
 import { userBomBotAutomaticRestartCounterStore } from '@/store/BomBotAutomaticRestartCounterStore.ts'
-import { createBomBotStatData } from '@/type/BomBotPlayerStatData.ts'
+import { BomBotStatData, createBomBotStatData } from '@/type/BomBotPlayerStatData.ts'
 
 const blockTypeDataStartPos = vec2(20, 361) // inclusive x
 const blockTypeDataEndPos = vec2(389, 361) // exclusive x
@@ -773,6 +773,7 @@ async function everySecondBomBotUpdate() {
           `/tp #${useBomBotRoundStore().bomberPlayerId} ${bomberAreaTopLeft.x + getRandomInt(0, mapSize.x)} ${bomberAreaTopLeft.y}`,
         )
         prepareBomberVariables()
+        informFirstTimeBomberHowToBomb()
       } else {
         if (useBomBotRoundStore().secondsLeftBeforeBombMustBeRemoved <= 0) {
           useBomBotRoundStore().secondsSpentByBomber++
@@ -785,6 +786,14 @@ async function everySecondBomBotUpdate() {
     }
     default:
       throw new Error('Unknown BomBotState: ' + useBomBotWorldStore().currentState)
+  }
+}
+
+function informFirstTimeBomberHowToBomb() {
+  const botData = getPlayerBomBotData(useBomBotRoundStore().bomberPlayerId)
+  if (!botData.informedHowToPlaceBombOnce) {
+    botData.informedHowToPlaceBombOnce = true
+    sendPrivateChatMessage('You are the bomber! Press space to place a bomb.', useBomBotRoundStore().bomberPlayerId)
   }
 }
 
@@ -957,7 +966,7 @@ function isBomBotMapValid(
   return true
 }
 
-function getPlayerBomBotData(playerId: number) {
+function getPlayerBomBotData(playerId: number): BomBotStatData {
   if (!useBomBotWorldStore().playerBombotStatData[playerId]) {
     useBomBotWorldStore().playerBombotStatData[playerId] = createBomBotStatData()
   }
