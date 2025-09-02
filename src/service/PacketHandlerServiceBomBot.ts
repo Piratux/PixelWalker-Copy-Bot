@@ -30,6 +30,7 @@ import { useBomBotRoundStore } from '@/store/BomBotRoundStore.ts'
 import { getRandomInt } from '@/util/Random.ts'
 import { clamp } from '@/util/Numbers.ts'
 import { userBomBotAutomaticRestartCounterStore } from '@/store/BomBotAutomaticRestartCounterStore.ts'
+import { createBomBotStatData } from '@/type/BomBotPlayerStatData.ts'
 
 const blockTypeDataStartPos = vec2(20, 361) // inclusive x
 const blockTypeDataEndPos = vec2(389, 361) // exclusive x
@@ -208,9 +209,12 @@ function playerCountersUpdatePacketReceived(data: ProtoGen.PlayerCountersUpdateP
 function playerTeamUpdatePacketReceived(data: ProtoGen.PlayerTeamUpdatePacket) {
   if (useBomBotWorldStore().currentState === BomBotState.WAITING_FOR_ALL_PLAYERS_TO_BE_TELEPORTED_TO_MAP) {
     const randomPos = getRandomAvailablePlayerSpawnPosition()
-    sendRawMessage(`/tp #${data.playerId} ${randomPos.x} ${randomPos.y}`)
+    const playerId = data.playerId!
+
+    sendRawMessage(`/tp #${playerId} ${randomPos.x} ${randomPos.y}`)
     useBomBotRoundStore().totalPlayersTeleportedToMap++
-    useBomBotRoundStore().playersInGame.push(getPwGameWorldHelper().players.get(data.playerId!)!)
+    useBomBotRoundStore().playersInGame.push(getPwGameWorldHelper().players.get(playerId)!)
+    getPlayerBomBotData(playerId).plays++
   }
 }
 
@@ -245,6 +249,12 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
     case '.afk':
       afkCommandReceived(args, playerId)
       break
+    case '.wins':
+      winsCommandReceived(args, playerId)
+      break
+    case '.plays':
+      playsCommandReceived(args, playerId)
+      break
     case '.placeallbombot':
       await placeallbombotCommandReceived(args, playerId)
       break
@@ -252,6 +262,32 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       if (args[0].startsWith('.')) {
         sendPrivateChatMessage('ERROR! Unrecognised command', playerId)
       }
+  }
+}
+
+function winsCommandReceived(args: string[], playerId: number) {
+  getPlayerStat(args, playerId, 'wins', 'won')
+}
+
+function playsCommandReceived(args: string[], playerId: number) {
+  getPlayerStat(args, playerId, 'plays', 'played')
+}
+
+function getPlayerStat(args: string[], playerId: number, stat: 'wins' | 'plays', verb: 'won' | 'played') {
+  if (args.length === 1) {
+    const botData = getPlayerBomBotData(playerId)
+    sendPrivateChatMessage(`You have ${verb} ${botData[stat]} times.`, playerId)
+  } else {
+    const otherPlayerName = args[1].toLowerCase()
+    const otherPlayer = getPwGameWorldHelper()
+      .getPlayers()
+      .find((p) => p.username.toLowerCase() === otherPlayerName)
+    if (otherPlayer) {
+      const botData = getPlayerBomBotData(otherPlayer.playerId)
+      sendPrivateChatMessage(`${otherPlayerName} has ${verb} ${botData[stat]} times.`, playerId)
+    } else {
+      sendPrivateChatMessage(`ERROR! Player ${otherPlayerName} not found.`, playerId)
+    }
   }
 }
 
@@ -276,7 +312,7 @@ function afkCommandReceived(_: string[], playerId: number) {
 
 function helpCommandReceived(args: string[], playerId: number) {
   if (args.length == 1) {
-    sendPrivateChatMessage('Commands: .help .ping .start .quickstart .stop', playerId)
+    sendPrivateChatMessage('Commands: .help .ping .start .quickstart .stop .wins .plays', playerId)
     sendPrivateChatMessage('See more info about each command via .help [command]', playerId)
     // TODO:
     // sendPrivateChatMessage('You can also host BomBot yourself at: piratux.github.io/PixelWalker-Copy-Bot/', playerId)
@@ -307,6 +343,12 @@ function helpCommandReceived(args: string[], playerId: number) {
       break
     case 'afk':
       sendPrivateChatMessage(".afk - tells bot that you're afk or not.", playerId)
+      break
+    case 'wins':
+      sendPrivateChatMessage('.wins [player_name] - shows how many times player won.', playerId)
+      break
+    case 'plays':
+      sendPrivateChatMessage('.plays [player_name] - shows how many times player played.', playerId)
       break
     default:
       sendPrivateChatMessage(`ERROR! Unrecognised command ${args[1]}`, playerId)
@@ -529,6 +571,8 @@ function playerWinRound(playerId: number) {
   sendRawMessage(`/givecrown #${playerId}`)
   sendRawMessage(`/team #${playerId} ${TEAM_NONE}`)
   sendGlobalChatMessage(`${getPwGameWorldHelper().getPlayer(playerId)?.username} wins!`)
+  getPlayerBomBotData(playerId).wins++
+
   useBomBotWorldStore().currentState = BomBotState.RESET_STORE
 }
 
@@ -593,7 +637,8 @@ async function everySecondBomBotUpdate() {
 
       for (const activePlayer of activePlayers) {
         const roundStartTopLeftPos = vec2(35, 40)
-        sendRawMessage(`/tp #${activePlayer.playerId} ${roundStartTopLeftPos.x} ${roundStartTopLeftPos.y}`)
+        const playerId = activePlayer.playerId
+        sendRawMessage(`/tp #${playerId} ${roundStartTopLeftPos.x} ${roundStartTopLeftPos.y}`)
       }
       useBomBotWorldStore().currentState = BomBotState.WAITING_FOR_ALL_PLAYERS_TO_BE_TELEPORTED_TO_MAP
       useBomBotRoundStore().playersThatWereSelectedForRoundStart = activePlayers
@@ -870,4 +915,11 @@ function isBomBotMapValid(
   }
 
   return true
+}
+
+function getPlayerBomBotData(playerId: number) {
+  if (!useBomBotWorldStore().playerBombotStatData[playerId]) {
+    useBomBotWorldStore().playerBombotStatData[playerId] = createBomBotStatData()
+  }
+  return useBomBotWorldStore().playerBombotStatData[playerId]
 }

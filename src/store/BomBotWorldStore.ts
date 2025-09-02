@@ -5,6 +5,7 @@ import { WorldBlock } from '@/type/WorldBlock.ts'
 import { BomBotMapEntry } from '@/type/BomBotMapEntry.ts'
 import { BomBotState } from '@/enum/BomBotState.ts'
 import { BomBotBlockType } from '@/enum/BomBotBlockType.ts'
+import { PlayerBomBotStatData } from '@/type/BomBotPlayerStatData.ts'
 
 export const useBomBotWorldStore = defineStore('BomBotWorldStore', () => {
   const bombBlocks = ref<Raw<WorldBlock[]>>([])
@@ -14,6 +15,7 @@ export const useBomBotWorldStore = defineStore('BomBotWorldStore', () => {
   const blockTypes = ref<BomBotBlockType[]>([]) // index is block id
   const currentState = ref<BomBotState>(BomBotState.STOPPED)
   const playedOnce = ref<boolean>(false)
+  const playerBombotStatData = ref<PlayerBomBotStatData>({})
 
   return {
     bombBlocks,
@@ -23,5 +25,6 @@ export const useBomBotWorldStore = defineStore('BomBotWorldStore', () => {
     blockTypes,
     currentState,
     playedOnce,
+    playerBombotStatData,
   }
 })
