@@ -38,6 +38,7 @@ const blockTypeDataSpacingY = 3
 const mapSize = vec2(22, 11)
 const mapTopLeftPos = vec2(39, 45)
 const bomberAreaTopLeft = vec2(39, 43)
+const mapInfoSignOffset = vec2(10, -2)
 
 // NOTE: it's not a good idea to rely on these being constant, but it will do for now
 const TEAM_NONE = 0
@@ -471,7 +472,6 @@ async function loadBomBotData() {
   const totalMapCount = vec2(15, 21)
   const mapSpacing = vec2.add(mapSize, vec2(4, 6))
   const topLeftMapOffset = vec2(3, 5)
-  const mapInfoSignOffset = vec2(10, -2)
   for (let x = 0; x < totalMapCount.x; x++) {
     for (let y = 0; y < totalMapCount.y; y++) {
       const sectionTopLeft = vec2.add(topLeftMapOffset, vec2.mul(vec2(x, y), mapSpacing))
@@ -887,7 +887,6 @@ function loadBlockTypes(bombotBlocks: DeserialisedStructure) {
     for (let x = blockTypeDataStartPos.x; x < blockTypeDataEndPos.x; x++) {
       const blockTypeIndicatorBlock = bombotBlocks.blocks[LayerType.Background][x][y + 1]
       if (blockTypeIndicatorBlock.bId === 0) {
-        console.log('useBomBotStore().blockTypes: ', useBomBotWorldStore().blockTypes)
         return
       }
 
@@ -946,7 +945,7 @@ function isBomBotMapValid(
   const hasIllegalBlocks = worldBlocks.some((wb) => {
     if (useBomBotWorldStore().blockTypes[wb.block.bId] === BomBotBlockType.ILLEGAL) {
       console.error(
-        `Illegal block found at local pos: ${wb.pos.x}, ${wb.pos.y}; in map pos ${sectionTopLeft.x}, ${sectionTopLeft.y}`,
+        `Illegal block found. Local pos: ${wb.pos.x}, ${wb.pos.y}. Map pos ${sectionTopLeft.x}, ${sectionTopLeft.y}`,
       )
       return true
     } else {
@@ -959,7 +958,21 @@ function isBomBotMapValid(
 
   const hasAvailableSpawnPositions = getAvailableSpawnPositions(mapBlocks).length > 0
   if (!hasAvailableSpawnPositions) {
-    console.error(`No available spawn positions found in map pos ${sectionTopLeft.x}, ${sectionTopLeft.y}`)
+    console.error(`No available spawn positions. Map pos ${sectionTopLeft.x}, ${sectionTopLeft.y}`)
+    return false
+  }
+
+  const mapInfoSignBlock =
+    bombotBlocks.blocks[LayerType.Foreground][sectionTopLeft.x + mapInfoSignOffset.x][
+      sectionTopLeft.y + mapInfoSignOffset.y
+    ]
+  const signBlockText = mapInfoSignBlock.args[0] as string
+  const signBlockTextLines = signBlockText.split('\n')
+  const mapInfoSignHasAllInfo = signBlockTextLines.length == 3
+  if (!mapInfoSignHasAllInfo) {
+    console.error(
+      `Expected 3 lines in sign describing map name and author. Map pos ${sectionTopLeft.x}, ${sectionTopLeft.y}`,
+    )
     return false
   }
 
