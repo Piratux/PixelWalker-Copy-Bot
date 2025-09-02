@@ -38,6 +38,10 @@ const mapSize = vec2(22, 11)
 const mapTopLeftPos = vec2(39, 45)
 const bomberAreaTopLeft = vec2(39, 43)
 
+// NOTE: it's not a good idea to rely on these being constant, but it will do for now
+const TEAM_NONE = 0
+const TEAM_RED = 1
+
 const callbacks: CallbackEntry[] = [
   { name: 'playerInitPacket', fn: playerInitPacketReceived },
   { name: 'playerJoinedPacket', fn: playerJoinedPacketReceived },
@@ -79,7 +83,7 @@ function playerInitPacketReceived() {
     enabled: true,
   })
 
-  sendRawMessage(`/team #${getPwGameWorldHelper().botPlayerId} 1`)
+  sendRawMessage(`/team #${getPwGameWorldHelper().botPlayerId} ${TEAM_RED}`)
 }
 
 function removePlayerFromPlayersInGame(playerId: number) {
@@ -100,8 +104,9 @@ function playerMovedPacketReceived(data: ProtoGen.PlayerMovedPacket) {
     performBombAction(clamp(Math.floor(data.position!.x / 16), mapTopLeftPos.x, mapTopLeftPos.x + mapSize.x - 1))
   }
 
-  if (getPwGameWorldHelper().getPlayer(data.playerId!)?.states?.teamId === 1) {
-    sendRawMessage(`/team #${data.playerId} none`)
+  const player = getPwGameWorldHelper().getPlayer(data.playerId!)
+  if (player?.states?.teamId === TEAM_RED && player?.states?.godmode === false) {
+    sendRawMessage(`/team #${data.playerId} ${TEAM_NONE}`)
   }
 }
 
@@ -163,13 +168,22 @@ function disqualifyPlayerFromRound(playerId: number) {
   if (useBomBotWorldStore().currentState === BomBotState.PLAYING) {
     if (getPlayerIdsInGame().includes(playerId)) {
       removePlayerFromPlayersInGame(playerId)
-      sendRawMessage(`/team #${playerId} none`)
+      sendRawMessage(`/team #${playerId} ${TEAM_NONE}`)
     }
   }
 }
 
 function playerGodModePacketReceived(data: ProtoGen.PlayerGodModePacket) {
-  disqualifyPlayerFromRound(data.playerId!)
+  const playerId = data.playerId
+  if (!playerId) {
+    return
+  }
+  disqualifyPlayerFromRound(playerId)
+  if (data.enabled) {
+    sendRawMessage(`/team #${playerId} ${TEAM_RED}`)
+  } else {
+    sendRawMessage(`/team #${playerId} ${TEAM_NONE}`)
+  }
 }
 
 function playerResetPacketReceived(data: ProtoGen.PlayerResetPacket) {
@@ -493,7 +507,7 @@ function playerWinRound(playerId: number) {
   const winPos = vec2(55, 58)
   sendRawMessage(`/tp #${playerId} ${winPos.x} ${winPos.y}`)
   sendRawMessage(`/givecrown #${playerId}`)
-  sendRawMessage(`/team #${playerId} none`)
+  sendRawMessage(`/team #${playerId} ${TEAM_NONE}`)
   sendGlobalChatMessage(`${getPwGameWorldHelper().getPlayer(playerId)?.username} wins!`)
   useBomBotWorldStore().currentState = BomBotState.RESET_STORE
 }
@@ -695,7 +709,7 @@ function updateBomberTimeIndication() {
 function disqualifyPlayerFromRoundBecauseAfk(playerId: number) {
   const afkPos = vec2(43, 58)
   sendRawMessage(`/tp #${playerId} ${afkPos.x} ${afkPos.y}`)
-  sendRawMessage(`/team #${playerId} 1`)
+  sendRawMessage(`/team #${playerId} ${TEAM_RED}`)
   sendPrivateChatMessage('You were disqualified from the round for being AFK', playerId)
   removePlayerFromPlayersInGame(playerId)
 }
