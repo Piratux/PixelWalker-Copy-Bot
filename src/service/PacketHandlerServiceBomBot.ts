@@ -29,6 +29,7 @@ import { handleException } from '@/util/Exception.ts'
 import { useBomBotRoundStore } from '@/store/BomBotRoundStore.ts'
 import { getRandomInt } from '@/util/Random.ts'
 import { clamp } from '@/util/Numbers.ts'
+import { userBomBotAutomaticRestartCounterStore } from '@/store/BomBotAutomaticRestartCounterStore.ts'
 
 const blockTypeDataStartPos = vec2(20, 361) // inclusive x
 const blockTypeDataEndPos = vec2(389, 361) // exclusive x
@@ -65,7 +66,7 @@ if (import.meta.hot) {
     if (getPwBotType() === BotType.BOM_BOT) {
       hotReloadCallbacks(callbacks)
       if (useBomBotWorldStore().currentState !== BomBotState.STOPPED) {
-        void restartBomBot()
+        void autoRestartBomBot()
       }
     }
   })
@@ -87,7 +88,7 @@ function removePlayerFromPlayersInGame(playerId: number) {
 
 async function handleBombotError(e: unknown) {
   handleException(e)
-  await restartBomBot()
+  await autoRestartBomBot()
 }
 
 function playerMovedPacketReceived(data: ProtoGen.PlayerMovedPacket) {
@@ -191,7 +192,6 @@ function playerCountersUpdatePacketReceived(data: ProtoGen.PlayerCountersUpdateP
 }
 
 function playerTeamUpdatePacketReceived(data: ProtoGen.PlayerTeamUpdatePacket) {
-  // TODO: tp player only if it's allowed
   if (useBomBotWorldStore().currentState === BomBotState.WAITING_FOR_ALL_PLAYERS_TO_BE_TELEPORTED_TO_MAP) {
     const randomPos = getRandomAvailablePlayerSpawnPosition()
     sendRawMessage(`/tp #${data.playerId} ${randomPos.x} ${randomPos.y}`)
@@ -260,6 +260,17 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       }))
       await placeMultipleBlocks(blocks)
       break
+    }
+    case '.simulatecrash': {
+      if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+        return
+      }
+
+      if (!isDeveloper(playerId)) {
+        sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
+        return
+      }
+      throw new Error('error')
     }
     default:
       if (args[0].startsWith('.')) {
@@ -389,8 +400,6 @@ async function loadBomBotData() {
   }
 
   sendGlobalChatMessage(`Total of ${useBomBotWorldStore().bomBotMaps.length} maps loaded`)
-
-  // TODO: validate (map has only allowed blocks, sign block has 3 lines, there is at least 1 spawn position)
 }
 
 function stopCommandReceived(_args: string[], playerId: number) {
@@ -456,7 +465,7 @@ async function everySecondUpdate(): Promise<void> {
     await everySecondBomBotUpdate()
   } catch (e) {
     handleException(e)
-    await restartBomBot()
+    await autoRestartBomBot()
     return
   }
 
@@ -773,9 +782,23 @@ function loadBlockTypes(bombotBlocks: DeserialisedStructure) {
   }
 }
 
-async function restartBomBot() {
+async function autoRestartBomBot() {
+  if (useBomBotWorldStore().currentState === BomBotState.STOPPED) {
+    return
+  }
+
   sendGlobalChatMessage('Restarting bombot...')
   stopBomBot()
+
+  const MAX_AUTOMATIC_RESTARTS = 3
+  if (userBomBotAutomaticRestartCounterStore().totalAutomaticRestarts >= MAX_AUTOMATIC_RESTARTS) {
+    sendGlobalChatMessage(
+      `ERROR! Bombot has automatically restarted ${MAX_AUTOMATIC_RESTARTS} times, not restarting again`,
+    )
+    return
+  }
+  userBomBotAutomaticRestartCounterStore().totalAutomaticRestarts++
+
   await startBomBot(false)
 }
 
