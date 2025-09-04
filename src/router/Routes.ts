@@ -48,12 +48,6 @@ export const EerImportViewRoute = {
   component: () => import('@/view/EerImportView.vue'),
 }
 
-export const HostBombotViewRoute = {
-  path: `${basePath}/dev`,
-  name: 'host-bombot',
-  component: () => import('@/view/HostBombotView.vue'),
-}
-
 export const NotFoundViewRoute = {
   path: '/:pathMatch(.*)*',
   name: 'notFound',
