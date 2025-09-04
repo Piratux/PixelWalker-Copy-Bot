@@ -5,6 +5,7 @@ import {
   DeserialisedStructure,
   LayerType,
   Point,
+  PWGameWorldHelper,
   SendableBlockPacket,
 } from 'pw-js-world'
 import {
@@ -20,6 +21,10 @@ import { sleep } from '@/util/Sleep.ts'
 import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { cloneDeep } from 'lodash-es'
+import { PWApiClient, PWGameClient } from 'pw-js-api'
+import { getAllWorldBlocks, pwAuthenticate, pwJoinWorld } from '@/service/PwClientService.ts'
+import { handleException } from '@/util/Exception.ts'
+import waitUntil from 'async-wait-until'
 
 export function getBlockAt(pos: Point, layer: number): Block {
   try {
@@ -39,7 +44,10 @@ export async function placeMultipleBlocks(worldBlocks: WorldBlock[]) {
   return await placePackets(packets, worldBlocks.length)
 }
 
-export async function placeWorldDataBlocks(worldData: DeserialisedStructure, pos: Point): Promise<boolean> {
+export async function placeWorldDataBlocks(
+  worldData: DeserialisedStructure,
+  pos: Point = vec2(0, 0),
+): Promise<boolean> {
   const packets: SendableBlockPacket[] = worldData.toPackets(pos.x, pos.y)
 
   return await placePackets(packets, worldData.width * worldData.height * TOTAL_PW_LAYERS)
@@ -170,4 +178,78 @@ export function portalIdToNumber(portalId: string): number | undefined {
   const portalIdIsInteger = /^\d{1,5}$/.test(portalId)
   const portalIdHasNoLeadingZeros = portalId === parseInt(portalId).toString()
   return portalIdIsInteger && portalIdHasNoLeadingZeros ? parseInt(portalId) : undefined
+}
+
+export async function getAnotherWorldBlocks(worldId: string): Promise<DeserialisedStructure | null> {
+  const pwApiClient = new PWApiClient(usePwClientStore().email, usePwClientStore().password)
+
+  await pwAuthenticate(pwApiClient)
+
+  const pwGameClient = new PWGameClient(pwApiClient)
+  const pwGameWorldHelper = new PWGameWorldHelper()
+
+  let copyFromAnotherWorldFinished = false
+  let blocksResult: DeserialisedStructure | null = null
+
+  pwGameClient.addHook(pwGameWorldHelper.receiveHook).addCallback('playerInitPacket', () => {
+    try {
+      pwGameClient.send('playerInitReceived')
+
+      blocksResult = getAllWorldBlocks(pwGameWorldHelper)
+    } catch (e) {
+      handleException(e)
+    } finally {
+      pwGameClient.disconnect(false)
+      copyFromAnotherWorldFinished = true
+    }
+  })
+
+  await pwJoinWorld(pwGameClient, worldId)
+
+  await waitUntil(() => copyFromAnotherWorldFinished, { timeout: 10000, intervalBetweenAttempts: 1000 })
+  return blocksResult
+}
+
+// Inclusive on both ends
+export function getDeserialisedStructureSection(
+  blocks: DeserialisedStructure,
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+): DeserialisedStructure {
+  if (startX > endX) {
+    throw new Error('Starting X is greater than ending X')
+  }
+  if (startY > endY) {
+    throw new Error('Starting Y is greater than ending Y')
+  }
+
+  const blocksResult = new DeserialisedStructure([[], [], []], { width: endX - startX + 1, height: endY - startY + 1 })
+  for (let l = 0; l < TOTAL_PW_LAYERS; l++) {
+    for (let x = startX, width = Math.min(endX, blocks.blocks[l].length); x <= width; x++) {
+      blocksResult.blocks[l][x - startX] = []
+      for (let y = startY, height = Math.min(endY, blocks.blocks[l][x].length); y <= height; y++) {
+        blocksResult.blocks[l][x - startX][y - startY] = blocks.blocks[l][x][y].clone()
+      }
+    }
+  }
+  return blocksResult
+}
+
+// Inclusive on both ends
+export function getDeserialisedStructureSectionVec2(
+  blocks: DeserialisedStructure,
+  startPos: vec2,
+  endPos: vec2,
+): DeserialisedStructure {
+  return getDeserialisedStructureSection(blocks, startPos.x, startPos.y, endPos.x, endPos.y)
+}
+
+export function applyPosOffsetForBlocks(offsetPos: Point, worldBlocks: WorldBlock[]) {
+  return worldBlocks.map((worldBlock) => {
+    const clonedBlock = cloneDeep(worldBlock)
+    clonedBlock.pos = vec2.add(clonedBlock.pos, offsetPos)
+    return clonedBlock
+  })
 }

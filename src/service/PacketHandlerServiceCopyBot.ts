@@ -1,39 +1,41 @@
 import {
   getPwBlocks,
   getPwBlocksByPwId,
+  getPwBotType,
   getPwGameClient,
   getPwGameWorldHelper,
   usePwClientStore,
 } from '@/store/PwClientStore.ts'
-import { Block, ComponentTypeHeader, IPlayer, LayerType, Point, PWGameWorldHelper } from 'pw-js-world'
+import { Block, ComponentTypeHeader, IPlayer, LayerType, Point } from 'pw-js-world'
 import { cloneDeep, isEqual } from 'lodash-es'
 import { BotData, createBotData } from '@/type/BotData.ts'
-import { getPlayerBotData } from '@/store/BotStore.ts'
+import { getPlayerCopyBotData } from '@/store/CopyBotStore.ts'
 import { BotState } from '@/enum/BotState.ts'
 import { WorldBlock } from '@/type/WorldBlock.ts'
 import { sendGlobalChatMessage, sendPrivateChatMessage } from '@/service/ChatMessageService.ts'
 import { vec2 } from '@basementuniverse/vec'
 import {
+  applyPosOffsetForBlocks,
+  blockIsPortal,
   convertDeserializedStructureToWorldBlocks,
+  getAnotherWorldBlocks,
   getBlockAt,
-  getBlockName,
-  placeMultipleBlocks,
   getBlockIdFromString,
   getBlockLayer,
-  blockIsPortal,
+  getBlockName,
+  getDeserialisedStructureSection,
+  placeMultipleBlocks,
   portalIdToNumber,
 } from '@/service/WorldService.ts'
 import { addUndoItemWorldBlock, performRedo, performUndo } from '@/service/UndoRedoService.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
 import { performRuntimeTests } from '@/test/RuntimeTests.ts'
-import { ProtoGen, PWApiClient, PWGameClient } from 'pw-js-api'
+import { ProtoGen } from 'pw-js-api'
 import {
-  getAllWorldBlocks,
-  pwAuthenticate,
+  commonPlayerInitPacketReceived,
+  hotReloadCallbacks,
   pwCheckEdit,
   pwCreateEmptyBlocks,
-  pwEnterEditKey,
-  pwJoinWorld,
 } from '@/service/PwClientService.ts'
 import { isDeveloper } from '@/util/Environment'
 import { getImportedFromPwlvlData } from '@/service/PwlvlImporterService.ts'
@@ -41,28 +43,23 @@ import { getWorldIdIfUrl } from '@/service/WorldIdExtractorService.ts'
 import { handleException } from '@/util/Exception.ts'
 import { GameError } from '@/class/GameError.ts'
 import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
-import type { WorldEventNames } from 'pw-js-api'
-import { Promisable } from '@/util/Promise'
 import { bufferToArrayBuffer } from '@/util/Buffers.ts'
+import { CallbackEntry } from '@/type/CallbackEntry.ts'
+import { BotType } from '@/enum/BotType.ts'
 
-interface CallbackEntry {
-  name: WorldEventNames
-  // we disable any here because there is no reasonable way to represent the generic packet arguments that properly interfaces with pw-js-api
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  fn: (...args: any) => Promisable<void | 'STOP'>
-}
 const callbacks: CallbackEntry[] = [
-  { name: 'playerInitPacket', fn: playerInitPacketReceived },
+  { name: 'playerInitPacket', fn: commonPlayerInitPacketReceived },
   { name: 'worldBlockPlacedPacket', fn: worldBlockPlacedPacketReceived },
   { name: 'playerChatPacket', fn: playerChatPacketReceived },
   { name: 'playerJoinedPacket', fn: playerJoinedPacketReceived },
 ]
 
-export function registerCallbacks() {
+export function registerCopyBotCallbacks() {
   const client = getPwGameClient()
   const helper = getPwGameWorldHelper()
   client.addHook(helper.receiveHook)
   client.addCallback('debug', console.log)
+  client.addCallback('error', handleException)
   for (const cb of callbacks) {
     client.addCallback(cb.name, cb.fn)
   }
@@ -70,24 +67,10 @@ export function registerCallbacks() {
 
 if (import.meta.hot) {
   import.meta.hot.on('vite:afterUpdate', ({}) => {
-    hotReload()
+    if (getPwBotType() === BotType.COPY_BOT) {
+      hotReloadCallbacks(callbacks)
+    }
   })
-}
-
-function hotReload() {
-  const client = getPwGameClient()
-  if (!client) {
-    return
-  }
-
-  for (const cb of callbacks) {
-    client.removeCallback(cb.name)
-    client.addCallback(cb.name, cb.fn)
-  }
-  const date = new Date(Date.now())
-  const message = `[${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}] Hot reloaded.`
-  console.log(message)
-  sendGlobalChatMessage(message)
 }
 
 function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
@@ -95,8 +78,8 @@ function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
   if (!playerId) {
     return
   }
-  if (!getPlayerBotData()[playerId]) {
-    getPlayerBotData()[playerId] = createBotData()
+  if (!getPlayerCopyBotData()[playerId]) {
+    getPlayerCopyBotData()[playerId] = createBotData()
   }
   sendPrivateChatMessage('Copy Bot is here! Type .help to show usage!', playerId)
 }
@@ -106,14 +89,14 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
   const playerId = data.playerId!
 
   switch (args[0].toLowerCase()) {
+    case '.help':
+      helpCommandReceived(args, playerId)
+      break
     case '.placeall':
       await placeallCommandReceived(args, playerId)
       break
     case '.ping':
       sendPrivateChatMessage('pong', playerId)
-      break
-    case '.help':
-      helpCommandReceived(args, playerId)
       break
     case '.edit':
       editCommandReceived(args, playerId)
@@ -150,7 +133,7 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
 }
 
 function maskCommandReceived(args: string[], playerId: number) {
-  const botData = getPlayerBotData()[playerId]
+  const botData = getPlayerCopyBotData()[playerId]
   if (args.includes('all')) {
     botData.maskBackgroundEnabled = true
     botData.maskForegroundEnabled = true
@@ -184,7 +167,7 @@ function maskCommandReceived(args: string[], playerId: number) {
 }
 
 function moveCommandReceived(_args: string[], playerId: number) {
-  const botData = getPlayerBotData()[playerId]
+  const botData = getPlayerCopyBotData()[playerId]
   botData.moveEnabled = !botData.moveEnabled
 
   sendPrivateChatMessage(`Move mode ${botData.moveEnabled ? 'enabled' : 'disabled'}`, playerId)
@@ -297,67 +280,41 @@ async function importCommandReceived(args: string[], playerId: number) {
     }
   }
 
-  const pwApiClient = new PWApiClient(usePwClientStore().email, usePwClientStore().password)
+  const worldId = getWorldIdIfUrl(args[1])
 
-  try {
-    await pwAuthenticate(pwApiClient)
-  } catch (e) {
-    handleException(e)
+  sendGlobalChatMessage(`Importing world from ${worldId}`)
+
+  const blocksFromAnotherWorld = await getAnotherWorldBlocks(worldId)
+  if (!blocksFromAnotherWorld) {
+    sendGlobalChatMessage('ERROR! Failed to get blocks from another world.')
     return
   }
 
-  const pwGameClient = new PWGameClient(pwApiClient)
-  const pwGameWorldHelper = new PWGameWorldHelper()
+  const blocks = getDeserialisedStructureSection(blocksFromAnotherWorld, srcFromX, srcFromY, srcToX, srcToY)
 
-  const worldId = getWorldIdIfUrl(args[1])
+  let allBlocks: WorldBlock[]
+  if (partialImportUsed) {
+    allBlocks = convertDeserializedStructureToWorldBlocks(blocks, vec2(destToX, destToY))
+  } else {
+    const emptyBlocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
+    const worldData = getImportedFromPwlvlData(bufferToArrayBuffer(blocks.toBuffer()))
+    const emptyBlocksWorldBlocks = convertDeserializedStructureToWorldBlocks(emptyBlocks)
+    const worldDataWorldBlocks = convertDeserializedStructureToWorldBlocks(worldData)
+    allBlocks = mergeWorldBlocks(emptyBlocksWorldBlocks, worldDataWorldBlocks)
+  }
 
-  pwGameClient.addHook(pwGameWorldHelper.receiveHook).addCallback('playerInitPacket', async () => {
-    try {
-      pwGameClient.send('playerInitReceived')
+  const botData = getPlayerCopyBotData()[playerId]
+  allBlocks = filterByLayerMasks(allBlocks, botData)
+  addUndoItemWorldBlock(botData, allBlocks)
 
-      const blocks = partialImportUsed
-        ? pwGameWorldHelper.sectionBlocks(srcFromX, srcFromY, srcToX, srcToY)
-        : getAllWorldBlocks(pwGameWorldHelper)
-
-      sendGlobalChatMessage(`Importing world from ${worldId}`)
-
-      const botData = getPlayerBotData()[playerId]
-
-      let allBlocks: WorldBlock[]
-      if (partialImportUsed) {
-        allBlocks = convertDeserializedStructureToWorldBlocks(blocks, vec2(destToX, destToY))
-      } else {
-        const emptyBlocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
-        const worldData = getImportedFromPwlvlData(bufferToArrayBuffer(blocks.toBuffer()))
-        const emptyBlocksWorldBlocks = convertDeserializedStructureToWorldBlocks(emptyBlocks)
-        const worldDataWorldBlocks = convertDeserializedStructureToWorldBlocks(worldData)
-        allBlocks = mergeWorldBlocks(emptyBlocksWorldBlocks, worldDataWorldBlocks)
-      }
-      allBlocks = filterByLayerMasks(allBlocks, botData)
-
-      addUndoItemWorldBlock(botData, allBlocks)
-
-      const success = await placeMultipleBlocks(allBlocks)
-      let message: string
-      if (success) {
-        message = 'Finished importing world.'
-        sendGlobalChatMessage(message)
-      } else {
-        message = 'ERROR! Failed to import world.'
-        sendGlobalChatMessage(message)
-      }
-    } catch (e) {
-      handleException(e)
-    } finally {
-      pwGameClient.disconnect(false)
-    }
-  })
-
-  try {
-    await pwJoinWorld(pwGameClient, worldId)
-  } catch (e) {
-    handleException(e)
-    return
+  const success = await placeMultipleBlocks(allBlocks)
+  let message: string
+  if (success) {
+    message = 'Finished importing world.'
+    sendGlobalChatMessage(message)
+  } else {
+    message = 'ERROR! Failed to place imported world blocks.'
+    sendGlobalChatMessage(message)
   }
 }
 
@@ -389,14 +346,16 @@ function helpCommandReceived(args: string[], playerId: number) {
     return
   }
 
+  if (args[1].startsWith('.')) {
+    args[1] = args[1].substring(1)
+  }
+
   switch (args[1]) {
     case 'ping':
-    case '.ping':
       sendPrivateChatMessage('.ping - check if bot is alive by pinging it.', playerId)
       sendPrivateChatMessage(`Example usage: .ping`, playerId)
       break
     case 'help':
-    case '.help':
       sendPrivateChatMessage(
         '.help [command] - get general help, or if command is specified, get help about command.',
         playerId,
@@ -404,7 +363,6 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage(`Example usage: .help paste`, playerId)
       break
     case 'edit':
-    case '.edit':
       sendPrivateChatMessage(
         '.edit name find replace - edits selected block name substrings from "find" to "replace".',
         playerId,
@@ -418,14 +376,12 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage('name_find - restricts to blocks with this substring in their name', playerId)
       break
     case 'paste':
-    case '.paste':
       sendPrivateChatMessage('.paste x_times y_times [x_spacing y_spacing] - repeat next paste (x/y)_times.', playerId)
       sendPrivateChatMessage('(x/y)_spacing - gap size to leave between pastes.', playerId)
       sendPrivateChatMessage(`Example usage 1: .paste 2 3`, playerId)
       sendPrivateChatMessage(`Example usage 2: .paste 2 3 4 1`, playerId)
       break
     case 'smartpaste':
-    case '.smartpaste':
       sendPrivateChatMessage(
         '.smartpaste - same as .paste, but increments special block arguments, when using repeated paste.',
         playerId,
@@ -444,24 +400,20 @@ function helpCommandReceived(args: string[], playerId: number) {
       )
       break
     case 'undo':
-    case '.undo':
       sendPrivateChatMessage('.undo [count] - undoes last paste performed by bot "count" times', playerId)
       sendPrivateChatMessage(`Example usage 1: .undo`, playerId)
       sendPrivateChatMessage(`Example usage 2: .undo 3`, playerId)
       break
     case 'redo':
-    case '.redo':
       sendPrivateChatMessage('.redo [count] - redoes last paste performed by bot "count" times', playerId)
       sendPrivateChatMessage(`Example usage 1: .redo`, playerId)
       sendPrivateChatMessage(`Example usage 2: .redo 3`, playerId)
       break
     case 'move':
-    case '.move':
       sendPrivateChatMessage('.move - enabled move mode, which deletes blocks in last selected area', playerId)
       sendPrivateChatMessage('Move mode lasts until next area selection', playerId)
       break
     case 'mask':
-    case '.mask':
       sendPrivateChatMessage('.mask [all | background | foreground | overlay] - masks layers when pasting', playerId)
       sendPrivateChatMessage(
         `Example usage 1: .mask foreground background (only pastes foreground and background blocks)`,
@@ -470,7 +422,6 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage(`Example usage 2: .mask all (resets to default mask)`, playerId)
       break
     case 'import':
-    case '.import':
       sendPrivateChatMessage('.import world_id [src_from_x src_from_y src_to_x src_to_y dest_to_x dest_to_y]', playerId)
       sendPrivateChatMessage('Copies blocks from world with "world_id" and places them into current world', playerId)
       sendPrivateChatMessage('src_from_(x/y) - top left corner position to copy from', playerId)
@@ -498,7 +449,7 @@ function undoCommandReceived(args: string[], playerId: number) {
       return
     }
   }
-  const botData = getPlayerBotData()[playerId]
+  const botData = getPlayerCopyBotData()[playerId]
   performUndo(botData, playerId, count)
 }
 
@@ -516,7 +467,7 @@ function redoCommandReceived(args: string[], playerId: number) {
       return
     }
   }
-  const botData = getPlayerBotData()[playerId]
+  const botData = getPlayerCopyBotData()[playerId]
   performRedo(botData, playerId, count)
 }
 
@@ -544,7 +495,7 @@ function pasteCommandReceived(args: string[], playerId: number, smartPaste: bool
     }
   }
 
-  const botData = getPlayerBotData()[playerId]
+  const botData = getPlayerCopyBotData()[playerId]
   botData.repeatVec = vec2(repeatX, repeatY)
   botData.spacingVec = vec2(spacingX, spacingY)
   botData.smartRepeatEnabled = smartPaste
@@ -567,7 +518,7 @@ function editCommandReceived(args: string[], playerId: number) {
     return
   }
 
-  if (getPlayerBotData()[playerId].selectedBlocks.length === 0) {
+  if (getPlayerCopyBotData()[playerId].selectedBlocks.length === 0) {
     sendPrivateChatMessage(`ERROR! Select blocks before replacing them!`, playerId)
     return
   }
@@ -615,25 +566,27 @@ function editNameCommand(args: string[], playerId: number): WorldBlock[] {
 
   const editedBlocks: WorldBlock[] = []
 
-  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map((worldBlock) => {
-    const copyName = worldBlock.block.name.replace(searchFor, replaceWith)
-    if (worldBlock.block.name !== copyName && copyName != '') {
-      copyNamesFound.add(copyName)
-      const possBlockId = getBlockIdFromString(copyName)
-      if (possBlockId !== undefined && !isNaN(possBlockId)) {
-        const deepBlock = cloneDeep(worldBlock)
-        if (getBlockLayer(possBlockId) !== getBlockLayer(worldBlock.block.bId)) {
-          warning = '.edit name does not support changing layers'
-          return worldBlock
+  getPlayerCopyBotData()[playerId].selectedBlocks = getPlayerCopyBotData()[playerId].selectedBlocks.map(
+    (worldBlock) => {
+      const copyName = worldBlock.block.name.replace(searchFor, replaceWith)
+      if (worldBlock.block.name !== copyName && copyName != '') {
+        copyNamesFound.add(copyName)
+        const possBlockId = getBlockIdFromString(copyName)
+        if (possBlockId !== undefined && !isNaN(possBlockId)) {
+          const deepBlock = cloneDeep(worldBlock)
+          if (getBlockLayer(possBlockId) !== getBlockLayer(worldBlock.block.bId)) {
+            warning = '.edit name does not support changing layers'
+            return worldBlock
+          }
+          deepBlock.block = new Block(possBlockId, worldBlock.block.args)
+          counter++
+          editedBlocks.push(deepBlock)
+          return deepBlock
         }
-        deepBlock.block = new Block(possBlockId, worldBlock.block.args)
-        counter++
-        editedBlocks.push(deepBlock)
-        return deepBlock
       }
-    }
-    return worldBlock
-  })
+      return worldBlock
+    },
+  )
   if (!warning && counter == 0 && copyNamesFound.size == 1) {
     // some blocks are confusingly named, if they're trying to edit a single block type let them know that it's not valid.
     sendPrivateChatMessage(`${counter} blocks changed. ${[...copyNamesFound][0]} is not a valid block.`, playerId)
@@ -689,17 +642,19 @@ function editIdCommand(args: string[], playerId: number): WorldBlock[] {
   const editedBlocks: WorldBlock[] = []
 
   let counter = 0
-  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map((worldBlock) => {
-    if (worldBlock.block.bId !== searchForId) {
-      return worldBlock
-    } else {
-      const deepBlock = cloneDeep(worldBlock)
-      deepBlock.block = new Block(replaceWithId, worldBlock.block.args)
-      counter++
-      editedBlocks.push(deepBlock)
-      return deepBlock
-    }
-  })
+  getPlayerCopyBotData()[playerId].selectedBlocks = getPlayerCopyBotData()[playerId].selectedBlocks.map(
+    (worldBlock) => {
+      if (worldBlock.block.bId !== searchForId) {
+        return worldBlock
+      } else {
+        const deepBlock = cloneDeep(worldBlock)
+        deepBlock.block = new Block(replaceWithId, worldBlock.block.args)
+        counter++
+        editedBlocks.push(deepBlock)
+        return deepBlock
+      }
+    },
+  )
   sendPrivateChatMessage(`${counter} blocks changed ${searchForId} to ${replaceWithId}`, playerId)
   return editedBlocks
 }
@@ -717,29 +672,31 @@ function editArithmeticCommand(args: string[], playerId: number, op: mathOp, opP
 
   const editedBlocks: WorldBlock[] = []
 
-  getPlayerBotData()[playerId].selectedBlocks = getPlayerBotData()[playerId].selectedBlocks.map((worldBlock) => {
-    if (searchFor === '' || worldBlock.block.name.includes(searchFor)) {
-      if (worldBlock.block.args.length !== 0) {
-        const deepBlock = cloneDeep(worldBlock)
-        if (deepBlock.block.name === (PwBlockName.SWITCH_LOCAL_ACTIVATOR as string)) {
-          deepBlock.block.args[0] = Math.floor(op(deepBlock.block.args[0] as number, amount))
+  getPlayerCopyBotData()[playerId].selectedBlocks = getPlayerCopyBotData()[playerId].selectedBlocks.map(
+    (worldBlock) => {
+      if (searchFor === '' || worldBlock.block.name.includes(searchFor)) {
+        if (worldBlock.block.args.length !== 0) {
+          const deepBlock = cloneDeep(worldBlock)
+          if (deepBlock.block.name === (PwBlockName.SWITCH_LOCAL_ACTIVATOR as string)) {
+            deepBlock.block.args[0] = Math.floor(op(deepBlock.block.args[0] as number, amount))
+            editedBlocks.push(deepBlock)
+            return deepBlock
+          }
+          deepBlock.block.args = deepBlock.block.args.map((arg) => {
+            if (typeof arg === 'number') {
+              counter++
+              return Math.floor(op(arg, amount))
+            } else {
+              return arg
+            }
+          })
           editedBlocks.push(deepBlock)
           return deepBlock
         }
-        deepBlock.block.args = deepBlock.block.args.map((arg) => {
-          if (typeof arg === 'number') {
-            counter++
-            return Math.floor(op(arg, amount))
-          } else {
-            return arg
-          }
-        })
-        editedBlocks.push(deepBlock)
-        return deepBlock
       }
-    }
-    return worldBlock
-  })
+      return worldBlock
+    },
+  )
   sendPrivateChatMessage(`${counter} blocks ${opPast} by ${amount}`, playerId)
   return editedBlocks
 }
@@ -766,11 +723,6 @@ function editAddCommand(args: string[], playerId: number): WorldBlock[] {
 
 function editSubCommand(args: string[], playerId: number): WorldBlock[] {
   return editArithmeticCommand(args, playerId, (a, b) => a - b, 'subtracted')
-}
-
-function playerInitPacketReceived() {
-  getPwGameClient().send('playerInitReceived')
-  void pwEnterEditKey(getPwGameClient(), usePwClientStore().secretEditKey)
 }
 
 function applySmartTransformForBlocks(
@@ -1059,10 +1011,10 @@ function worldBlockPlacedPacketReceived(
 }
 
 function getBotData(playerId: number) {
-  if (!getPlayerBotData()[playerId]) {
-    getPlayerBotData()[playerId] = createBotData()
+  if (!getPlayerCopyBotData()[playerId]) {
+    getPlayerCopyBotData()[playerId] = createBotData()
   }
-  return getPlayerBotData()[playerId]
+  return getPlayerCopyBotData()[playerId]
 }
 
 function createOldWorldBlocks(positions: vec2[], oldBlocks: Block[]) {
@@ -1141,14 +1093,6 @@ function blueCoinBlockPlaced(
       pasteBlocks(botData, blockPos)
     }
   }
-}
-
-function applyPosOffsetForBlocks(offsetPos: Point, worldBlocks: WorldBlock[]) {
-  return worldBlocks.map((worldBlock) => {
-    const clonedBlock = cloneDeep(worldBlock)
-    clonedBlock.pos = vec2.add(clonedBlock.pos, offsetPos)
-    return clonedBlock
-  })
 }
 
 function getMinMaxPos(pos1: Point, pos2: Point) {

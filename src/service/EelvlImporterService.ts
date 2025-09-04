@@ -102,7 +102,7 @@ export async function importFromEelvl(fileData: ArrayBuffer) {
 
   const worldData = getImportedFromEelvlData(fileData)
 
-  const success = await placeWorldDataBlocks(worldData, vec2(0, 0))
+  const success = await placeWorldDataBlocks(worldData)
 
   let message: string
   if (success) {

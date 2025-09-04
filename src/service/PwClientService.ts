@@ -2,14 +2,16 @@ import { ListBlockResult, PWApiClient, PWGameClient } from 'pw-js-api'
 import { GENERAL_CONSTANTS, TOTAL_PW_LAYERS } from '@/constant/General.ts'
 import { Block, DeserialisedStructure, PWGameWorldHelper } from 'pw-js-world'
 import { placeWorldDataBlocks } from '@/service/WorldService.ts'
-import { vec2 } from '@basementuniverse/vec'
 import { getPwApiClient, getPwGameClient, getPwGameWorldHelper, usePwClientStore } from '@/store/PwClientStore.ts'
 import { sendGlobalChatMessage, sendPrivateChatMessage } from '@/service/ChatMessageService.ts'
 import { GameError } from '@/class/GameError.ts'
 import waitUntil, { TimeoutError } from 'async-wait-until'
-import { registerCallbacks } from '@/service/PacketHandlerService.ts'
+import { registerCopyBotCallbacks } from '@/service/PacketHandlerServiceCopyBot.ts'
 import ManyKeysMap from 'many-keys-map'
 import { EER_MAPPINGS } from '@/eer/EerMappings.ts'
+import { BotType } from '@/enum/BotType.ts'
+import { registerBomBotCallbacks } from '@/service/PacketHandlerServiceBomBot.ts'
+import { CallbackEntry } from '@/type/CallbackEntry.ts'
 
 export async function pwAuthenticate(pwApiClient: PWApiClient): Promise<void> {
   const authenticationResult = await pwApiClient.authenticate()
@@ -80,7 +82,7 @@ function initEerBlocks(eerBlocks: ListBlockResult[]) {
   })
 }
 
-export async function initPwClasses() {
+export async function initPwClasses(botType: BotType) {
   usePwClientStore().pwApiClient = new PWApiClient(usePwClientStore().email, usePwClientStore().password, {
     endpoints: {
       Api: import.meta.env.VITE_PW_API_URL,
@@ -94,7 +96,11 @@ export async function initPwClasses() {
   usePwClientStore().pwGameClient = new PWGameClient(getPwApiClient())
   usePwClientStore().pwGameWorldHelper = new PWGameWorldHelper()
 
-  registerCallbacks()
+  if (botType === BotType.COPY_BOT) {
+    registerCopyBotCallbacks()
+  } else if (botType === BotType.BOM_BOT) {
+    registerBomBotCallbacks()
+  }
 
   await pwJoinWorld(getPwGameClient(), usePwClientStore().worldId)
 
@@ -120,7 +126,7 @@ export function pwCreateEmptyBlocks(pwGameWorldHelper: PWGameWorldHelper): Deser
 
 export async function pwClearWorld(): Promise<void> {
   const emptyBlocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
-  await placeWorldDataBlocks(emptyBlocks, vec2(0, 0))
+  await placeWorldDataBlocks(emptyBlocks)
 }
 
 export function pwUserHasEditAccess(pwGameWorldHelper: PWGameWorldHelper, playerId: number): boolean {
@@ -178,4 +184,25 @@ export function pwCheckEditWhenImporting(pwGameWorldHelper: PWGameWorldHelper): 
 
 export function getAllWorldBlocks(pwGameWorldHelper: PWGameWorldHelper): DeserialisedStructure {
   return pwGameWorldHelper.sectionBlocks(0, 0, pwGameWorldHelper.width - 1, pwGameWorldHelper.height - 1)
+}
+
+export function hotReloadCallbacks(callbacks: CallbackEntry[]) {
+  const client = getPwGameClient()
+  if (!client) {
+    return
+  }
+
+  for (const cb of callbacks) {
+    client.removeCallback(cb.name)
+    client.addCallback(cb.name, cb.fn)
+  }
+  const date = new Date(Date.now())
+  const message = `[${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}] Hot reloaded.`
+  console.log(message)
+  sendGlobalChatMessage(message)
+}
+
+export function commonPlayerInitPacketReceived() {
+  getPwGameClient().send('playerInitReceived')
+  void pwEnterEditKey(getPwGameClient(), usePwClientStore().secretEditKey)
 }
