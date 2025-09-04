@@ -127,7 +127,7 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       break
     default:
       if (args[0].startsWith('.')) {
-        sendPrivateChatMessage('ERROR! Unrecognised command', playerId)
+        sendPrivateChatMessage('ERROR! Unrecognised command. Type .help to see all commands', playerId)
       }
   }
 }
@@ -431,7 +431,7 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage(`Example usage 2: .import legacy:PW4gnKMssUb0I 2 4 25 16 2 4`, playerId)
       break
     default:
-      sendPrivateChatMessage(`ERROR! Unrecognised command ${args[1]}`, playerId)
+      sendPrivateChatMessage(`ERROR! Unrecognised command ${args[1]}. Type .help to see all commands`, playerId)
   }
 }
 

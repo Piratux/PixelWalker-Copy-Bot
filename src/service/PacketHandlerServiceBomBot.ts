@@ -289,7 +289,7 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       break
     default:
       if (args[0].startsWith('.')) {
-        sendPrivateChatMessage('ERROR! Unrecognised command', playerId)
+        sendPrivateChatMessage('ERROR! Unrecognised command. Type .help to see all commands', playerId)
       }
   }
 }
@@ -344,6 +344,10 @@ function helpCommandReceived(args: string[], playerId: number) {
     return
   }
 
+  if (args[1].startsWith('.')) {
+    args[1] = args[1].substring(1)
+  }
+
   switch (args[1]) {
     case 'ping':
       sendPrivateChatMessage('.ping - check if bot is alive by pinging it.', playerId)
@@ -376,7 +380,7 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage('.plays [player_name] - shows how many times player played.', playerId)
       break
     default:
-      sendPrivateChatMessage(`ERROR! Unrecognised command ${args[1]}`, playerId)
+      sendPrivateChatMessage(`ERROR! Unrecognised command ${args[1]}. Type .help to see all commands`, playerId)
   }
 }
 
