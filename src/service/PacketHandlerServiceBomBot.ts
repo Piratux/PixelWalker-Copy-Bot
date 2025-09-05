@@ -161,6 +161,10 @@ function checkIfPowerUpUsed(data: ProtoGen.PlayerMovedPacket) {
 
       botRounData.powerupsLeft--
 
+      // Require people to press powerup even amount of times to use it.
+      // That is, we want to prevent using 2 powerups when pressing up 3 times quickly.
+      botData.lastTimeUpPressedMs = 0
+
       switch (botData.powerupSelected) {
         case BomBotPowerup.PLATFORM:
           sendPrivateChatMessage(`Powerup platform used! ${botRounData.powerupsLeft} left`, data.playerId!)
@@ -485,6 +489,7 @@ function helpCommandReceived(args: string[], playerId: number) {
         '.powerup [powerup_name] - equips/unequips powerup. Powerups can be used by double pressing up.',
         playerId,
       )
+      sendPrivateChatMessage('Available powerups: platform, shield, none', playerId)
       break
     default:
       sendPrivateChatMessage(`ERROR! Unrecognised command ${args[1]}. Type .help to see all commands`, playerId)
