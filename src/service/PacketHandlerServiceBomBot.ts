@@ -32,6 +32,7 @@ import { getRandomInt } from '@/util/Random.ts'
 import { clamp } from '@/util/Numbers.ts'
 import { userBomBotAutomaticRestartCounterStore } from '@/store/BomBotAutomaticRestartCounterStore.ts'
 import { BomBotStatData, createBomBotStatData } from '@/type/BomBotPlayerStatData.ts'
+import waitUntil from 'async-wait-until'
 
 const blockTypeDataStartPos = vec2(20, 361) // inclusive x
 const blockTypeDataEndPos = vec2(389, 361) // exclusive x
@@ -274,7 +275,7 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       await startCommandReceived(args, playerId, false)
       break
     case '.stop':
-      stopCommandReceived(args, playerId)
+      await stopCommandReceived(args, playerId)
       break
     case '.afk':
       afkCommandReceived(args, playerId)
@@ -507,7 +508,7 @@ async function loadBomBotData() {
   sendGlobalChatMessage(`Total of ${useBomBotWorldStore().bomBotMaps.length} maps loaded`)
 }
 
-function stopCommandReceived(_args: string[], playerId: number) {
+async function stopCommandReceived(_args: string[], playerId: number) {
   if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
     return
   }
@@ -522,12 +523,16 @@ function stopCommandReceived(_args: string[], playerId: number) {
     return
   }
 
-  stopBomBot()
+  await stopBomBot()
 }
 
-function stopBomBot() {
+async function stopBomBot() {
   sendGlobalChatMessage('Stopping BomBot...')
   useBomBotWorldStore().currentState = BomBotState.STOPPED
+  await waitUntil(() => !useBomBotWorldStore().everySecondUpdateIsRunning, {
+    timeout: 15000,
+    intervalBetweenAttempts: 1000,
+  })
   sendGlobalChatMessage('BomBot stopped!')
 }
 
@@ -562,11 +567,14 @@ async function startBomBot(loadWorld: boolean) {
   useBomBotWorldStore().currentState = BomBotState.RESET_STORE
 
   sendGlobalChatMessage('Bombot started!')
+
+  useBomBotWorldStore().everySecondUpdateIsRunning = true
   void everySecondUpdate()
 }
 
 async function everySecondUpdate(): Promise<void> {
   if (useBomBotWorldStore().currentState === BomBotState.STOPPED) {
+    useBomBotWorldStore().everySecondUpdateIsRunning = false
     return
   }
 
@@ -604,12 +612,12 @@ function playerWinRound(playerId: number) {
   sendGlobalChatMessage(`${getPwGameWorldHelper().getPlayer(playerId)?.username} wins!`)
   getPlayerBomBotData(playerId).wins++
 
-  useBomBotWorldStore().currentState = BomBotState.RESET_STORE
+  setBombState(BomBotState.RESET_STORE)
 }
 
 function abandonRoundDueToNoPlayersLeft() {
   sendGlobalChatMessage('No players left, ending round')
-  useBomBotWorldStore().currentState = BomBotState.RESET_STORE
+  setBombState(BomBotState.RESET_STORE)
 }
 
 function selectRandomBomber(): number {
@@ -634,14 +642,14 @@ async function everySecondBomBotUpdate() {
       return
     case BomBotState.RESET_STORE:
       useBomBotRoundStore().$reset()
-      useBomBotWorldStore().currentState = BomBotState.AWAITING_PLAYERS
+      setBombState(BomBotState.AWAITING_PLAYERS)
       return
     case BomBotState.AWAITING_PLAYERS: {
       const minimumPlayerCountRequiredToStartGame = 2
       const activePlayerCount = getActivePlayerCount()
       if (activePlayerCount >= minimumPlayerCountRequiredToStartGame) {
         sendGlobalChatMessage(`A total of ${activePlayerCount} active players were found. Starting round...`)
-        useBomBotWorldStore().currentState = BomBotState.PREPARING_FOR_NEXT_ROUND
+        setBombState(BomBotState.PREPARING_FOR_NEXT_ROUND)
         return
       }
 
@@ -671,7 +679,7 @@ async function everySecondBomBotUpdate() {
         const playerId = activePlayer.playerId
         sendRawMessage(`/tp #${playerId} ${roundStartTopLeftPos.x} ${roundStartTopLeftPos.y}`)
       }
-      useBomBotWorldStore().currentState = BomBotState.WAITING_FOR_ALL_PLAYERS_TO_BE_TELEPORTED_TO_MAP
+      setBombState(BomBotState.WAITING_FOR_ALL_PLAYERS_TO_BE_TELEPORTED_TO_MAP)
       useBomBotRoundStore().playersThatWereSelectedForRoundStart = activePlayers
 
       break
@@ -706,7 +714,7 @@ async function everySecondBomBotUpdate() {
           }
         }
 
-        useBomBotWorldStore().currentState = BomBotState.PLAYING
+        setBombState(BomBotState.PLAYING)
       }
 
       break
@@ -929,7 +937,7 @@ async function autoRestartBomBot() {
   }
 
   sendGlobalChatMessage('Restarting bombot...')
-  stopBomBot()
+  await stopBomBot()
 
   const MAX_AUTOMATIC_RESTARTS = 3
   if (userBomBotAutomaticRestartCounterStore().totalAutomaticRestarts >= MAX_AUTOMATIC_RESTARTS) {
@@ -998,4 +1006,12 @@ function getPlayerBomBotData(playerId: number): BomBotStatData {
     useBomBotWorldStore().playerBombotStatData[playerId] = createBomBotStatData()
   }
   return useBomBotWorldStore().playerBombotStatData[playerId]
+}
+
+function setBombState(newState: BomBotState) {
+  // Prevent state from being changed if we're trying to stop the bot
+  if (useBomBotWorldStore().currentState === BomBotState.STOPPED) {
+    return
+  }
+  useBomBotWorldStore().currentState = newState
 }
