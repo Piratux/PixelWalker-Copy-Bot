@@ -12,8 +12,9 @@ export const useBomBotRoundStore = defineStore('BomBotRoundStore', () => {
   const totalPlayersTeleportedToMapLastSeenValue = ref<number>(0)
   const totalPlayersTeleportedToMapSecondsPassedSinceValuesMatch = ref<number>(0)
   const playersThatWereSelectedForRoundStart = ref<Player[]>([])
+  const playerIdsBomberQueueOriginal = ref<number[]>([]) // couldn't think of better name for this
+  const playerIdsBomberQueueRemainder = ref<number[]>([])
   const bomberPlayerId = ref<number>(0)
-  const previousBomberPlayerId = ref<number>(0) // prevent same bomber twice in a row
   // TODO: allow bomber to consecutively place bombs, once death packet contains position of player death
   // const totalTimesBomberKilledSomeoneInARow = ref<number>(0)
   // const playerWasKilledByLastBomb = ref<boolean>(false)
@@ -33,8 +34,9 @@ export const useBomBotRoundStore = defineStore('BomBotRoundStore', () => {
     totalPlayersTeleportedToMapLastSeenValue,
     totalPlayersTeleportedToMapSecondsPassedSinceValuesMatch,
     playersThatWereSelectedForRoundStart,
+    playerIdsBomberQueueOriginal,
+    playerIdsBomberQueueRemainder,
     bomberPlayerId,
-    previousBomberPlayerId,
     // totalTimesBomberKilledSomeoneInARow,
     // playerWasKilledByLastBomb,
     secondsSpentByBomber,

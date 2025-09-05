@@ -5,7 +5,7 @@ import { CallbackEntry } from '@/type/CallbackEntry.ts'
 import { commonPlayerInitPacketReceived, hotReloadCallbacks, pwCheckEdit } from '@/service/PwClientService.ts'
 import { isDeveloper } from '@/util/Environment.ts'
 import { vec2 } from '@basementuniverse/vec'
-import { cloneDeep } from 'lodash-es'
+import { cloneDeep, shuffle } from 'lodash-es'
 import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
 import { WorldBlock } from '@/type/WorldBlock.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
@@ -95,6 +95,9 @@ function playerInitPacketReceived() {
 
 function removePlayerFromPlayersInGame(playerId: number) {
   useBomBotRoundStore().playersInGame = useBomBotRoundStore().playersInGame.filter((p) => p.playerId !== playerId)
+  useBomBotRoundStore().playerIdsBomberQueueRemainder = useBomBotRoundStore().playerIdsBomberQueueRemainder.filter(
+    (pId) => pId !== playerId,
+  )
 }
 
 async function handleBombotError(e: unknown) {
@@ -736,13 +739,16 @@ function abandonRoundDueToNoPlayersLeft() {
 
 function selectRandomBomber(): number {
   const playerIdsInGame = getPlayerIdsInGame()
-  if (useBomBotRoundStore().previousBomberPlayerId !== 0) {
-    const randomIndex = getRandomInt(0, playerIdsInGame.length - 1)
-    return playerIdsInGame.filter((pId) => pId !== useBomBotRoundStore().previousBomberPlayerId)[randomIndex]
-  } else {
-    const randomIndex = getRandomInt(0, playerIdsInGame.length)
-    return playerIdsInGame[randomIndex]
+
+  if (useBomBotRoundStore().playerIdsBomberQueueOriginal.length === 0) {
+    useBomBotRoundStore().playerIdsBomberQueueOriginal = shuffle(cloneDeep(playerIdsInGame))
   }
+
+  if (useBomBotRoundStore().playerIdsBomberQueueRemainder.length === 0) {
+    useBomBotRoundStore().playerIdsBomberQueueRemainder = cloneDeep(useBomBotRoundStore().playerIdsBomberQueueOriginal)
+  }
+
+  return useBomBotRoundStore().playerIdsBomberQueueRemainder.pop()!
 }
 
 function getRandomMap() {
@@ -867,7 +873,6 @@ async function everySecondBomBotUpdate() {
           const randomPos = getRandomAvailablePlayerSpawnPosition()
           sendRawMessage(`/tp #${useBomBotRoundStore().bomberPlayerId} ${randomPos.x} ${randomPos.y}`)
 
-          useBomBotRoundStore().previousBomberPlayerId = useBomBotRoundStore().bomberPlayerId
           useBomBotRoundStore().bomberPlayerId = 0
           // }
         }
