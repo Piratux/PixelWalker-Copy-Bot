@@ -25,6 +25,7 @@ import { PWApiClient, PWGameClient } from 'pw-js-api'
 import { getAllWorldBlocks, pwAuthenticate, pwJoinWorld } from '@/service/PwClientService.ts'
 import { handleException } from '@/util/Exception.ts'
 import waitUntil from 'async-wait-until'
+import { clamp } from '@/util/Numbers.ts'
 
 export function getBlockAt(pos: Point, layer: number): Block {
   try {
@@ -51,6 +52,36 @@ export async function placeWorldDataBlocks(
   const packets: SendableBlockPacket[] = worldData.toPackets(pos.x, pos.y)
 
   return await placePackets(packets, worldData.width * worldData.height * TOTAL_PW_LAYERS)
+}
+
+export async function placeWorldDataBlocksUsingPattern(
+  worldData: DeserialisedStructure,
+  pos: Point = vec2(0, 0),
+  blocksPlacedPerPositionSpeed = 50,
+): Promise<void> {
+  blocksPlacedPerPositionSpeed = clamp(blocksPlacedPerPositionSpeed, 1, 50)
+
+  const delayBetweenPlacementsMs = Math.ceil(1000 / blocksPlacedPerPositionSpeed)
+
+  const worldDataWidth = worldData.width
+  const worldDataHeight = worldData.height
+
+  for (let x = 0; x < worldDataWidth; x++) {
+    for (let y = 0; y < worldDataHeight; y++) {
+      const blocksToPlace: WorldBlock[] = []
+      for (let layer = 0; layer < TOTAL_PW_LAYERS; layer++) {
+        const block = worldData.blocks[layer][x][y]
+        blocksToPlace.push({
+          block: block,
+          layer: layer,
+          pos: vec2(x + pos.x, y + pos.y),
+        })
+      }
+
+      void placeMultipleBlocks(blocksToPlace)
+      await sleep(delayBetweenPlacementsMs)
+    }
+  }
 }
 
 export async function placeLayerDataBlocks(

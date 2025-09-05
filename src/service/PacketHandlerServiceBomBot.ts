@@ -16,6 +16,7 @@ import {
   getDeserialisedStructureSectionVec2,
   placeMultipleBlocks,
   placeWorldDataBlocks,
+  placeWorldDataBlocksUsingPattern,
 } from '@/service/WorldService.ts'
 import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
 import { getWorldIdIfUrl } from '@/service/WorldIdExtractorService.ts'
@@ -451,7 +452,7 @@ async function placeBomBotWorld() {
 async function placeBomBotMap(mapEntry: BomBotMapEntry) {
   sendGlobalChatMessage('Loading map: ' + mapEntry.mapName + ' by ' + mapEntry.authorName)
 
-  await placeWorldDataBlocks(mapEntry.blocks, mapTopLeftPos)
+  await placeWorldDataBlocksUsingPattern(mapEntry.blocks, mapTopLeftPos)
 }
 
 async function loadBomBotData() {
