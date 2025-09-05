@@ -31,8 +31,10 @@ import { useBomBotRoundStore } from '@/store/BomBotRoundStore.ts'
 import { getRandomInt } from '@/util/Random.ts'
 import { clamp } from '@/util/Numbers.ts'
 import { userBomBotAutomaticRestartCounterStore } from '@/store/BomBotAutomaticRestartCounterStore.ts'
-import { BomBotStatData, createBomBotStatData } from '@/type/BomBotPlayerStatData.ts'
+import { BomBotWorldData, createBomBotWorldData } from '@/type/BomBotPlayerWorldData.ts'
 import waitUntil from 'async-wait-until'
+import { BomBotPowerup } from '@/enum/BomBotPowerup.ts'
+import { BomBotRoundData, createBomBotRoundData } from '@/type/BomBotPlayerRoundData.ts'
 
 const blockTypeDataStartPos = vec2(20, 361) // inclusive x
 const blockTypeDataEndPos = vec2(389, 361) // exclusive x
@@ -113,6 +115,70 @@ function playerMovedPacketReceived(data: ProtoGen.PlayerMovedPacket) {
   if (player?.states?.teamId === TEAM_RED && player?.states?.godmode === false) {
     sendRawMessage(`/team #${data.playerId} ${TEAM_NONE}`)
   }
+
+  checkIfPowerUpUsed(data)
+}
+
+function checkIfPowerUpUsed(data: ProtoGen.PlayerMovedPacket) {
+  if (
+    useBomBotWorldStore().currentState !== BomBotState.PLAYING ||
+    data.playerId === useBomBotRoundStore().bomberPlayerId ||
+    !getPlayerIdsInGame().includes(data.playerId!)
+  ) {
+    return
+  }
+
+  const playerPos = vec2.div(data.position!, 16)
+  playerPos.x = Math.round(playerPos.x)
+  playerPos.y = Math.round(playerPos.y)
+
+  const posBelow = vec2.add(playerPos, vec2(0, 1))
+  const foregroundBlockBelow = getPwGameWorldHelper().getBlockAt(posBelow, LayerType.Foreground)
+  const overlayBlockBelow = getPwGameWorldHelper().getBlockAt(posBelow, LayerType.Overlay)
+  const playerIsInAir =
+    useBomBotWorldStore().blockTypes[foregroundBlockBelow.bId] === BomBotBlockType.NON_SOLID &&
+    useBomBotWorldStore().blockTypes[overlayBlockBelow.bId] === BomBotBlockType.NON_SOLID
+  const upPressed = data.vertical === -1 && data.horizontal === 0
+
+  if (upPressed && !playerIsInAir) {
+    const performanceNow = performance.now()
+    const botData = getPlayerBomBotWorldData(data.playerId!)
+    const upPressedMsDifference = performanceNow - botData.lastTimeUpPressedMs
+    const POWERUP_UP_PRESSED_REQUIRED_DIFFERENCE_MS = 200
+    botData.lastTimeUpPressedMs = performanceNow
+
+    if (upPressedMsDifference < POWERUP_UP_PRESSED_REQUIRED_DIFFERENCE_MS) {
+      const botRounData = getPlayerBomBotRoundData(data.playerId!)
+      if (botRounData.powerupsLeft <= 0) {
+        return
+      }
+
+      botRounData.powerupsLeft--
+
+      switch (botData.powerupSelected) {
+        case BomBotPowerup.PLATFORM:
+          sendPrivateChatMessage(`Powerup platform used! ${botRounData.powerupsLeft} left`, data.playerId!)
+          placeStructureInsideMap(useBomBotWorldStore().powerupPlatformBlocks, playerPos)
+          break
+        case BomBotPowerup.SHIELD:
+          sendPrivateChatMessage(`Powerup shield used! ${botRounData.powerupsLeft} left`, data.playerId!)
+          placeStructureInsideMap(useBomBotWorldStore().powerupShieldBlocks, playerPos)
+          break
+        default:
+          break
+      }
+    }
+  }
+}
+
+function placeStructureInsideMap(blocks: WorldBlock[], pos: vec2) {
+  let worldBlocks = blocks.map((wb) => ({
+    block: cloneDeep(wb.block),
+    layer: wb.layer,
+    pos: vec2.add(wb.pos, pos),
+  }))
+  worldBlocks = filterBlocksOutsideMapArea(worldBlocks)
+  void placeMultipleBlocks(worldBlocks)
 }
 
 function getBombSpawnPos(posX: number): vec2 {
@@ -156,13 +222,7 @@ function performBombAction(posX: number) {
   useBomBotRoundStore().bombAvailable = false
 
   const bombPos = getBombSpawnPos(posX)
-  let bombWorldBlocks = useBomBotWorldStore().bombBlocks.map((wb) => ({
-    block: cloneDeep(wb.block),
-    layer: wb.layer,
-    pos: vec2.add(vec2.add(wb.pos, bombPos), vec2(-1, -1)),
-  }))
-  bombWorldBlocks = filterBlocksOutsideMapArea(bombWorldBlocks)
-  void placeMultipleBlocks(bombWorldBlocks)
+  placeStructureInsideMap(useBomBotWorldStore().bombBlocks, bombPos)
   useBomBotRoundStore().lastBombPos = bombPos
   useBomBotRoundStore().secondsLeftBeforeBombMustBeRemoved = 2
 
@@ -245,7 +305,7 @@ function playerTeamUpdatePacketReceived(data: ProtoGen.PlayerTeamUpdatePacket) {
     sendRawMessage(`/tp #${playerId} ${randomPos.x} ${randomPos.y}`)
     useBomBotRoundStore().totalPlayersTeleportedToMap++
     useBomBotRoundStore().playersInGame.push(getPwGameWorldHelper().players.get(playerId)!)
-    getPlayerBomBotData(playerId).plays++
+    getPlayerBomBotWorldData(playerId).plays++
   }
 }
 
@@ -286,6 +346,9 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
     case '.plays':
       playsCommandReceived(args, playerId)
       break
+    case '.powerup':
+      powerupCommandReceived(args, playerId)
+      break
     case '.placeallbombot':
       await placeallbombotCommandReceived(args, playerId)
       break
@@ -293,6 +356,36 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       if (args[0].startsWith('.')) {
         sendPrivateChatMessage('ERROR! Unrecognised command. Type .help to see all commands', playerId)
       }
+  }
+}
+
+function powerupCommandReceived(args: string[], playerId: number) {
+  // TODO: use names from enum instead
+  if (args.length === 1) {
+    sendPrivateChatMessage('ERROR! Example usage: .powerup [platform|shield|none]', playerId)
+    return
+  }
+  const powerupName = args[1].toLowerCase()
+  const botData = getPlayerBomBotWorldData(playerId)
+  switch (powerupName) {
+    case 'platform':
+      botData.powerupSelected = BomBotPowerup.PLATFORM
+      sendPrivateChatMessage('Powerup selected: platform', playerId)
+      break
+    case 'shield':
+      botData.powerupSelected = BomBotPowerup.SHIELD
+      sendPrivateChatMessage('Powerup selected: shield', playerId)
+      break
+    case 'none':
+      botData.powerupSelected = null
+      sendPrivateChatMessage('Powerup unequipped', playerId)
+      break
+    default:
+      sendPrivateChatMessage('ERROR! Unrecognised powerup. Available powerups: platform, shield, none', playerId)
+  }
+  if (!botData.powerupEquippedOnce) {
+    botData.powerupEquippedOnce = true
+    sendPrivateChatMessage('Tip: Powerups can be used by double pressing up', playerId)
   }
 }
 
@@ -306,7 +399,7 @@ function playsCommandReceived(args: string[], playerId: number) {
 
 function getPlayerStat(args: string[], playerId: number, stat: 'wins' | 'plays', verb: 'won' | 'played') {
   if (args.length === 1) {
-    const botData = getPlayerBomBotData(playerId)
+    const botData = getPlayerBomBotWorldData(playerId)
     sendPrivateChatMessage(`You have ${verb} ${botData[stat]} times.`, playerId)
   } else {
     const otherPlayerName = args[1].toLowerCase()
@@ -314,7 +407,7 @@ function getPlayerStat(args: string[], playerId: number, stat: 'wins' | 'plays',
       .getPlayers()
       .find((p) => p.username.toLowerCase() === otherPlayerName)
     if (otherPlayer) {
-      const botData = getPlayerBomBotData(otherPlayer.playerId)
+      const botData = getPlayerBomBotWorldData(otherPlayer.playerId)
       sendPrivateChatMessage(`${otherPlayerName} has ${verb} ${botData[stat]} times.`, playerId)
     } else {
       sendPrivateChatMessage(`ERROR! Player ${otherPlayerName} not found.`, playerId)
@@ -380,6 +473,12 @@ function helpCommandReceived(args: string[], playerId: number) {
       break
     case 'plays':
       sendPrivateChatMessage('.plays [player_name] - shows how many times player played.', playerId)
+      break
+    case 'powerup':
+      sendPrivateChatMessage(
+        '.powerup [powerup_name] - equips/unequips powerup. Powerups can be used by double pressing up.',
+        playerId,
+      )
       break
     default:
       sendPrivateChatMessage(`ERROR! Unrecognised command ${args[1]}. Type .help to see all commands`, playerId)
@@ -456,6 +555,21 @@ async function placeBomBotMap(mapEntry: BomBotMapEntry) {
   await placeWorldDataBlocksUsingPattern(mapEntry.blocks, mapTopLeftPos)
 }
 
+function getBomBotStructure(bombotBlocks: DeserialisedStructure, topLeft: vec2, size: vec2, offset: vec2 = vec2(0, 0)) {
+  const blocks = getDeserialisedStructureSectionVec2(
+    bombotBlocks,
+    topLeft,
+    vec2.add(topLeft, vec2.add(size, vec2(-1, -1))),
+  )
+  let worldBlocks = convertDeserializedStructureToWorldBlocks(blocks)
+  worldBlocks = worldBlocks.filter((wb) => wb.layer !== LayerType.Background)
+  return worldBlocks.map((wb) => ({
+    block: cloneDeep(wb.block),
+    layer: wb.layer,
+    pos: vec2.add(wb.pos, offset),
+  }))
+}
+
 async function loadBomBotData() {
   sendGlobalChatMessage('Loading BomBot data')
   const bomBotDataWorldId = getWorldIdIfUrl('lbsz7864s3a3yih')
@@ -468,10 +582,10 @@ async function loadBomBotData() {
   useBomBotWorldStore().bombTimerBgBlockTimeSpent = bombotBlocks.blocks[LayerType.Background][10][363]
   useBomBotWorldStore().bombTimerBgBlockTimeLeft = bombotBlocks.blocks[LayerType.Background][8][363]
 
-  const bombTopLeft = vec2(3, 361)
-  const bombBlocks = getDeserialisedStructureSectionVec2(bombotBlocks, bombTopLeft, vec2.add(bombTopLeft, vec2(2, 2)))
-  const bombWorldBlocks = convertDeserializedStructureToWorldBlocks(bombBlocks)
-  useBomBotWorldStore().bombBlocks = bombWorldBlocks.filter((wb) => wb.layer !== LayerType.Background)
+  useBomBotWorldStore().bombBlocks = getBomBotStructure(bombotBlocks, vec2(3, 361), vec2(3, 3), vec2(-1, -1))
+  useBomBotWorldStore().bombRemoveBlocks = getBomBotStructure(bombotBlocks, vec2(3, 368), vec2(3, 3), vec2(-1, -1))
+  useBomBotWorldStore().powerupPlatformBlocks = getBomBotStructure(bombotBlocks, vec2(11, 379), vec2(5, 1), vec2(-2, 1))
+  useBomBotWorldStore().powerupShieldBlocks = getBomBotStructure(bombotBlocks, vec2(12, 371), vec2(3, 1), vec2(-1, -2))
 
   loadBlockTypes(bombotBlocks)
 
@@ -610,7 +724,7 @@ function playerWinRound(playerId: number) {
   sendRawMessage(`/givecrown #${playerId}`)
   sendRawMessage(`/team #${playerId} ${TEAM_NONE}`)
   sendGlobalChatMessage(`${getPwGameWorldHelper().getPlayer(playerId)?.username} wins!`)
-  getPlayerBomBotData(playerId).wins++
+  getPlayerBomBotWorldData(playerId).wins++
 
   setBombState(BomBotState.RESET_STORE)
 }
@@ -739,13 +853,7 @@ async function everySecondBomBotUpdate() {
       if (useBomBotRoundStore().secondsLeftBeforeBombMustBeRemoved > 0) {
         useBomBotRoundStore().secondsLeftBeforeBombMustBeRemoved--
         if (useBomBotRoundStore().secondsLeftBeforeBombMustBeRemoved <= 0) {
-          let bombRemoveBlocks = useBomBotWorldStore().bombBlocks.map((wb) => ({
-            block: new Block(0),
-            layer: wb.layer,
-            pos: vec2.add(vec2.add(wb.pos, useBomBotRoundStore().lastBombPos), vec2(-1, -1)),
-          }))
-          bombRemoveBlocks = filterBlocksOutsideMapArea(bombRemoveBlocks)
-          void placeMultipleBlocks(bombRemoveBlocks)
+          placeStructureInsideMap(useBomBotWorldStore().bombRemoveBlocks, useBomBotRoundStore().lastBombPos)
 
           // const MAX_TIMES_BOMBER_CAN_CONTINUE_BOMBING_AFTER_KILLING_SOMEONE_IN_A_ROW = 2
           //
@@ -805,7 +913,7 @@ async function everySecondBomBotUpdate() {
 }
 
 function informFirstTimeBomberHowToBomb() {
-  const botData = getPlayerBomBotData(useBomBotRoundStore().bomberPlayerId)
+  const botData = getPlayerBomBotWorldData(useBomBotRoundStore().bomberPlayerId)
   if (!botData.informedHowToPlaceBombOnce) {
     botData.informedHowToPlaceBombOnce = true
     sendPrivateChatMessage('You are the bomber! Press space to place a bomb.', useBomBotRoundStore().bomberPlayerId)
@@ -1001,11 +1109,18 @@ function isBomBotMapValid(
   return true
 }
 
-function getPlayerBomBotData(playerId: number): BomBotStatData {
-  if (!useBomBotWorldStore().playerBombotStatData[playerId]) {
-    useBomBotWorldStore().playerBombotStatData[playerId] = createBomBotStatData()
+function getPlayerBomBotWorldData(playerId: number): BomBotWorldData {
+  if (!useBomBotWorldStore().playerBombotWorldData[playerId]) {
+    useBomBotWorldStore().playerBombotWorldData[playerId] = createBomBotWorldData()
   }
-  return useBomBotWorldStore().playerBombotStatData[playerId]
+  return useBomBotWorldStore().playerBombotWorldData[playerId]
+}
+
+function getPlayerBomBotRoundData(playerId: number): BomBotRoundData {
+  if (!useBomBotRoundStore().playerBombotRoundData[playerId]) {
+    useBomBotRoundStore().playerBombotRoundData[playerId] = createBomBotRoundData()
+  }
+  return useBomBotRoundStore().playerBombotRoundData[playerId]
 }
 
 function setBombState(newState: BomBotState) {

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { Player } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
+import { PlayerBomBotRoundData } from '@/type/BomBotPlayerRoundData.ts'
 
 export const useBomBotRoundStore = defineStore('BomBotRoundStore', () => {
   const availablePlayerSpawnPositions = ref<vec2[]>([])
@@ -22,6 +23,7 @@ export const useBomBotRoundStore = defineStore('BomBotRoundStore', () => {
   const lastBombPos = ref<vec2>(vec2(0, 0))
   const bombAvailable = ref<boolean>(false) // prevent placing multiple bombs per bomber
   const waitingForMorePlayersMessagePrintedOnce = ref<boolean>(false)
+  const playerBombotRoundData = ref<PlayerBomBotRoundData>({})
 
   return {
     availablePlayerSpawnPositions,
@@ -41,5 +43,6 @@ export const useBomBotRoundStore = defineStore('BomBotRoundStore', () => {
     lastBombPos,
     bombAvailable,
     waitingForMorePlayersMessagePrintedOnce,
+    playerBombotRoundData,
   }
 })
