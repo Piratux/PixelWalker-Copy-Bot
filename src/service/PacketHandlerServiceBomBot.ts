@@ -95,6 +95,9 @@ function playerInitPacketReceived() {
 
 function removePlayerFromPlayersInGame(playerId: number) {
   useBomBotRoundStore().playersInGame = useBomBotRoundStore().playersInGame.filter((p) => p.playerId !== playerId)
+  useBomBotRoundStore().playerIdsBomberQueueOriginal = useBomBotRoundStore().playerIdsBomberQueueOriginal.filter(
+    (pId) => pId !== playerId,
+  )
   useBomBotRoundStore().playerIdsBomberQueueRemainder = useBomBotRoundStore().playerIdsBomberQueueRemainder.filter(
     (pId) => pId !== playerId,
   )
