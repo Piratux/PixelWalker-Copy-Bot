@@ -668,6 +668,12 @@ async function startCommandReceived(_args: string[], playerId: number, loadWorld
     return
   }
 
+  // Because /tp commands don't work for non world owners, even if they have edit rights
+  if (!getPwGameWorldHelper().getPlayer(getPwGameWorldHelper().botPlayerId)?.isWorldOwner) {
+    sendPrivateChatMessage('ERROR! Bot must be world owner for BomBot to work', playerId)
+    return
+  }
+
   await startBomBot(loadWorld)
 }
 
