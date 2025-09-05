@@ -566,6 +566,10 @@ async function startBomBot(loadWorld: boolean) {
 }
 
 async function everySecondUpdate(): Promise<void> {
+  if (useBomBotWorldStore().currentState === BomBotState.STOPPED) {
+    return
+  }
+
   try {
     await everySecondBomBotUpdate()
   } catch (e) {
@@ -574,12 +578,10 @@ async function everySecondUpdate(): Promise<void> {
     return
   }
 
-  if (useBomBotWorldStore().currentState !== BomBotState.STOPPED) {
-    // NOTE: This might be called less often than just every second, but it makes sure that `everySecondBomBotUpdate` are never executed concurrently.
-    setCustomTimeout(() => {
-      void everySecondUpdate()
-    }, 1000)
-  }
+  // NOTE: This might be called less often than just every second, but it makes sure that `everySecondBomBotUpdate` are never executed concurrently.
+  setCustomTimeout(() => {
+    void everySecondUpdate()
+  }, 1000)
 }
 
 function getActivePlayers() {
