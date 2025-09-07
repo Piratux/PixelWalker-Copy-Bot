@@ -290,14 +290,14 @@ async function importCommandReceived(args: string[], playerId: number) {
     return
   }
 
-  const blocks = getDeserialisedStructureSection(blocksFromAnotherWorld, srcFromX, srcFromY, srcToX, srcToY)
+  const partialBlocks = getDeserialisedStructureSection(blocksFromAnotherWorld, srcFromX, srcFromY, srcToX, srcToY)
 
   let allBlocks: WorldBlock[]
   if (partialImportUsed) {
-    allBlocks = convertDeserializedStructureToWorldBlocks(blocks, vec2(destToX, destToY))
+    allBlocks = convertDeserializedStructureToWorldBlocks(partialBlocks, vec2(destToX, destToY))
   } else {
     const emptyBlocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
-    const worldData = getImportedFromPwlvlData(bufferToArrayBuffer(blocks.toBuffer()))
+    const worldData = getImportedFromPwlvlData(bufferToArrayBuffer(blocksFromAnotherWorld.toBuffer()))
     const emptyBlocksWorldBlocks = convertDeserializedStructureToWorldBlocks(emptyBlocks)
     const worldDataWorldBlocks = convertDeserializedStructureToWorldBlocks(worldData)
     allBlocks = mergeWorldBlocks(emptyBlocksWorldBlocks, worldDataWorldBlocks)

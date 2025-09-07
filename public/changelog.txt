@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-09-07 Version 1.7.3
+- Bot: Fix .import command pasting just empty blocks.
+
 2025-08-21 Version 1.7.2
 - Bot: Allow .edit id to replace blocks to air (empty).
 
