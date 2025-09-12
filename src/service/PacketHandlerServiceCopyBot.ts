@@ -496,6 +496,12 @@ function pasteCommandReceived(args: string[], playerId: number, smartPaste: bool
   }
 
   const botData = getPlayerCopyBotData()[playerId]
+
+  if (botData.botState !== BotState.SELECTED_TO) {
+    sendPrivateChatMessage('ERROR! You need to select area first', playerId)
+    return
+  }
+
   botData.repeatVec = vec2(repeatX, repeatY)
   botData.spacingVec = vec2(spacingX, spacingY)
   botData.smartRepeatEnabled = smartPaste
