@@ -499,7 +499,12 @@ function pasteCommandReceived(args: string[], playerId: number, smartPaste: bool
   botData.repeatVec = vec2(repeatX, repeatY)
   botData.spacingVec = vec2(spacingX, spacingY)
   botData.smartRepeatEnabled = smartPaste
-  sendPrivateChatMessage(`Next paste will be repeated ${repeatX}x${repeatY} times`, playerId)
+  sendPrivateChatMessage(
+    `Selection repeated ${repeatX}x${repeatY} times` +
+      (spacingX !== 0 && spacingY !== 0 ? ` with spacing ${spacingX}x${spacingY}` : ''),
+    playerId,
+  )
+  pasteBlocks(botData, botData.selectedFromPos)
 }
 
 function placeEditedBlocks(playerId: number, editedBlocks: WorldBlock[]) {
