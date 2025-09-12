@@ -280,6 +280,16 @@ async function importCommandReceived(args: string[], playerId: number) {
     }
   }
 
+  // Allow specifying any 2 corners of source area
+  if (srcFromX > srcToX) {
+    ;[srcFromX, srcToX] = [srcToX, srcFromX]
+    destToX = destToX - (srcToX - srcFromX)
+  }
+  if (srcFromY > srcToY) {
+    ;[srcFromY, srcToY] = [srcToY, srcFromY]
+    destToY = destToY - (srcToY - srcFromY)
+  }
+
   const worldId = getWorldIdIfUrl(args[1])
 
   sendGlobalChatMessage(`Importing world from ${worldId}`)
