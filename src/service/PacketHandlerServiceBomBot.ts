@@ -567,11 +567,7 @@ async function placeBomBotMap(mapEntry: BomBotMapEntry) {
 }
 
 function getBomBotStructure(bombotBlocks: DeserialisedStructure, topLeft: vec2, size: vec2, offset: vec2 = vec2(0, 0)) {
-  const blocks = getDeserialisedStructureSectionVec2(
-    bombotBlocks,
-    topLeft,
-    vec2.add(topLeft, vec2.add(size, vec2(-1, -1))),
-  )
+  const blocks = getDeserialisedStructureSectionVec2(bombotBlocks, topLeft, vec2.addm(topLeft, size, vec2(-1, -1)))
   let worldBlocks = convertDeserializedStructureToWorldBlocks(blocks)
   worldBlocks = worldBlocks.filter((wb) => wb.layer !== LayerType.Background)
   return worldBlocks.map((wb) => ({
@@ -609,7 +605,7 @@ async function loadBomBotData() {
       const mapBlocks = getDeserialisedStructureSectionVec2(
         bombotBlocks,
         sectionTopLeft,
-        vec2.add(vec2.add(sectionTopLeft, mapSize), vec2(-1, -1)),
+        vec2.addm(sectionTopLeft, mapSize, vec2(-1, -1)),
       )
 
       if (!isBomBotMapValid(bombotBlocks, mapBlocks, sectionTopLeft)) {
