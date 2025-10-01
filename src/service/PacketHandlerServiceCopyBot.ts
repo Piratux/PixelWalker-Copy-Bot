@@ -529,7 +529,8 @@ function placeEditedBlocks(playerId: number, editedBlocks: WorldBlock[]) {
   }
 
   const botData = getBotData(playerId)
-  editedBlocks = applyPosOffsetForBlocks(botData.selectedFromPos, editedBlocks)
+  const offsetPos = vec2.add(botData.selectedFromPos, botData.selectionLocalTopLeftPos)
+  editedBlocks = applyPosOffsetForBlocks(offsetPos, editedBlocks)
   addUndoItemWorldBlock(botData, editedBlocks)
   void placeMultipleBlocks(editedBlocks)
 }

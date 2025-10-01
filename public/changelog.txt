@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-10-01 Version 1.8.1
+- Bot: Fixed .edit command in some cases not pasting edited blocks at correct location.
+
 2025-09-12 Version 1.8.0
 - Bot: Improved .paste and .smartpaste commands, by immediately pasting repeated blocks.
 - Bot: When doing partial import with .import, allow specifying any 2 corner positions (just like when selecting area with gold coins).
