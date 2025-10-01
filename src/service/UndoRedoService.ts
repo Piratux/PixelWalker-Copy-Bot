@@ -1,4 +1,4 @@
-import { BotData } from '@/type/BotData.ts'
+import { CopyBotData } from '@/type/CopyBotData.ts'
 import { WorldBlock } from '@/type/WorldBlock.ts'
 import { convertDeserializedStructureToWorldBlocks, getBlockAt, placeMultipleBlocks } from '@/service/WorldService.ts'
 import { sendPrivateChatMessage } from '@/service/ChatMessageService.ts'
@@ -7,7 +7,7 @@ import { vec2 } from '@basementuniverse/vec'
 
 const MAX_UNDO_REDO_STACK_LENGTH = 100
 
-export function addUndoItemWorldBlock(botData: BotData, newBlocks: WorldBlock[]) {
+export function addUndoItemWorldBlock(botData: CopyBotData, newBlocks: WorldBlock[]) {
   botData.redoStack = []
   if (botData.undoStack.length >= MAX_UNDO_REDO_STACK_LENGTH) {
     botData.undoStack.shift()
@@ -20,7 +20,7 @@ export function addUndoItemWorldBlock(botData: BotData, newBlocks: WorldBlock[])
 }
 
 export function addUndoItemDeserializedStructure(
-  botData: BotData,
+  botData: CopyBotData,
   blocks: DeserialisedStructure,
   offsetPos: vec2 = vec2(0, 0),
 ) {
@@ -29,7 +29,7 @@ export function addUndoItemDeserializedStructure(
 }
 
 // TODO: this could be improved by smartly merging blocks as opposed to doing undo one by one
-export function performUndo(botData: BotData, playerId: number, count: number) {
+export function performUndo(botData: CopyBotData, playerId: number, count: number) {
   let i = 0
   for (; i < count; i++) {
     const undoRedoItem = botData.undoStack.pop()
@@ -43,7 +43,7 @@ export function performUndo(botData: BotData, playerId: number, count: number) {
 }
 
 // TODO: this could be improved by smartly merging blocks as opposed to doing redo one by one
-export function performRedo(botData: BotData, playerId: number, count: number) {
+export function performRedo(botData: CopyBotData, playerId: number, count: number) {
   let i = 0
   for (; i < count; i++) {
     const undoRedoItem = botData.redoStack.pop()

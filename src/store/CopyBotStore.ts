@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { PlayerCopyBotData } from '@/type/BotData.ts'
+import { PlayerCopyBotData } from '@/type/CopyBotData.ts'
 import { ref } from 'vue'
 
 export const useCopyBotStore = defineStore('CopyBotStore', () => {

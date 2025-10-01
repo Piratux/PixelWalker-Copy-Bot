@@ -8,9 +8,9 @@ import {
 } from '@/store/PwClientStore.ts'
 import { Block, ComponentTypeHeader, IPlayer, LayerType, Point } from 'pw-js-world'
 import { cloneDeep, isEqual } from 'lodash-es'
-import { BotData, createBotData } from '@/type/BotData.ts'
+import { CopyBotData, createBotData } from '@/type/CopyBotData.ts'
 import { getPlayerCopyBotData } from '@/store/CopyBotStore.ts'
-import { BotState } from '@/enum/BotState.ts'
+import { CopyBotState } from '@/enum/CopyBotState.ts'
 import { WorldBlock } from '@/type/WorldBlock.ts'
 import { sendGlobalChatMessage, sendPrivateChatMessage } from '@/service/ChatMessageService.ts'
 import { vec2 } from '@basementuniverse/vec'
@@ -507,7 +507,7 @@ function pasteCommandReceived(args: string[], playerId: number, smartPaste: bool
 
   const botData = getPlayerCopyBotData()[playerId]
 
-  if (botData.botState !== BotState.SELECTED_TO) {
+  if (botData.botState !== CopyBotState.SELECTED_TO) {
     sendPrivateChatMessage('ERROR! You need to select area first', playerId)
     return
   }
@@ -800,7 +800,7 @@ function applySmartTransformForBlocks(
   })
 }
 
-function getSelectedAreaAsEmptyBlocks(botData: BotData) {
+function getSelectedAreaAsEmptyBlocks(botData: CopyBotData) {
   const [minPos, maxPos] = getMinMaxPos(botData.selectedFromPos, botData.selectedToPos)
   const emptyBlocks: WorldBlock[] = []
   for (let x = 0; x <= maxPos.x - minPos.x; x++) {
@@ -830,7 +830,7 @@ function mergeWorldBlocks(blocksBottom: WorldBlock[], blocksTop: WorldBlock[]) {
   return filteredBlocksBottom.concat(blocksTop)
 }
 
-function applyMoveMode(botData: BotData, allBlocks: WorldBlock[]) {
+function applyMoveMode(botData: CopyBotData, allBlocks: WorldBlock[]) {
   // TODO: There is an issue, where quickly spamming blue coins to move selected blocks, will cause some blocks to remain permanent, even though move should be non destructive.
   //  I have no idea what causes it and how to fix it.
   if (!botData.moveEnabled) {
@@ -863,7 +863,7 @@ function applyMoveMode(botData: BotData, allBlocks: WorldBlock[]) {
   return resultBlocks
 }
 
-function filterByLayerMasks(allBlocks: WorldBlock[], botData: BotData) {
+function filterByLayerMasks(allBlocks: WorldBlock[], botData: CopyBotData) {
   return allBlocks.filter((block) => {
     if (block.layer === LayerType.Background) {
       return botData.maskBackgroundEnabled
@@ -879,7 +879,7 @@ function filterByLayerMasks(allBlocks: WorldBlock[], botData: BotData) {
   })
 }
 
-function pasteBlocks(botData: BotData, blockPos: Point) {
+function pasteBlocks(botData: CopyBotData, blockPos: Point) {
   try {
     let allBlocks: WorldBlock[] = []
 
@@ -940,20 +940,20 @@ function pasteBlocks(botData: BotData, blockPos: Point) {
   }
 }
 
-function resetMoveModeData(botData: BotData) {
+function resetMoveModeData(botData: CopyBotData) {
   botData.moveOperationPerformedOnce = false
   botData.replacedByLastMoveOperationBlocks = []
 }
 
-function selectBlocks(botData: BotData, blockPos: Point, playerId: number) {
+function selectBlocks(botData: CopyBotData, blockPos: Point, playerId: number) {
   let selectedTypeText: string
-  if ([BotState.NONE, BotState.SELECTED_TO].includes(botData.botState)) {
+  if ([CopyBotState.NONE, CopyBotState.SELECTED_TO].includes(botData.botState)) {
     selectedTypeText = 'from'
-    botData.botState = BotState.SELECTED_FROM
+    botData.botState = CopyBotState.SELECTED_FROM
     botData.selectedFromPos = blockPos
   } else {
     selectedTypeText = 'to'
-    botData.botState = BotState.SELECTED_TO
+    botData.botState = CopyBotState.SELECTED_TO
     botData.selectedToPos = blockPos
     botData.selectionSize = vec2(
       Math.abs(botData.selectedToPos.x - botData.selectedFromPos.x) + 1,
@@ -1099,7 +1099,7 @@ function blueCoinBlockPlaced(
 
   const botData = getBotData(playerId)
 
-  if (botData.botState !== BotState.SELECTED_TO) {
+  if (botData.botState !== CopyBotState.SELECTED_TO) {
     sendPrivateChatMessage('ERROR! You need to select area first', playerId)
     return
   }

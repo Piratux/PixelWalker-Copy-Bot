@@ -1,11 +1,11 @@
-import { BotState } from '@/enum/BotState.ts'
+import { CopyBotState } from '@/enum/CopyBotState.ts'
 import { Point } from 'pw-js-world'
 import { WorldBlock } from '@/type/WorldBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { UndoRedoItem } from '@/type/UndoRedoItem.ts'
 
-export interface BotData {
-  botState: BotState
+export interface CopyBotData {
+  botState: CopyBotState
   selectedFromPos: Point
   selectedToPos: Point
   selectedBlocks: WorldBlock[]
@@ -25,11 +25,11 @@ export interface BotData {
   redoStack: UndoRedoItem[]
 }
 
-export type PlayerCopyBotData = Record<number, BotData>
+export type PlayerCopyBotData = Record<number, CopyBotData>
 
-export function createBotData(): BotData {
+export function createBotData(): CopyBotData {
   return {
-    botState: BotState.NONE,
+    botState: CopyBotState.NONE,
     selectedFromPos: vec2(0, 0),
     selectedToPos: vec2(0, 0),
     selectedBlocks: [],
