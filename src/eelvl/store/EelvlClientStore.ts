@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { EELVL_BLOCKS, EelvlBlock } from '@/eelvl/block/EelvlBlocks.ts'
+import ManyKeysMap from 'many-keys-map'
+import { ListBlockResult } from 'pw-js-api'
 
 export const useEelvlClientStore = defineStore('EelvlClientStore', () => {
   const blocksById = computed<Record<number, EelvlBlock>>(() => {
@@ -10,16 +12,11 @@ export const useEelvlClientStore = defineStore('EelvlClientStore', () => {
     }, {})
   })
 
-  const blocksByName = computed<Record<string, EelvlBlock>>(() => {
-    return EELVL_BLOCKS.reduce((acc: Record<string, EelvlBlock>, item: EelvlBlock) => {
-      acc[item.name] = item
-      return acc
-    }, {})
-  })
+  const blocksByParameters = ref<ManyKeysMap<number[], ListBlockResult>>(new ManyKeysMap()) // Key consist of [LegacyId, LegacyMorph]
 
   return {
     blocksById,
-    blocksByName,
+    blocksByParameters,
   }
 })
 
@@ -28,7 +25,6 @@ export function getEelvlBlocksById(): Record<number, EelvlBlock> {
   return useEelvlClientStore().blocksById
 }
 
-// TODO: Think what to do about blockname = EMPTY as there is more than 1 entry
-export function getEelvlBlocksByName(): Record<string, EelvlBlock> {
-  return useEelvlClientStore().blocksByName
+export function getPwBlocksByEelvlParameters(): ManyKeysMap<number[], ListBlockResult> {
+  return useEelvlClientStore().blocksByParameters
 }

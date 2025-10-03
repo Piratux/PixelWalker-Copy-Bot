@@ -6,12 +6,13 @@ import { vec2 } from '@basementuniverse/vec'
 import { EelvlFileHeader } from '@/eelvl/type/EelvlFileHeader.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { getBlockLayer, placeWorldDataBlocks } from '@/core/service/WorldService.ts'
-import { getPwBlocksByEelvlParameters, getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
+import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { cloneDeep } from 'lodash-es'
 import { handlePlaceBlocksResult, requireBotEditPermission } from '@/core/service/PwClientService.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { hasEelvlBlockOneIntParameter, isEelvlNpc } from '@/eelvl/service/EelvlUtilService.ts'
 import { EelvlLayer } from '@/eelvl/enum/EelvlLayer.ts'
+import { getPwBlocksByEelvlParameters } from '@/eelvl/store/EelvlClientStore.ts'
 
 export function getImportedFromEelvlData(fileData: ArrayBuffer): DeserialisedStructure {
   const bytes = new ByteArray(new Uint8Array(fileData))

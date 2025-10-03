@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { ListBlockResult, PWApiClient, PWGameClient } from 'pw-js-api'
 import { PWGameWorldHelper } from 'pw-js-world'
 import { Raw, ref } from 'vue'
-import ManyKeysMap from 'many-keys-map'
 import { BotType } from '@/core/enum/BotType.ts'
 
 export const usePwClientStore = defineStore('PwClientStore', () => {
@@ -18,8 +17,6 @@ export const usePwClientStore = defineStore('PwClientStore', () => {
   const blocks = ref<ListBlockResult[]>([]) // sorted and uppercased blocks
   const blocksByPwId = ref<Record<number, ListBlockResult>>({})
   const blocksByPwName = ref<Record<string, ListBlockResult>>({})
-  const blocksByEelvlParameters = ref<ManyKeysMap<number[], ListBlockResult>>(new ManyKeysMap()) // Key consist of [LegacyId, LegacyMorph]
-  const blocksByEerParameters = ref<ManyKeysMap<number[], ListBlockResult>>(new ManyKeysMap()) // Key consist of [LegacyId, LegacyMorph]
   const isConnected = ref<boolean>(false)
 
   return {
@@ -35,8 +32,6 @@ export const usePwClientStore = defineStore('PwClientStore', () => {
     blocks,
     blocksByPwId,
     blocksByPwName,
-    blocksByEelvlParameters,
-    blocksByEerParameters,
     isConnected,
   }
 })
@@ -65,14 +60,6 @@ export function getPwBlocksByPwId(): Record<number, ListBlockResult> {
 // TODO: Think what to do about blockname = EMPTY as there is more than 1 entry
 export function getPwBlocksByPwName(): Record<string, ListBlockResult> {
   return usePwClientStore().blocksByPwName
-}
-
-export function getPwBlocksByEelvlParameters(): ManyKeysMap<number[], ListBlockResult> {
-  return usePwClientStore().blocksByEelvlParameters
-}
-
-export function getPwBlocksByEerParameters(): ManyKeysMap<number[], ListBlockResult> {
-  return usePwClientStore().blocksByEerParameters
 }
 
 export function getPwBotType(): BotType {

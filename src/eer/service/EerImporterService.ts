@@ -14,9 +14,10 @@ import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { Block } from 'pw-js-world'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { placeMultipleBlocks } from '@/core/service/WorldService.ts'
-import { getPwBlocksByEerParameters, getPwBlocksByPwName } from '@/core/store/PwClientStore.ts'
+import { getPwBlocksByPwName } from '@/core/store/PwClientStore.ts'
 import { uint32ToInt32 } from '@/core/util/Numbers.ts'
 import { bufferToArrayBuffer } from '@/core/util/Buffers.ts'
+import { getPwBlocksByEerParameters } from '@/eer/store/EerClientStore.ts'
 
 interface EerBlock {
   type: number
