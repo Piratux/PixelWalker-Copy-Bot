@@ -12,7 +12,7 @@ async function generateBlockEnumFiles() {
 }
 
 async function generatePwBlockNameEnum() {
-  const blocks: ListBlockResult[] = await fetch('https://game.pixelwalker.net/listblocks').then((res) => res.json())
+  const blocks: ListBlockResult[] = await fetch('https://server.pixelwalker.net/listblocks').then((res) => res.json())
   const blocksSorted = blocks.sort((a, b) => a.Id - b.Id)
 
   let tsOutput = getGeneratedFileHeading()
