@@ -1,12 +1,12 @@
 import { DeserialisedStructure } from 'pw-js-world'
-import { getImportedFromPwlvlData } from '@/service/PwlvlImporterService.ts'
+import { getImportedFromPwlvlData } from '@/pwlvl/service/PwlvlImporterService.ts'
 import { deepStrictEqual } from 'node:assert'
-import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
-import { getImportedFromEelvlData } from '@/service/EelvlImporterService.ts'
-import { placeWorldDataBlocks } from '@/service/WorldService.ts'
-import { clearWorld } from '@/service/PwClientService.ts'
-import { getImportedFromPngData } from '@/service/PngImporterService.ts'
-import { getImportedFromMidiData } from '@/service/MidiImporterService.ts'
+import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
+import { getImportedFromEelvlData } from '@/eelvl/service/EelvlImporterService.ts'
+import { placeWorldDataBlocks } from '@/core/service/WorldService.ts'
+import { clearWorld } from '@/core/service/PwClientService.ts'
+import { getImportedFromPngData } from '@/png/service/PngImporterService.ts'
+import { getImportedFromMidiData } from '@/midi/service/MidiImporterService.ts'
 
 export function compareDeserialisedStructureData(
   receivedData: DeserialisedStructure,

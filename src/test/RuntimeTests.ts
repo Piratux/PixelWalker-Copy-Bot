@@ -6,9 +6,9 @@ import piratuxPfpUnquantizedPwlvlFile from '@/test/resources/piratux-pfp-unquant
 import piratuxPfpPngFile from '@/test/resources/piratux-pfp.png?url'
 import thomasBergersenAuraPianoPwlvlFile from '@/test/resources/Thomas_Bergersen-Aura_Piano.pwlvl?url'
 import thomasBergersenAuraPianoMidFile from '@/test/resources/Thomas_Bergersen-Aura_Piano.mid?url'
-import { getImportedFromEelvlData } from '@/service/EelvlImporterService.ts'
-import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
-import { getExportedToEelvlData } from '@/service/EelvlExporterService.ts'
+import { getImportedFromEelvlData } from '@/eelvl/service/EelvlImporterService.ts'
+import { sendGlobalChatMessage } from '@/core/service/ChatMessageService.ts'
+import { getExportedToEelvlData } from '@/eelvl/service/EelvlExporterService.ts'
 import {
   compareDeserialisedStructureData,
   getDataFromEelvlFile,
@@ -17,12 +17,12 @@ import {
   getDataFromPwlvlFile,
   placePwLvlblocks,
 } from '@/test/RuntimeTestsUtil.ts'
-import { authenticate, getAllWorldBlocks, joinWorld } from '@/service/PwClientService.ts'
-import { getPwGameClient, getPwGameWorldHelper, usePwClientStore } from '@/store/PwClientStore.ts'
+import { authenticate, getAllWorldBlocks, joinWorld } from '@/core/service/PwClientService.ts'
+import { getPwGameClient, getPwGameWorldHelper, usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { CustomBotEvents, PWApiClient, PWGameClient, WorldEventNames } from 'pw-js-api'
 import { PWGameWorldHelper } from 'pw-js-world'
 import waitUntil from 'async-wait-until'
-import { bufferToArrayBuffer } from '@/util/Buffers.ts'
+import { bufferToArrayBuffer } from '@/core/util/Buffers.ts'
 
 export async function performRuntimeTests() {
   sendGlobalChatMessage('[TEST] Performing runtime tests...')

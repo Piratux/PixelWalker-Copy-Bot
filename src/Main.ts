@@ -3,7 +3,7 @@ import { createVuetify } from '@/plugin/Vuetify.ts'
 import { createPinia } from 'pinia'
 import { createRouter } from '@/router/Router.ts'
 import { createApp } from 'vue'
-import { handleException } from '@/util/Exception.ts'
+import { handleException } from '@/core/util/Exception.ts'
 import { resetStorePlugin } from '@/plugin/ResetStore.ts'
 
 const vuetify = createVuetify()

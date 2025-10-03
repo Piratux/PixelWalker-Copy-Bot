@@ -34,12 +34,12 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue'
-import { MENU_ITEMS } from '@/constant/MenuItems.ts'
+import { MENU_ITEMS } from '@/core/constant/MenuItems.ts'
 import { useRoute, useRouter } from 'vue-router'
 import { DevViewRoute, LoginViewRoute } from '@/router/Routes.ts'
-import { isEnvDevViewEnabled } from '@/util/Environment.ts'
-import { withLoading } from '@/service/LoaderProxyService.ts'
-import { getPwGameClient, usePwClientStore } from '@/store/PwClientStore.ts'
+import { isEnvDevViewEnabled } from '@/core/util/Environment.ts'
+import { withLoading } from '@/core/service/LoaderProxyService.ts'
+import { getPwGameClient, usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { resetAllStores } from '@/plugin/ResetStore.ts'
 import PiOverlay from '@/component/PiOverlay.vue'
 

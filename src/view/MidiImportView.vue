@@ -1,14 +1,14 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { FileImportAsArrayBufferResult, getFileAsArrayBuffer } from '@/service/FileService.ts'
-import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
-import { importFromMidi } from '@/service/MidiImporterService'
-import { withLoading } from '@/service/LoaderProxyService.ts'
+import { FileImportAsArrayBufferResult, getFileAsArrayBuffer } from '@/core/service/FileService.ts'
+import { sendGlobalChatMessage } from '@/core/service/ChatMessageService.ts'
+import { importFromMidi } from '@/midi/service/MidiImporterService.ts'
+import { withLoading } from '@/core/service/LoaderProxyService.ts'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'
 import PiOverlay from '@/component/PiOverlay.vue'
-import { usePwClientStore } from '@/store/PwClientStore.ts'
-import { isEnvDevViewEnabled } from '@/util/Environment.ts'
+import { usePwClientStore } from '@/core/store/PwClientStore.ts'
+import { isEnvDevViewEnabled } from '@/core/util/Environment.ts'
 
 const loadingOverlay = ref(false)
 

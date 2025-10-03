@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { exportToEelvl } from '@/service/EelvlExporterService.ts'
-import { withLoading } from '@/service/LoaderProxyService.ts'
+import { exportToEelvl } from '@/eelvl/service/EelvlExporterService.ts'
+import { withLoading } from '@/core/service/LoaderProxyService.ts'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'
-import { createAsyncCallback } from '@/util/Promise.ts'
+import { createAsyncCallback } from '@/core/util/Promise.ts'
 import PiOverlay from '@/component/PiOverlay.vue'
-import { usePwClientStore } from '@/store/PwClientStore.ts'
+import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 
 const loadingOverlay = ref(false)
 

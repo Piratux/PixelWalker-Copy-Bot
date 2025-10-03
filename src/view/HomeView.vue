@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { getPwGameWorldHelper, usePwClientStore } from '@/store/PwClientStore.ts'
+import { getPwGameWorldHelper, usePwClientStore } from '@/core/store/PwClientStore.ts'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 
 const worldId = ref<string>(usePwClientStore().worldId)

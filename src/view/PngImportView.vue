@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { FileImportAsArrayBufferResult, getFileAsArrayBuffer } from '@/service/FileService.ts'
-import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
-import { importFromPng } from '@/service/PngImporterService'
-import { withLoading } from '@/service/LoaderProxyService.ts'
+import { FileImportAsArrayBufferResult, getFileAsArrayBuffer } from '@/core/service/FileService.ts'
+import { sendGlobalChatMessage } from '@/core/service/ChatMessageService.ts'
+import { importFromPng } from '@/png/service/PngImporterService.ts'
+import { withLoading } from '@/core/service/LoaderProxyService.ts'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'
 import PiOverlay from '@/component/PiOverlay.vue'
-import { usePwClientStore } from '@/store/PwClientStore.ts'
+import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 
 const loadingOverlay = ref(false)
 

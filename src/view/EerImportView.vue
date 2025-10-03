@@ -3,12 +3,12 @@ import { ref } from 'vue'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'
 import PiOverlay from '@/component/PiOverlay.vue'
-import { usePwClientStore } from '@/store/PwClientStore.ts'
+import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 import PiTextField from '@/component/PiTextField.vue'
 import { VForm } from 'vuetify/components'
-import { withLoading } from '@/service/LoaderProxyService.ts'
-import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
-import { importFromEer } from '@/service/EerImporterService.ts'
+import { withLoading } from '@/core/service/LoaderProxyService.ts'
+import { sendGlobalChatMessage } from '@/core/service/ChatMessageService.ts'
+import { importFromEer } from '@/eer/service/EerImporterService.ts'
 
 const loadingOverlay = ref(false)
 const eerRoomId = ref('')
