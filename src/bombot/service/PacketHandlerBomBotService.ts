@@ -41,6 +41,7 @@ import waitUntil from 'async-wait-until'
 import { BomBotPowerup } from '@/bombot/enum/BomBotPowerup.ts'
 import { BomBotRoundData, createBomBotRoundData } from '@/bombot/type/BomBotPlayerRoundData.ts'
 import { GameError } from '@/core/class/GameError.ts'
+import { BomBotPowerupData } from '@/bombot/type/BomBotPowerupData.ts'
 
 const blockTypeDataStartPos = vec2(20, 361) // inclusive x
 const blockTypeDataEndPos = vec2(389, 361) // exclusive x
@@ -109,12 +110,25 @@ function removePlayerFromPlayersInGame(playerId: number) {
   )
 }
 
-async function handleBombotError(e: unknown) {
+function handleBombotError(e: unknown) {
   handleException(e)
-  await autoRestartBomBot()
+  // await autoRestartBomBot() // TODO FIX
+}
+
+function convertFromPixelPosToBlockPos(pixelPos: vec2): vec2 {
+  const blockPos = vec2.div(pixelPos, 16)
+  blockPos.x = Math.round(blockPos.x)
+  blockPos.y = Math.round(blockPos.y)
+  return blockPos
 }
 
 function playerMovedPacketReceived(data: ProtoGen.PlayerMovedPacket) {
+  checkIfBombPlaced(data)
+  checkIfPowerUpUsed(data)
+  checkIfPowerUpEquipped(data)
+}
+
+function checkIfBombPlaced(data: ProtoGen.PlayerMovedPacket) {
   if (
     data.spaceJustDown &&
     useBomBotWorldStore().currentState === BomBotState.PLAYING &&
@@ -122,13 +136,6 @@ function playerMovedPacketReceived(data: ProtoGen.PlayerMovedPacket) {
   ) {
     performBombAction(clamp(Math.round(data.position!.x / 16), mapTopLeftPos.x, mapTopLeftPos.x + mapSize.x - 1))
   }
-
-  const player = getPwGameWorldHelper().getPlayer(data.playerId!)
-  if (player?.states?.teamId === TEAM_RED && player?.states?.godmode === false) {
-    sendRawMessage(`/team #${data.playerId} ${TEAM_NONE}`)
-  }
-
-  checkIfPowerUpUsed(data)
 }
 
 function checkIfPowerUpUsed(data: ProtoGen.PlayerMovedPacket) {
@@ -140,9 +147,12 @@ function checkIfPowerUpUsed(data: ProtoGen.PlayerMovedPacket) {
     return
   }
 
-  const playerPos = vec2.div(data.position!, 16)
-  playerPos.x = Math.round(playerPos.x)
-  playerPos.y = Math.round(playerPos.y)
+  const playerPos = convertFromPixelPosToBlockPos(data.position!)
+
+  const upPressed = data.vertical === -1 && data.horizontal === 0
+  if (!upPressed) {
+    return
+  }
 
   const posBelow = vec2.add(playerPos, vec2(0, 1))
   const foregroundBlockBelow = getPwGameWorldHelper().getBlockAt(posBelow, LayerType.Foreground)
@@ -150,39 +160,55 @@ function checkIfPowerUpUsed(data: ProtoGen.PlayerMovedPacket) {
   const playerIsInAir =
     useBomBotWorldStore().blockTypes[foregroundBlockBelow.bId] === BomBotBlockType.NON_SOLID &&
     useBomBotWorldStore().blockTypes[overlayBlockBelow.bId] === BomBotBlockType.NON_SOLID
-  const upPressed = data.vertical === -1 && data.horizontal === 0
+  if (playerIsInAir) {
+    return
+  }
 
-  if (upPressed && !playerIsInAir) {
-    const performanceNow = performance.now()
-    const botData = getPlayerBomBotWorldData(data.playerId!)
-    const upPressedMsDifference = performanceNow - botData.lastTimeUpPressedMs
-    const POWERUP_UP_PRESSED_REQUIRED_DIFFERENCE_MS = 200
-    botData.lastTimeUpPressedMs = performanceNow
+  const botData = getPlayerBomBotWorldData(data.playerId!)
+  if (botData.powerupSelected === null) {
+    return
+  }
 
-    if (upPressedMsDifference < POWERUP_UP_PRESSED_REQUIRED_DIFFERENCE_MS) {
-      const botRounData = getPlayerBomBotRoundData(data.playerId!)
-      if (botRounData.powerupsLeft <= 0) {
-        return
-      }
+  const performanceNow = performance.now()
+  const upPressedMsDifference = performanceNow - botData.lastTimeUpPressedMs
+  const POWERUP_UP_PRESSED_REQUIRED_DIFFERENCE_MS = 200
+  botData.lastTimeUpPressedMs = performanceNow
 
-      botRounData.powerupsLeft--
+  if (upPressedMsDifference >= POWERUP_UP_PRESSED_REQUIRED_DIFFERENCE_MS) {
+    return
+  }
 
-      // Require people to press powerup even amount of times to use it.
-      // That is, we want to prevent using 2 powerups when pressing up 3 times quickly.
-      botData.lastTimeUpPressedMs = 0
+  const botRoundData = getPlayerBomBotRoundData(data.playerId!)
+  if (botRoundData.powerupsLeft <= 0) {
+    return
+  }
 
-      switch (botData.powerupSelected) {
-        case BomBotPowerup.PLATFORM:
-          sendPrivateChatMessage(`Powerup platform used! ${botRounData.powerupsLeft} left`, data.playerId!)
-          placeStructureInsideMap(useBomBotWorldStore().powerupPlatformBlocks, playerPos)
-          break
-        case BomBotPowerup.SHIELD:
-          sendPrivateChatMessage(`Powerup shield used! ${botRounData.powerupsLeft} left`, data.playerId!)
-          placeStructureInsideMap(useBomBotWorldStore().powerupShieldBlocks, playerPos)
-          break
-        default:
-          break
-      }
+  botRoundData.powerupsLeft--
+
+  // Require people to press powerup even amount of times to use it.
+  // That is, we want to prevent using 2 powerups when pressing up 3 times quickly.
+  botData.lastTimeUpPressedMs = 0
+
+  sendPrivateChatMessage(
+    `Powerup ${BomBotPowerup[botData.powerupSelected]} used! ${botRoundData.powerupsLeft} left`,
+    data.playerId!,
+  )
+  placeStructureInsideMap(useBomBotWorldStore().powerupData[botData.powerupSelected].blocks, playerPos)
+}
+
+function checkIfPowerUpEquipped(data: ProtoGen.PlayerMovedPacket) {
+  const downPressed = data.vertical === 1 && data.horizontal === 0
+  if (!downPressed) {
+    return
+  }
+
+  const playerId = data.playerId!
+  const playerPos = convertFromPixelPosToBlockPos(data.position!)
+  const botData = getPlayerBomBotWorldData(playerId)
+  for (const powerupListElement of useBomBotWorldStore().powerupData) {
+    if (vec2.eq(playerPos, powerupListElement.equipPos)) {
+      botData.powerupSelected = powerupListElement.type
+      sendPrivateChatMessage(`Powerup selected: ${BomBotPowerup[powerupListElement.type]}`, playerId)
     }
   }
 }
@@ -361,9 +387,6 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
     case '.plays':
       playsCommandReceived(args, playerId)
       break
-    case '.powerup':
-      powerupCommandReceived(args, playerId)
-      break
     case '.placeallbombot':
       await placeallbombotCommandReceived(args, playerId)
       break
@@ -371,35 +394,6 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       if (args[0].startsWith('.')) {
         throw new GameError('Unrecognised command. Type .help to see all commands', playerId)
       }
-  }
-}
-
-function powerupCommandReceived(args: string[], playerId: number) {
-  // TODO: use names from enum instead
-  if (args.length === 1) {
-    throw new GameError('Example usage: .powerup [platform|shield|none]', playerId)
-  }
-  const powerupName = args[1].toLowerCase()
-  const botData = getPlayerBomBotWorldData(playerId)
-  switch (powerupName) {
-    case 'platform':
-      botData.powerupSelected = BomBotPowerup.PLATFORM
-      sendPrivateChatMessage('Powerup selected: platform', playerId)
-      break
-    case 'shield':
-      botData.powerupSelected = BomBotPowerup.SHIELD
-      sendPrivateChatMessage('Powerup selected: shield', playerId)
-      break
-    case 'none':
-      botData.powerupSelected = null
-      sendPrivateChatMessage('Powerup unequipped', playerId)
-      break
-    default:
-      throw new GameError('Unrecognised powerup. Available powerups: platform, shield, none', playerId)
-  }
-  if (!botData.powerupEquippedOnce) {
-    botData.powerupEquippedOnce = true
-    sendPrivateChatMessage('Tip: Powerups can be used by double pressing up', playerId)
   }
 }
 
@@ -488,13 +482,6 @@ function helpCommandReceived(args: string[], playerId: number) {
     case 'plays':
       sendPrivateChatMessage('.plays [player_name] - shows how many times player played.', playerId)
       break
-    case 'powerup':
-      sendPrivateChatMessage(
-        '.powerup [powerup_name] - equips/unequips powerup. Powerups can be used by double pressing up.',
-        playerId,
-      )
-      sendPrivateChatMessage('Available powerups: platform, shield, none', playerId)
-      break
     default:
       throw new GameError(`Unrecognised command ${args[1]}. Type .help to see all commands`, playerId)
   }
@@ -570,6 +557,40 @@ function getBomBotStructure(bombotBlocks: DeserialisedStructure, topLeft: vec2, 
   }))
 }
 
+function loadPowerups(bombotBlocks: DeserialisedStructure) {
+  const powerupList: BomBotPowerupData[] = [
+    {
+      equipPos: vec2(9, 92),
+      type: BomBotPowerup.SHIELD,
+      blocks: getBomBotStructure(bombotBlocks, vec2(3, 395), vec2(3, 1), vec2(-1, -2)),
+    },
+    {
+      equipPos: vec2(15, 92),
+      type: BomBotPowerup.SABOTAGE,
+      blocks: getBomBotStructure(bombotBlocks, vec2(9, 395), vec2(3, 3), vec2(-1, -1)),
+    },
+    {
+      equipPos: vec2(21, 92),
+      type: BomBotPowerup.DOTS,
+      blocks: getBomBotStructure(bombotBlocks, vec2(15, 395), vec2(3, 3), vec2(-1, -1)),
+    },
+    {
+      equipPos: vec2(27, 92),
+      type: BomBotPowerup.MUD_FIELD,
+      blocks: getBomBotStructure(bombotBlocks, vec2(21, 395), vec2(3, 3), vec2(-1, -1)),
+    },
+    {
+      equipPos: vec2(34, 92),
+      type: BomBotPowerup.PLATFORM,
+      blocks: getBomBotStructure(bombotBlocks, vec2(27, 397), vec2(5, 1), vec2(-2, 1)),
+    },
+  ]
+
+  for (const powerupListElement of powerupList) {
+    useBomBotWorldStore().powerupData.push(powerupListElement)
+  }
+}
+
 async function loadBomBotData() {
   sendGlobalChatMessage('Loading BomBot data')
   const bomBotDataWorldId = getWorldIdIfUrl('lbsz7864s3a3yih')
@@ -583,9 +604,8 @@ async function loadBomBotData() {
 
   useBomBotWorldStore().bombBlocks = getBomBotStructure(bombotBlocks, vec2(3, 361), vec2(3, 3), vec2(-1, -1))
   useBomBotWorldStore().bombRemoveBlocks = getBomBotStructure(bombotBlocks, vec2(3, 368), vec2(3, 3), vec2(-1, -1))
-  useBomBotWorldStore().powerupPlatformBlocks = getBomBotStructure(bombotBlocks, vec2(11, 379), vec2(5, 1), vec2(-2, 1))
-  useBomBotWorldStore().powerupShieldBlocks = getBomBotStructure(bombotBlocks, vec2(12, 371), vec2(3, 1), vec2(-1, -2))
 
+  loadPowerups(bombotBlocks)
   loadBlockTypes(bombotBlocks)
 
   const totalMapCount = vec2(15, 21)
@@ -937,7 +957,7 @@ function updateBomberTimeIndication() {
 }
 
 function disqualifyPlayerFromRoundBecauseAfk(playerId: number) {
-  const afkPos = vec2(43, 58)
+  const afkPos = vec2(47, 86)
   sendRawMessage(`/tp #${playerId} ${afkPos.x} ${afkPos.y}`)
   makePlayerAfk(playerId)
 }

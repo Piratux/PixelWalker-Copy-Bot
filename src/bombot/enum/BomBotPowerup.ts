@@ -1,4 +1,7 @@
 export enum BomBotPowerup {
-  PLATFORM,
   SHIELD,
+  SABOTAGE,
+  DOTS,
+  MUD_FIELD,
+  PLATFORM,
 }
