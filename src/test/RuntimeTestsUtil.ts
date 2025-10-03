@@ -4,7 +4,7 @@ import { deepStrictEqual } from 'node:assert'
 import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
 import { getImportedFromEelvlData } from '@/service/EelvlImporterService.ts'
 import { placeWorldDataBlocks } from '@/service/WorldService.ts'
-import { pwClearWorld } from '@/service/PwClientService.ts'
+import { clearWorld } from '@/service/PwClientService.ts'
 import { getImportedFromPngData } from '@/service/PngImporterService.ts'
 import { getImportedFromMidiData } from '@/service/MidiImporterService.ts'
 
@@ -57,7 +57,7 @@ export async function getDataFromMidiFile(fileUrl: string): Promise<Deserialised
 
 // Returns blocks loaded from fileUrl
 export async function placePwLvlblocks(fileUrl: string): Promise<DeserialisedStructure> {
-  await pwClearWorld()
+  await clearWorld()
 
   const expectedData = await getDataFromPwlvlFile(fileUrl)
   const success = await placeWorldDataBlocks(expectedData)

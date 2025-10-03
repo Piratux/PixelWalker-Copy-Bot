@@ -2,14 +2,14 @@ import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
 import { placeWorldDataBlocks } from '@/service/WorldService.ts'
 import { getPwGameWorldHelper } from '@/store/PwClientStore.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
-import { pwCheckEditWhenImporting, pwCreateEmptyBlocks } from '@/service/PwClientService.ts'
+import { createEmptyBlocks, hasBotEditPermission } from '@/service/PwClientService.ts'
 import { MessageService } from '@/service/MessageService.ts'
 import { Midi } from '@tonejs/midi'
 import { PwBlockName } from '@/gen/PwBlockName'
 import { uniq } from 'lodash-es'
 
 export async function importFromMidi(fileData: ArrayBuffer, showColors: boolean) {
-  if (!pwCheckEditWhenImporting(getPwGameWorldHelper())) {
+  if (!hasBotEditPermission(getPwGameWorldHelper())) {
     return
   }
 
@@ -40,7 +40,7 @@ export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boole
   const pwMapWidth = getPwGameWorldHelper().width
   const pwMapHeight = getPwGameWorldHelper().height
 
-  const blocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
+  const blocks = createEmptyBlocks(getPwGameWorldHelper())
 
   // These blocks create a spawner, and a set of boosts that get you to the max falling speed pretty fast
   blocks.blocks[LayerType.Foreground][0][0] = new Block(PwBlockName.TOOL_SPAWN_LOBBY)

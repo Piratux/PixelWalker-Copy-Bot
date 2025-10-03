@@ -12,7 +12,7 @@ import { BotType } from '@/enum/BotType.ts'
 import { registerBomBotCallbacks } from '@/service/PacketHandlerServiceBomBot.ts'
 import { CallbackEntry } from '@/type/CallbackEntry.ts'
 
-export async function pwAuthenticate(pwApiClient: PWApiClient): Promise<void> {
+export async function authenticate(pwApiClient: PWApiClient): Promise<void> {
   const authenticationResult = await pwApiClient.authenticate()
 
   if ('token' in authenticationResult) {
@@ -26,7 +26,7 @@ export async function pwAuthenticate(pwApiClient: PWApiClient): Promise<void> {
   }
 }
 
-export async function pwJoinWorld(pwGameClient: PWGameClient, worldId: string): Promise<void> {
+export async function joinWorld(pwGameClient: PWGameClient, worldId: string): Promise<void> {
   try {
     await pwGameClient.joinWorld(worldId)
   } catch (e) {
@@ -90,7 +90,7 @@ export async function initPwClasses(botType: BotType) {
     },
   })
 
-  await pwAuthenticate(getPwApiClient())
+  await authenticate(getPwApiClient())
 
   usePwClientStore().pwGameClient = new PWGameClient(getPwApiClient())
   usePwClientStore().pwGameWorldHelper = new PWGameWorldHelper()
@@ -101,13 +101,13 @@ export async function initPwClasses(botType: BotType) {
     registerBomBotCallbacks()
   }
 
-  await pwJoinWorld(getPwGameClient(), usePwClientStore().worldId)
+  await joinWorld(getPwGameClient(), usePwClientStore().worldId)
 
   initPwBlocks(await getPwApiClient().getListBlocks())
   initEerBlocks(EER_MAPPINGS)
 }
 
-export function pwCreateEmptyBlocks(pwGameWorldHelper: PWGameWorldHelper): DeserialisedStructure {
+export function createEmptyBlocks(pwGameWorldHelper: PWGameWorldHelper): DeserialisedStructure {
   const width = pwGameWorldHelper.width
   const height = pwGameWorldHelper.height
   const pwBlock3DArray: [Block[][], Block[][], Block[][]] = [[], [], []]
@@ -123,16 +123,12 @@ export function pwCreateEmptyBlocks(pwGameWorldHelper: PWGameWorldHelper): Deser
   return new DeserialisedStructure(pwBlock3DArray, { width: width, height: height })
 }
 
-export async function pwClearWorld(): Promise<void> {
-  const emptyBlocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
+export async function clearWorld(): Promise<void> {
+  const emptyBlocks = createEmptyBlocks(getPwGameWorldHelper())
   await placeWorldDataBlocks(emptyBlocks)
 }
 
-export function pwUserHasEditAccess(pwGameWorldHelper: PWGameWorldHelper, playerId: number): boolean {
-  return pwGameWorldHelper.getPlayer(playerId)?.rights.canEdit === true
-}
-
-export async function pwEnterEditKey(pwGameClient: PWGameClient, secretEditKey: string): Promise<void> {
+export async function enterEditKey(pwGameClient: PWGameClient, secretEditKey: string): Promise<void> {
   if (secretEditKey === '') {
     return
   }
@@ -145,7 +141,7 @@ export async function pwEnterEditKey(pwGameClient: PWGameClient, secretEditKey: 
     secretEditKey: secretEditKey,
   })
   try {
-    await waitUntil(() => pwUserHasEditAccess(getPwGameWorldHelper(), getPwGameWorldHelper().botPlayerId), {
+    await waitUntil(() => hasPlayerEditPermission(getPwGameWorldHelper(), getPwGameWorldHelper().botPlayerId), {
       timeout: 5000,
       intervalBetweenAttempts: 1000,
     })
@@ -158,13 +154,13 @@ export async function pwEnterEditKey(pwGameClient: PWGameClient, secretEditKey: 
   }
 }
 
-export function pwCheckEdit(pwGameWorldHelper: PWGameWorldHelper, playerId: number): boolean {
-  if (!pwUserHasEditAccess(pwGameWorldHelper, playerId)) {
+export function hasPlayerAndBotEditPermission(pwGameWorldHelper: PWGameWorldHelper, playerId: number): boolean {
+  if (!hasPlayerEditPermission(pwGameWorldHelper, playerId)) {
     sendPrivateChatMessage('ERROR! You do not have edit access.', playerId)
     return false
   }
 
-  if (!pwUserHasEditAccess(pwGameWorldHelper, pwGameWorldHelper.botPlayerId)) {
+  if (!hasPlayerEditPermission(pwGameWorldHelper, pwGameWorldHelper.botPlayerId)) {
     sendPrivateChatMessage('ERROR! Bot does not have edit access.', playerId)
     return false
   }
@@ -172,8 +168,12 @@ export function pwCheckEdit(pwGameWorldHelper: PWGameWorldHelper, playerId: numb
   return true
 }
 
-export function pwCheckEditWhenImporting(pwGameWorldHelper: PWGameWorldHelper): boolean {
-  if (!pwUserHasEditAccess(pwGameWorldHelper, pwGameWorldHelper.botPlayerId)) {
+export function hasPlayerEditPermission(pwGameWorldHelper: PWGameWorldHelper, playerId: number): boolean {
+  return pwGameWorldHelper.getPlayer(playerId)?.rights.canEdit === true
+}
+
+export function hasBotEditPermission(pwGameWorldHelper: PWGameWorldHelper): boolean {
+  if (!hasPlayerEditPermission(pwGameWorldHelper, pwGameWorldHelper.botPlayerId)) {
     sendGlobalChatMessage('ERROR! Bot does not have edit access.')
     return false
   }
@@ -203,5 +203,5 @@ export function hotReloadCallbacks(callbacks: CallbackEntry[]) {
 
 export function commonPlayerInitPacketReceived() {
   getPwGameClient().send('playerInitReceived')
-  void pwEnterEditKey(getPwGameClient(), usePwClientStore().secretEditKey)
+  void enterEditKey(getPwGameClient(), usePwClientStore().secretEditKey)
 }

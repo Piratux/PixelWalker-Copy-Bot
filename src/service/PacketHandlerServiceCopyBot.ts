@@ -33,9 +33,9 @@ import { performRuntimeTests } from '@/test/RuntimeTests.ts'
 import { ProtoGen } from 'pw-js-api'
 import {
   commonPlayerInitPacketReceived,
+  createEmptyBlocks,
+  hasPlayerAndBotEditPermission,
   hotReloadCallbacks,
-  pwCheckEdit,
-  pwCreateEmptyBlocks,
 } from '@/service/PwClientService.ts'
 import { isDeveloper } from '@/util/Environment'
 import { getImportedFromPwlvlData } from '@/service/PwlvlImporterService.ts'
@@ -174,7 +174,7 @@ function moveCommandReceived(_args: string[], playerId: number) {
 }
 
 async function placeallCommandReceived(_args: string[], playerId: number) {
-  if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
     return
   }
 
@@ -228,7 +228,7 @@ async function importCommandReceived(args: string[], playerId: number) {
     return
   }
 
-  if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
     return
   }
 
@@ -306,7 +306,7 @@ async function importCommandReceived(args: string[], playerId: number) {
   if (partialImportUsed) {
     allBlocks = convertDeserializedStructureToWorldBlocks(partialBlocks, vec2(destToX, destToY))
   } else {
-    const emptyBlocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
+    const emptyBlocks = createEmptyBlocks(getPwGameWorldHelper())
     const worldData = getImportedFromPwlvlData(bufferToArrayBuffer(blocksFromAnotherWorld.toBuffer()))
     const emptyBlocksWorldBlocks = convertDeserializedStructureToWorldBlocks(emptyBlocks)
     const worldDataWorldBlocks = convertDeserializedStructureToWorldBlocks(worldData)
@@ -334,7 +334,7 @@ async function testCommandReceived(_args: string[], playerId: number) {
     return
   }
 
-  if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
     return
   }
 
@@ -446,7 +446,7 @@ function helpCommandReceived(args: string[], playerId: number) {
 }
 
 function undoCommandReceived(args: string[], playerId: number) {
-  if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
     return
   }
 
@@ -464,7 +464,7 @@ function undoCommandReceived(args: string[], playerId: number) {
 }
 
 function redoCommandReceived(args: string[], playerId: number) {
-  if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
     return
   }
 
@@ -482,7 +482,7 @@ function redoCommandReceived(args: string[], playerId: number) {
 }
 
 function pasteCommandReceived(args: string[], playerId: number, smartPaste: boolean) {
-  if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
     return
   }
 
@@ -536,7 +536,7 @@ function placeEditedBlocks(playerId: number, editedBlocks: WorldBlock[]) {
 }
 
 function editCommandReceived(args: string[], playerId: number) {
-  if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
     return
   }
 
@@ -1056,7 +1056,7 @@ function goldCoinBlockPlaced(
   },
 ) {
   const playerId = data.playerId!
-  if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
     return
   }
 
@@ -1085,7 +1085,7 @@ function blueCoinBlockPlaced(
   },
 ) {
   const playerId = data.playerId!
-  if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
     return
   }
 

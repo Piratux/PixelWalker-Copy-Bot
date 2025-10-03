@@ -17,7 +17,7 @@ import {
   getDataFromPwlvlFile,
   placePwLvlblocks,
 } from '@/test/RuntimeTestsUtil.ts'
-import { getAllWorldBlocks, pwAuthenticate, pwJoinWorld } from '@/service/PwClientService.ts'
+import { authenticate, getAllWorldBlocks, joinWorld } from '@/service/PwClientService.ts'
 import { getPwGameClient, getPwGameWorldHelper, usePwClientStore } from '@/store/PwClientStore.ts'
 import { CustomBotEvents, PWApiClient, PWGameClient, WorldEventNames } from 'pw-js-api'
 import { PWGameWorldHelper } from 'pw-js-world'
@@ -93,7 +93,7 @@ async function testMapUpdateFromPlayerInitPacket() {
 
   const pwApiClient = new PWApiClient(usePwClientStore().email, usePwClientStore().password)
 
-  await pwAuthenticate(pwApiClient)
+  await authenticate(pwApiClient)
 
   const worldId = usePwClientStore().worldId
 
@@ -117,10 +117,10 @@ async function testMapUpdateFromPlayerInitPacket() {
 
     getPwGameClient().addCallback(eventName, playerInitPacketReceived)
 
-    await pwJoinWorld(getPwGameClient(), worldId)
+    await joinWorld(getPwGameClient(), worldId)
   })
 
-  await pwJoinWorld(pwGameClient, worldId)
+  await joinWorld(pwGameClient, worldId)
   await waitUntil(() => initReceived, { timeout: 30000, intervalBetweenAttempts: 1000 })
 }
 

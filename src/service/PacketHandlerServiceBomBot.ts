@@ -2,7 +2,11 @@ import { getPwBlocks, getPwBotType, getPwGameClient, getPwGameWorldHelper } from
 import { sendGlobalChatMessage, sendPrivateChatMessage, sendRawMessage } from '@/service/ChatMessageService.ts'
 import { ProtoGen } from 'pw-js-api'
 import { CallbackEntry } from '@/type/CallbackEntry.ts'
-import { commonPlayerInitPacketReceived, hotReloadCallbacks, pwCheckEdit } from '@/service/PwClientService.ts'
+import {
+  commonPlayerInitPacketReceived,
+  hasPlayerAndBotEditPermission,
+  hotReloadCallbacks,
+} from '@/service/PwClientService.ts'
 import { isDeveloper } from '@/util/Environment.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { cloneDeep, shuffle } from 'lodash-es'
@@ -497,7 +501,7 @@ function helpCommandReceived(args: string[], playerId: number) {
 }
 
 async function placeallbombotCommandReceived(_args: string[], playerId: number) {
-  if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
     return
   }
 
@@ -630,7 +634,7 @@ async function loadBomBotData() {
 }
 
 async function stopCommandReceived(_args: string[], playerId: number) {
-  if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
     return
   }
 
@@ -658,7 +662,7 @@ async function stopBomBot() {
 }
 
 async function startCommandReceived(_args: string[], playerId: number, loadWorld: boolean) {
-  if (!pwCheckEdit(getPwGameWorldHelper(), playerId)) {
+  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
     return
   }
 

@@ -22,7 +22,7 @@ import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { cloneDeep } from 'lodash-es'
 import { PWApiClient, PWGameClient } from 'pw-js-api'
-import { getAllWorldBlocks, pwAuthenticate, pwJoinWorld } from '@/service/PwClientService.ts'
+import { authenticate, getAllWorldBlocks, joinWorld } from '@/service/PwClientService.ts'
 import { handleException } from '@/util/Exception.ts'
 import waitUntil from 'async-wait-until'
 import { clamp } from '@/util/Numbers.ts'
@@ -214,7 +214,7 @@ export function portalIdToNumber(portalId: string): number | undefined {
 export async function getAnotherWorldBlocks(worldId: string): Promise<DeserialisedStructure | null> {
   const pwApiClient = new PWApiClient(usePwClientStore().email, usePwClientStore().password)
 
-  await pwAuthenticate(pwApiClient)
+  await authenticate(pwApiClient)
 
   const pwGameClient = new PWGameClient(pwApiClient)
   const pwGameWorldHelper = new PWGameWorldHelper()
@@ -235,7 +235,7 @@ export async function getAnotherWorldBlocks(worldId: string): Promise<Deserialis
     }
   })
 
-  await pwJoinWorld(pwGameClient, worldId)
+  await joinWorld(pwGameClient, worldId)
 
   await waitUntil(() => copyFromAnotherWorldFinished, { timeout: 10000, intervalBetweenAttempts: 1000 })
   return blocksResult

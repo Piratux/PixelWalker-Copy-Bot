@@ -3,13 +3,13 @@ import { vec2 } from '@basementuniverse/vec'
 import { placeLayerDataBlocks } from '@/service/WorldService.ts'
 import { getPwGameWorldHelper } from '@/store/PwClientStore.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
-import { pwCheckEditWhenImporting, pwCreateEmptyBlocks } from '@/service/PwClientService.ts'
+import { createEmptyBlocks, hasBotEditPermission } from '@/service/PwClientService.ts'
 import { MessageService } from '@/service/MessageService.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
 import { PNG } from 'pngjs'
 
 export async function importFromPng(fileData: ArrayBuffer, quantize = true) {
-  if (!pwCheckEditWhenImporting(getPwGameWorldHelper())) {
+  if (!hasBotEditPermission(getPwGameWorldHelper())) {
     return
   }
 
@@ -85,7 +85,7 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
     }
   }
 
-  const blocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
+  const blocks = createEmptyBlocks(getPwGameWorldHelper())
 
   for (const [hex, locations] of colorMap) {
     const block = new Block(PwBlockName.CUSTOM_SOLID_BG, [hex])

@@ -1,7 +1,6 @@
 import { ByteArray } from 'playerioclient'
 import { EelvlBlockId } from '@/gen/EelvlBlockId.ts'
-import { BlockArg, LayerType } from 'pw-js-world'
-import { Block, DeserialisedStructure } from 'pw-js-world'
+import { Block, BlockArg, DeserialisedStructure, LayerType } from 'pw-js-world'
 import { EelvlBlock } from '@/type/EelvlBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { EelvlFileHeader } from '@/type/EelvlFileHeader.ts'
@@ -10,7 +9,7 @@ import { getBlockLayer, placeWorldDataBlocks } from '@/service/WorldService.ts'
 import { getPwBlocksByEelvlParameters, getPwGameWorldHelper } from '@/store/PwClientStore.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
 import { cloneDeep } from 'lodash-es'
-import { pwCheckEditWhenImporting } from '@/service/PwClientService.ts'
+import { hasBotEditPermission } from '@/service/PwClientService.ts'
 import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
 import { MessageService } from '@/service/MessageService.ts'
 import { hasEelvlBlockOneIntParameter, isEelvlNpc } from '@/service/EelvlUtilService.ts'
@@ -96,7 +95,7 @@ function applyWorldBackground(
 }
 
 export async function importFromEelvl(fileData: ArrayBuffer) {
-  if (!pwCheckEditWhenImporting(getPwGameWorldHelper())) {
+  if (!hasBotEditPermission(getPwGameWorldHelper())) {
     return
   }
 

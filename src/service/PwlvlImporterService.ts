@@ -2,11 +2,11 @@ import { DeserialisedStructure, StructureHelper } from 'pw-js-world'
 import { placeWorldDataBlocks } from '@/service/WorldService.ts'
 import { getPwGameWorldHelper } from '@/store/PwClientStore.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
-import { pwCheckEditWhenImporting, pwCreateEmptyBlocks } from '@/service/PwClientService.ts'
+import { createEmptyBlocks, hasBotEditPermission } from '@/service/PwClientService.ts'
 import { MessageService } from '@/service/MessageService.ts'
 
 export function getImportedFromPwlvlData(fileData: ArrayBuffer): DeserialisedStructure {
-  const blocks = pwCreateEmptyBlocks(getPwGameWorldHelper())
+  const blocks = createEmptyBlocks(getPwGameWorldHelper())
   const importedBlocks = StructureHelper.read(Buffer.from(fileData))
   const layersInImportedBlocks = importedBlocks.blocks.length
   const width = Math.min(getPwGameWorldHelper().width, importedBlocks.width)
@@ -23,7 +23,7 @@ export function getImportedFromPwlvlData(fileData: ArrayBuffer): DeserialisedStr
 }
 
 export async function importFromPwlvl(fileData: ArrayBuffer): Promise<void> {
-  if (!pwCheckEditWhenImporting(getPwGameWorldHelper())) {
+  if (!hasBotEditPermission(getPwGameWorldHelper())) {
     return
   }
 
