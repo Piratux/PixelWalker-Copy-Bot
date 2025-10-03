@@ -40,7 +40,7 @@ import {
 } from '@/core/service/PwClientService.ts'
 import { isDeveloper, isWorldOwner, requireDeveloper } from '@/core/util/Environment.ts'
 import { getImportedFromPwlvlData } from '@/pwlvl/service/PwlvlImporterService.ts'
-import { getWorldIdIfUrl } from '@/core/service/WorldIdExtractorService.ts'
+import { getWorldIdIfUrl } from '@/core/util/WorldIdExtractor.ts'
 import { handleException } from '@/core/util/Exception.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { exportToEelvl } from '@/eelvl/service/EelvlExporterService.ts'
-import { withLoading } from '@/core/service/LoaderProxyService.ts'
+import { withLoading } from '@/core/util/LoaderProxy.ts'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'
 import { createAsyncCallback } from '@/core/util/Promise.ts'

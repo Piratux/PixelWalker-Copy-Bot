@@ -6,7 +6,7 @@ import PiOverlay from '@/component/PiOverlay.vue'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 import PiTextField from '@/component/PiTextField.vue'
 import { VForm } from 'vuetify/components'
-import { withLoading } from '@/core/service/LoaderProxyService.ts'
+import { withLoading } from '@/core/util/LoaderProxy.ts'
 import { sendGlobalChatMessage } from '@/core/service/ChatMessageService.ts'
 import { importFromEer } from '@/eer/service/EerImporterService.ts'
 

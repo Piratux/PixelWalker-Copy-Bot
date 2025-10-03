@@ -24,7 +24,7 @@ import {
   placeWorldDataBlocksUsingPattern,
 } from '@/core/service/WorldService.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
-import { getWorldIdIfUrl } from '@/core/service/WorldIdExtractorService.ts'
+import { getWorldIdIfUrl } from '@/core/util/WorldIdExtractor.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { useBomBotWorldStore } from '@/bombot/store/BomBotWorldStore.ts'
 import { BomBotState } from '@/bombot/enum/BomBotState.ts'
