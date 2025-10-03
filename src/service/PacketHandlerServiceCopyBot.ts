@@ -227,31 +227,23 @@ async function importCommandReceived(args: string[], playerId: number) {
     throw new GameError(ERROR_MESSAGE, playerId)
   }
 
-  const partialImportUsed = args.length === 8
-  let srcFromX = 0
-  let srcFromY = 0
-  let srcToX = 0
-  let srcToY = 0
-  let destToX = 0
-  let destToY = 0
-  if (partialImportUsed) {
-    srcFromX = Number(args[2])
-    srcFromY = Number(args[3])
-    srcToX = Number(args[4])
-    srcToY = Number(args[5])
-    destToX = Number(args[6])
-    destToY = Number(args[7])
+  const worldId = getWorldIdIfUrl(args[1])
 
-    if (
-      !isFinite(srcFromX) ||
-      !isFinite(srcFromY) ||
-      !isFinite(srcToX) ||
-      !isFinite(srcToY) ||
-      !isFinite(destToX) ||
-      !isFinite(destToY)
-    ) {
+  sendGlobalChatMessage(`Importing world from ${worldId}`)
+
+  const blocksFromAnotherWorld = await getAnotherWorldBlocks(worldId)
+  if (!blocksFromAnotherWorld) {
+    throw new GameError('Failed to get blocks from another world.')
+  }
+
+  const partialImportUsed = args.length === 8
+  let allBlocks: WorldBlock[]
+  if (partialImportUsed) {
+    const numberArgs = args.slice(2, 8).map(Number)
+    if (numberArgs.some((n) => !isFinite(n))) {
       throw new GameError(ERROR_MESSAGE, playerId)
     }
+    let [srcFromX, srcFromY, srcToX, srcToY, destToX, destToY] = numberArgs
 
     const mapWidth = getPwGameWorldHelper().width
     const mapHeight = getPwGameWorldHelper().height
@@ -263,31 +255,18 @@ async function importCommandReceived(args: string[], playerId: number) {
         playerId,
       )
     }
-  }
 
-  // Allow specifying any 2 corners of source area
-  if (srcFromX > srcToX) {
-    ;[srcFromX, srcToX] = [srcToX, srcFromX]
-    destToX = destToX - (srcToX - srcFromX)
-  }
-  if (srcFromY > srcToY) {
-    ;[srcFromY, srcToY] = [srcToY, srcFromY]
-    destToY = destToY - (srcToY - srcFromY)
-  }
+    // Allow specifying any 2 corners of source area
+    if (srcFromX > srcToX) {
+      ;[srcFromX, srcToX] = [srcToX, srcFromX]
+      destToX = destToX - (srcToX - srcFromX)
+    }
+    if (srcFromY > srcToY) {
+      ;[srcFromY, srcToY] = [srcToY, srcFromY]
+      destToY = destToY - (srcToY - srcFromY)
+    }
 
-  const worldId = getWorldIdIfUrl(args[1])
-
-  sendGlobalChatMessage(`Importing world from ${worldId}`)
-
-  const blocksFromAnotherWorld = await getAnotherWorldBlocks(worldId)
-  if (!blocksFromAnotherWorld) {
-    throw new GameError('Failed to get blocks from another world.')
-  }
-
-  const partialBlocks = getDeserialisedStructureSection(blocksFromAnotherWorld, srcFromX, srcFromY, srcToX, srcToY)
-
-  let allBlocks: WorldBlock[]
-  if (partialImportUsed) {
+    const partialBlocks = getDeserialisedStructureSection(blocksFromAnotherWorld, srcFromX, srcFromY, srcToX, srcToY)
     allBlocks = convertDeserializedStructureToWorldBlocks(partialBlocks, vec2(destToX, destToY))
   } else {
     const emptyBlocks = createEmptyBlocks(getPwGameWorldHelper())
