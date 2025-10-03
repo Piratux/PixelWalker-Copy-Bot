@@ -1,10 +1,9 @@
 import { ListBlockResult, PWApiClient, PWGameClient } from 'pw-js-api'
-import { GENERAL_CONSTANTS, TOTAL_PW_LAYERS } from '@/constant/General.ts'
+import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
 import { Block, DeserialisedStructure, PWGameWorldHelper } from 'pw-js-world'
 import { placeWorldDataBlocks } from '@/service/WorldService.ts'
 import { getPwApiClient, getPwGameClient, getPwGameWorldHelper, usePwClientStore } from '@/store/PwClientStore.ts'
 import { sendGlobalChatMessage, sendPrivateChatMessage } from '@/service/ChatMessageService.ts'
-import { GameError } from '@/class/GameError.ts'
 import waitUntil, { TimeoutError } from 'async-wait-until'
 import { registerCopyBotCallbacks } from '@/service/PacketHandlerServiceCopyBot.ts'
 import ManyKeysMap from 'many-keys-map'
@@ -21,9 +20,9 @@ export async function pwAuthenticate(pwApiClient: PWApiClient): Promise<void> {
   }
 
   if ('message' in authenticationResult) {
-    throw new GameError(authenticationResult.message)
+    throw new Error(authenticationResult.message)
   } else {
-    throw new GameError(GENERAL_CONSTANTS.GENERIC_ERROR)
+    throw new Error()
   }
 }
 
@@ -31,7 +30,7 @@ export async function pwJoinWorld(pwGameClient: PWGameClient, worldId: string): 
   try {
     await pwGameClient.joinWorld(worldId)
   } catch (e) {
-    throw new GameError('Failed to join world. Check world ID. ' + (e as Error).message)
+    throw new Error('Failed to join world. Check world ID. ' + (e as Error).message)
   }
 }
 

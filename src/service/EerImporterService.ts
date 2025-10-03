@@ -1,9 +1,8 @@
 import { EerBlockEntry } from '@/type/EerBlockEntry.ts'
 import { EerBlockId } from '@/gen/EerBlockId.ts'
 import { hasEerBlockOneIntParameter, isEerNpc } from '@/service/EerUtilService.ts'
-import { GameError } from '@/class/GameError.ts'
 import { EelvlBlockId, EelvlBlockIdKeys } from '@/gen/EelvlBlockId.ts'
-import { ByteArray } from 'playerioclient'
+import PlayerIOClient, { ByteArray } from 'playerioclient'
 import { vec2 } from '@basementuniverse/vec'
 import { EelvlLayer } from '@/enum/EelvlLayer.ts'
 import { writePositionsByteArrays } from '@/service/EelvlExporterService.ts'
@@ -17,7 +16,6 @@ import { PwBlockName } from '@/gen/PwBlockName.ts'
 import { placeMultipleBlocks } from '@/service/WorldService.ts'
 import { getPwBlocksByEerParameters, getPwBlocksByPwName } from '@/store/PwClientStore.ts'
 import { uint32ToInt32 } from '@/util/Numbers.ts'
-import PlayerIOClient from 'playerioclient'
 import { bufferToArrayBuffer } from '@/util/Buffers.ts'
 
 interface EerBlock {
@@ -101,7 +99,7 @@ function getBlockArgs(eerBlockId: number, eerBlock: EerBlock): EerBlockEntry {
       if (hasEerBlockOneIntParameter(eerBlockId)) {
         const eerBlockIntParameter = getEerBlockIntParameter(eerBlock)
         if (eerBlockIntParameter === undefined) {
-          throw new GameError(`EER block ${EerBlockId[eerBlockId as EerBlockId]} has no int parameter`)
+          throw new Error(`EER block ${EerBlockId[eerBlockId as EerBlockId]} has no int parameter`)
         }
         return [eerBlockIntParameter]
       } else if (isEerNpc(eerBlockId)) {
@@ -320,7 +318,7 @@ function getImportedFromEerAsEelvlAndPwData(eerWorld: EerWorld): [Buffer, WorldB
         console.error('block: ', eerBlock)
         console.error(`EelvlBlockId: ${EelvlBlockId[eerBlockId as EelvlBlockId]}`)
         console.error(`EerBlockId: ${EerBlockId[eerBlockId as EerBlockId]}`)
-        throw new GameError(`Unexpected type in key. Value: ${blockArg}, type: ${typeof blockArg}`)
+        throw new Error(`Unexpected type in key. Value: ${blockArg}, type: ${typeof blockArg}`)
       }
     }
   }

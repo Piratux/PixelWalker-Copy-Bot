@@ -12,7 +12,6 @@ import { EelvlLayer } from '@/enum/EelvlLayer.ts'
 import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
 import { EelvlBlockEntry } from '@/type/EelvlBlockEntry.ts'
 import { getAllWorldBlocks } from '@/service/PwClientService.ts'
-import { GameError } from '@/class/GameError.ts'
 import { getEelvlBlocksById } from '@/store/EelvlClientStore.ts'
 import { hasEelvlBlockOneIntParameter, isEelvlNpc, writeEeelvlFileHeader } from '@/service/EelvlUtilService.ts'
 import { ByteArray } from 'playerioclient'
@@ -71,7 +70,7 @@ export function getExportedToEelvlData(worldBlocks: DeserialisedStructure): [Buf
         const blockEntryKey: EelvlBlockEntry = getBlockEntryKey(eelvlBlockId, eelvlBlock, eelvlLayer)
         for (const key of blockEntryKey) {
           if (typeof key !== 'string' && typeof key !== 'number') {
-            throw new GameError(`Unexpected type in key. x: ${x}, y: ${y} Value: ${key}, type: ${typeof key}`)
+            throw new Error(`Unexpected type in key. x: ${x}, y: ${y} Value: ${key}, type: ${typeof key}`)
           }
         }
         addBlocksEntry(blocks, blockEntryKey, x, y)
@@ -92,7 +91,7 @@ export function getExportedToEelvlData(worldBlocks: DeserialisedStructure): [Buf
       } else if (typeof key === 'number') {
         bytes.writeInt(key)
       } else {
-        throw new GameError(`Unexpected type in key. Value: ${key}, type: ${typeof key}`)
+        throw new Error(`Unexpected type in key. Value: ${key}, type: ${typeof key}`)
       }
     }
   }
