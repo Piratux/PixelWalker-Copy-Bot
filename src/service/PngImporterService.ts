@@ -2,31 +2,16 @@ import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
 import { placeLayerDataBlocks } from '@/service/WorldService.ts'
 import { getPwGameWorldHelper } from '@/store/PwClientStore.ts'
-import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
-import { createEmptyBlocks, hasBotEditPermission } from '@/service/PwClientService.ts'
-import { MessageService } from '@/service/MessageService.ts'
+import { createEmptyBlocks, handlePlaceBlocksResult, requireBotEditPermission } from '@/service/PwClientService.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
 import { PNG } from 'pngjs'
 
 export async function importFromPng(fileData: ArrayBuffer, quantize = true) {
-  if (!hasBotEditPermission(getPwGameWorldHelper())) {
-    return
-  }
+  requireBotEditPermission(getPwGameWorldHelper())
 
   const worldData = getImportedFromPngData(fileData, quantize)
-
   const success = await placeLayerDataBlocks(worldData, vec2(0, 0), LayerType.Background)
-
-  let message: string
-  if (success) {
-    message = 'Finished importing image.'
-    sendGlobalChatMessage(message)
-    MessageService.success(message)
-  } else {
-    message = 'ERROR! Failed to import image.'
-    sendGlobalChatMessage(message)
-    MessageService.error(message)
-  }
+  handlePlaceBlocksResult(success)
 }
 
 export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): DeserialisedStructure {

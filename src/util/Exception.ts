@@ -1,22 +1,51 @@
 import { MessageService } from '@/service/MessageService.ts'
-import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
+import { sendGlobalChatMessage, sendPrivateChatMessage } from '@/service/ChatMessageService.ts'
 import { GENERAL_CONSTANTS } from '@/constant/General.ts'
 import { usePwClientStore } from '@/store/PwClientStore.ts'
+import { GameError } from '@/class/GameError.ts'
 
-export function getExceptionDescription(exception: unknown): string {
+export function getTrueExceptionMessage(exception: unknown): string {
   if (exception instanceof Error) {
     return exception.message
   } else {
-    return 'Unknown error occured.'
+    return GENERAL_CONSTANTS.GENERIC_ERROR
+  }
+}
+
+interface PwJsApiErrorObject {
+  type: string
+  error: unknown
+}
+
+export function handleInGameException(exception: unknown) {
+  if (exception instanceof GameError) {
+    printGameErrorExceptionMessage(exception)
+  } else if ((exception as PwJsApiErrorObject).error instanceof GameError) {
+    // Consider using Typia to simplify type checking when it's not broken anymore:
+    // https://github.com/samchon/typia/issues/1604#issuecomment-3360602946
+    // Although might need to wait for TS Go port to be finished, since Typia uses TS interal APIs.
+    const gameError: GameError = (exception as PwJsApiErrorObject).error as GameError
+    printGameErrorExceptionMessage(gameError)
+  } else {
+    sendGlobalChatMessage(GENERAL_CONSTANTS.GENERIC_ERROR)
+  }
+}
+
+export function printGameErrorExceptionMessage(gameError: GameError) {
+  const chatExceptionMessage = `ERROR! ${gameError.message}`
+  if (gameError.playerId) {
+    sendPrivateChatMessage(chatExceptionMessage, gameError.playerId)
+  } else {
+    sendGlobalChatMessage(chatExceptionMessage)
   }
 }
 
 export function handleException(exception: unknown): void {
-  console.error(exception)
-  const exceptionDescription = getExceptionDescription(exception)
-  MessageService.error(exceptionDescription)
-
   if (usePwClientStore().isConnected) {
-    sendGlobalChatMessage(GENERAL_CONSTANTS.GENERIC_ERROR)
+    handleInGameException(exception)
+  } else {
+    console.error(exception)
+    const trueExceptionMessage = getTrueExceptionMessage(exception)
+    MessageService.error(trueExceptionMessage)
   }
 }

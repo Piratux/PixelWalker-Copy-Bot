@@ -2,38 +2,23 @@ import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
 import { placeWorldDataBlocks } from '@/service/WorldService.ts'
 import { getPwGameWorldHelper } from '@/store/PwClientStore.ts'
 import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
-import { createEmptyBlocks, hasBotEditPermission } from '@/service/PwClientService.ts'
-import { MessageService } from '@/service/MessageService.ts'
+import { createEmptyBlocks, handlePlaceBlocksResult, requireBotEditPermission } from '@/service/PwClientService.ts'
 import { Midi } from '@tonejs/midi'
 import { PwBlockName } from '@/gen/PwBlockName'
 import { uniq } from 'lodash-es'
+import { GameError } from '@/class/GameError.ts'
 
 export async function importFromMidi(fileData: ArrayBuffer, showColors: boolean) {
-  if (!hasBotEditPermission(getPwGameWorldHelper())) {
-    return
-  }
+  requireBotEditPermission(getPwGameWorldHelper())
 
   const worldData = getImportedFromMidiData(fileData, showColors)
 
-  let message: string
   if (worldData === null) {
-    message = 'ERROR! This midi has no piano notes.'
-    sendGlobalChatMessage(message)
-    MessageService.error(message)
-    return
+    throw new GameError('This midi has no piano notes')
   }
 
   const success = await placeWorldDataBlocks(worldData)
-
-  if (success) {
-    message = 'Finished importing midi.'
-    sendGlobalChatMessage(message)
-    MessageService.success(message)
-  } else {
-    message = 'ERROR! Failed to import midi.'
-    sendGlobalChatMessage(message)
-    MessageService.error(message)
-  }
+  handlePlaceBlocksResult(success)
 }
 
 export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boolean): DeserialisedStructure | null {
@@ -118,9 +103,7 @@ function writeNotes(
       }
       lastX = Math.max(lastX, x)
     } else {
-      const message = `ERROR! Note at x=${x}, y=${y} is out of bounds. Stopping.`
-      sendGlobalChatMessage(message)
-      MessageService.error(message)
+      sendGlobalChatMessage(`ERROR! Note at x=${x}, y=${y} is out of bounds. Stopping.`)
       break
     }
   }

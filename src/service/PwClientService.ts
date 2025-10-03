@@ -1,9 +1,9 @@
 import { ListBlockResult, PWApiClient, PWGameClient } from 'pw-js-api'
-import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
+import { GENERAL_CONSTANTS, TOTAL_PW_LAYERS } from '@/constant/General.ts'
 import { Block, DeserialisedStructure, PWGameWorldHelper } from 'pw-js-world'
 import { placeWorldDataBlocks } from '@/service/WorldService.ts'
 import { getPwApiClient, getPwGameClient, getPwGameWorldHelper, usePwClientStore } from '@/store/PwClientStore.ts'
-import { sendGlobalChatMessage, sendPrivateChatMessage } from '@/service/ChatMessageService.ts'
+import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
 import waitUntil, { TimeoutError } from 'async-wait-until'
 import { registerCopyBotCallbacks } from '@/service/PacketHandlerServiceCopyBot.ts'
 import ManyKeysMap from 'many-keys-map'
@@ -11,6 +11,8 @@ import { EER_MAPPINGS } from '@/eer/EerMappings.ts'
 import { BotType } from '@/enum/BotType.ts'
 import { registerBomBotCallbacks } from '@/service/PacketHandlerServiceBomBot.ts'
 import { CallbackEntry } from '@/type/CallbackEntry.ts'
+import { MessageService } from '@/service/MessageService.ts'
+import { GameError } from '@/class/GameError.ts'
 
 export async function authenticate(pwApiClient: PWApiClient): Promise<void> {
   const authenticationResult = await pwApiClient.authenticate()
@@ -132,6 +134,7 @@ export async function enterEditKey(pwGameClient: PWGameClient, secretEditKey: st
   if (secretEditKey === '') {
     return
   }
+
   if (!getPwGameWorldHelper().meta!.hasSecretEditKey) {
     sendGlobalChatMessage('ERROR! This world has no secret edit key')
     return
@@ -140,6 +143,7 @@ export async function enterEditKey(pwGameClient: PWGameClient, secretEditKey: st
   pwGameClient.send('playerEnterSecretEditKeyPacket', {
     secretEditKey: secretEditKey,
   })
+
   try {
     await waitUntil(() => hasPlayerEditPermission(getPwGameWorldHelper(), getPwGameWorldHelper().botPlayerId), {
       timeout: 5000,
@@ -149,36 +153,31 @@ export async function enterEditKey(pwGameClient: PWGameClient, secretEditKey: st
     if (error instanceof TimeoutError) {
       sendGlobalChatMessage('ERROR! Entered secret edit key is incorrect')
     } else {
+      sendGlobalChatMessage(GENERAL_CONSTANTS.GENERIC_ERROR)
       console.error('Unexpected error:', error)
     }
   }
 }
 
-export function hasPlayerAndBotEditPermission(pwGameWorldHelper: PWGameWorldHelper, playerId: number): boolean {
-  if (!hasPlayerEditPermission(pwGameWorldHelper, playerId)) {
-    sendPrivateChatMessage('ERROR! You do not have edit access.', playerId)
-    return false
-  }
-
-  if (!hasPlayerEditPermission(pwGameWorldHelper, pwGameWorldHelper.botPlayerId)) {
-    sendPrivateChatMessage('ERROR! Bot does not have edit access.', playerId)
-    return false
-  }
-
-  return true
-}
-
-export function hasPlayerEditPermission(pwGameWorldHelper: PWGameWorldHelper, playerId: number): boolean {
+function hasPlayerEditPermission(pwGameWorldHelper: PWGameWorldHelper, playerId: number): boolean {
   return pwGameWorldHelper.getPlayer(playerId)?.rights.canEdit === true
 }
 
-export function hasBotEditPermission(pwGameWorldHelper: PWGameWorldHelper): boolean {
-  if (!hasPlayerEditPermission(pwGameWorldHelper, pwGameWorldHelper.botPlayerId)) {
-    sendGlobalChatMessage('ERROR! Bot does not have edit access.')
-    return false
+export function requirePlayerEditPermission(pwGameWorldHelper: PWGameWorldHelper, playerId: number): void {
+  if (!hasPlayerEditPermission(pwGameWorldHelper, playerId)) {
+    throw new GameError('You do not have edit access.', playerId)
   }
+}
 
-  return true
+export function requireBotEditPermission(pwGameWorldHelper: PWGameWorldHelper): void {
+  if (!hasPlayerEditPermission(pwGameWorldHelper, pwGameWorldHelper.botPlayerId)) {
+    throw new GameError('Bot does not have edit access.')
+  }
+}
+
+export function requirePlayerAndBotEditPermission(pwGameWorldHelper: PWGameWorldHelper, playerId: number): void {
+  requirePlayerEditPermission(pwGameWorldHelper, playerId)
+  requireBotEditPermission(pwGameWorldHelper)
 }
 
 export function getAllWorldBlocks(pwGameWorldHelper: PWGameWorldHelper): DeserialisedStructure {
@@ -204,4 +203,15 @@ export function hotReloadCallbacks(callbacks: CallbackEntry[]) {
 export function commonPlayerInitPacketReceived() {
   getPwGameClient().send('playerInitReceived')
   void enterEditKey(getPwGameClient(), usePwClientStore().secretEditKey)
+}
+
+export function handlePlaceBlocksResult(success: boolean) {
+  let message: string
+  if (success) {
+    message = 'Successfully finished placing all blocks.'
+    sendGlobalChatMessage(message)
+    MessageService.success(message)
+  } else {
+    throw new GameError('Failed to place all blocks.')
+  }
 }

@@ -4,10 +4,11 @@ import { ProtoGen } from 'pw-js-api'
 import { CallbackEntry } from '@/type/CallbackEntry.ts'
 import {
   commonPlayerInitPacketReceived,
-  hasPlayerAndBotEditPermission,
+  handlePlaceBlocksResult,
   hotReloadCallbacks,
+  requirePlayerAndBotEditPermission,
 } from '@/service/PwClientService.ts'
-import { isDeveloper } from '@/util/Environment.ts'
+import { isWorldOwner, requireDeveloper } from '@/util/Environment.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { cloneDeep, shuffle } from 'lodash-es'
 import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
@@ -39,6 +40,7 @@ import { BomBotWorldData, createBomBotWorldData } from '@/type/BomBotPlayerWorld
 import waitUntil from 'async-wait-until'
 import { BomBotPowerup } from '@/enum/BomBotPowerup.ts'
 import { BomBotRoundData, createBomBotRoundData } from '@/type/BomBotPlayerRoundData.ts'
+import { GameError } from '@/class/GameError.ts'
 
 const blockTypeDataStartPos = vec2(20, 361) // inclusive x
 const blockTypeDataEndPos = vec2(389, 361) // exclusive x
@@ -278,8 +280,7 @@ function playerCountersUpdatePacketReceived(data: ProtoGen.PlayerCountersUpdateP
   // However that's too much work.
   // We simplify this, by knowing this packet will only get sent when player dies, because we have no coins in this world.
   if (data.coins > 0 || data.blueCoins > 0) {
-    sendGlobalChatMessage('ERROR! Coins should not be placed in this world!')
-    throw new Error('ERROR! Coins should not be placed in this world!')
+    throw new GameError('Coins should not be placed in this world!')
   }
   disqualifyPlayerFromRound(data.playerId!)
 
@@ -368,7 +369,7 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       break
     default:
       if (args[0].startsWith('.')) {
-        sendPrivateChatMessage('ERROR! Unrecognised command. Type .help to see all commands', playerId)
+        throw new GameError('Unrecognised command. Type .help to see all commands', playerId)
       }
   }
 }
@@ -376,8 +377,7 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
 function powerupCommandReceived(args: string[], playerId: number) {
   // TODO: use names from enum instead
   if (args.length === 1) {
-    sendPrivateChatMessage('ERROR! Example usage: .powerup [platform|shield|none]', playerId)
-    return
+    throw new GameError('Example usage: .powerup [platform|shield|none]', playerId)
   }
   const powerupName = args[1].toLowerCase()
   const botData = getPlayerBomBotWorldData(playerId)
@@ -395,7 +395,7 @@ function powerupCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage('Powerup unequipped', playerId)
       break
     default:
-      sendPrivateChatMessage('ERROR! Unrecognised powerup. Available powerups: platform, shield, none', playerId)
+      throw new GameError('Unrecognised powerup. Available powerups: platform, shield, none', playerId)
   }
   if (!botData.powerupEquippedOnce) {
     botData.powerupEquippedOnce = true
@@ -424,7 +424,7 @@ function getPlayerStat(args: string[], playerId: number, stat: 'wins' | 'plays',
       const botData = getPlayerBomBotWorldData(otherPlayer.playerId)
       sendPrivateChatMessage(`${otherPlayerName} has ${verb} ${botData[stat]} times.`, playerId)
     } else {
-      sendPrivateChatMessage(`ERROR! Player ${otherPlayerName} not found.`, playerId)
+      throw new GameError(`Player ${otherPlayerName} not found.`, playerId)
     }
   }
 }
@@ -496,19 +496,13 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage('Available powerups: platform, shield, none', playerId)
       break
     default:
-      sendPrivateChatMessage(`ERROR! Unrecognised command ${args[1]}. Type .help to see all commands`, playerId)
+      throw new GameError(`Unrecognised command ${args[1]}. Type .help to see all commands`, playerId)
   }
 }
 
 async function placeallbombotCommandReceived(_args: string[], playerId: number) {
-  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
-    return
-  }
-
-  if (!isDeveloper(playerId)) {
-    sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
-    return
-  }
+  requireDeveloper(playerId)
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   const currentPos = cloneDeep(blockTypeDataStartPos)
   const sortedListBlocks = getPwBlocks()
@@ -546,20 +540,15 @@ async function placeallbombotCommandReceived(_args: string[], playerId: number) 
   }
 
   const success = await placeMultipleBlocks(worldBlocks)
-  if (success) {
-    sendPrivateChatMessage('Successfully placed all bombot non background blocks', playerId)
-  } else {
-    sendPrivateChatMessage('ERROR! Failed to place all blocks', playerId)
-  }
+  handlePlaceBlocksResult(success)
 }
 
 async function placeBomBotWorld() {
   sendGlobalChatMessage('Loading BomBot world')
-  const bomBotMapWorldId = getWorldIdIfUrl('r3796a7103bb687')
+  const bomBotMapWorldId = 'r3796a7103bb687'
   const blocks = await getAnotherWorldBlocks(bomBotMapWorldId)
   if (!blocks) {
-    sendGlobalChatMessage('ERROR! Failed to load BomBot world')
-    return
+    throw new GameError('Failed to load BomBot world')
   }
   await placeWorldDataBlocks(blocks)
 }
@@ -586,8 +575,7 @@ async function loadBomBotData() {
   const bomBotDataWorldId = getWorldIdIfUrl('lbsz7864s3a3yih')
   const bombotBlocks = await getAnotherWorldBlocks(bomBotDataWorldId)
   if (!bombotBlocks) {
-    sendGlobalChatMessage('ERROR! Failed to load BomBot data')
-    return
+    throw new GameError('Failed to load BomBot data')
   }
 
   useBomBotWorldStore().bombTimerBgBlockTimeSpent = bombotBlocks.blocks[LayerType.Background][10][363]
@@ -634,18 +622,11 @@ async function loadBomBotData() {
 }
 
 async function stopCommandReceived(_args: string[], playerId: number) {
-  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
-    return
-  }
-
-  if (!isDeveloper(playerId)) {
-    sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
-    return
-  }
+  requireDeveloper(playerId)
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   if (useBomBotWorldStore().currentState === BomBotState.STOPPED) {
-    sendPrivateChatMessage('ERROR! BomBot is already stopped', playerId)
-    return
+    throw new GameError('BomBot is already stopped', playerId)
   }
 
   await stopBomBot()
@@ -662,24 +643,17 @@ async function stopBomBot() {
 }
 
 async function startCommandReceived(_args: string[], playerId: number, loadWorld: boolean) {
-  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
-    return
-  }
-
-  if (!isDeveloper(playerId)) {
-    sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
-    return
-  }
+  requireDeveloper(playerId)
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   if (useBomBotWorldStore().currentState !== BomBotState.STOPPED) {
-    sendPrivateChatMessage('ERROR! BomBot is already running', playerId)
-    return
+    throw new GameError('BomBot is already running', playerId)
   }
 
   // Because /tp commands don't work for non world owners, even if they have edit rights
-  if (!getPwGameWorldHelper().getPlayer(getPwGameWorldHelper().botPlayerId)?.isWorldOwner) {
-    sendPrivateChatMessage('ERROR! Bot must be world owner for BomBot to work', playerId)
-    return
+  const botPlayerId = getPwGameWorldHelper().botPlayerId
+  if (!isWorldOwner(botPlayerId)) {
+    throw new GameError('Bot must be world owner for BomBot to work', playerId)
   }
 
   await startBomBot(loadWorld)
@@ -1068,10 +1042,7 @@ async function autoRestartBomBot() {
 
   const MAX_AUTOMATIC_RESTARTS = 3
   if (userBomBotAutomaticRestartCounterStore().totalAutomaticRestarts >= MAX_AUTOMATIC_RESTARTS) {
-    sendGlobalChatMessage(
-      `ERROR! Bombot has automatically restarted ${MAX_AUTOMATIC_RESTARTS} times, not restarting again`,
-    )
-    return
+    throw new GameError(`Bombot has automatically restarted ${MAX_AUTOMATIC_RESTARTS} times, not restarting again`)
   }
   userBomBotAutomaticRestartCounterStore().totalAutomaticRestarts++
 

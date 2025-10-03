@@ -34,10 +34,11 @@ import { ProtoGen } from 'pw-js-api'
 import {
   commonPlayerInitPacketReceived,
   createEmptyBlocks,
-  hasPlayerAndBotEditPermission,
+  handlePlaceBlocksResult,
   hotReloadCallbacks,
+  requirePlayerAndBotEditPermission,
 } from '@/service/PwClientService.ts'
-import { isDeveloper } from '@/util/Environment'
+import { isDeveloper, isWorldOwner, requireDeveloper } from '@/util/Environment'
 import { getImportedFromPwlvlData } from '@/service/PwlvlImporterService.ts'
 import { getWorldIdIfUrl } from '@/service/WorldIdExtractorService.ts'
 import { handleException } from '@/util/Exception.ts'
@@ -127,7 +128,7 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       break
     default:
       if (args[0].startsWith('.')) {
-        sendPrivateChatMessage('ERROR! Unrecognised command. Type .help to see all commands', playerId)
+        throw new GameError('Unrecognised command. Type .help to see all commands', playerId)
       }
   }
 }
@@ -162,7 +163,7 @@ function maskCommandReceived(args: string[], playerId: number) {
   }
 
   if (!botData.maskBackgroundEnabled && !botData.maskForegroundEnabled && !botData.maskOverlayEnabled) {
-    sendPrivateChatMessage(`ERROR! Correct usage is .mask [all | background | foreground | overlay]`, playerId)
+    throw new GameError(`Correct usage is .mask [all | background | foreground | overlay]`, playerId)
   }
 }
 
@@ -174,14 +175,8 @@ function moveCommandReceived(_args: string[], playerId: number) {
 }
 
 async function placeallCommandReceived(_args: string[], playerId: number) {
-  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
-    return
-  }
-
-  if (!isDeveloper(playerId)) {
-    sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
-    return
-  }
+  requireDeveloper(playerId)
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   const sortedListBlocks = getPwBlocks()
   const worldBlocks = []
@@ -190,11 +185,7 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
       const idx = y * 100 + x
       if (idx >= sortedListBlocks.length) {
         const success = await placeMultipleBlocks(worldBlocks)
-        if (success) {
-          sendPrivateChatMessage('Successfully placed all blocks', playerId)
-        } else {
-          sendPrivateChatMessage('ERROR! Failed to place all blocks', playerId)
-        }
+        handlePlaceBlocksResult(success)
 
         return
       }
@@ -223,21 +214,17 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
 }
 
 async function importCommandReceived(args: string[], playerId: number) {
-  if (!isDeveloper(playerId) && getPwGameWorldHelper().getPlayer(playerId)?.isWorldOwner !== true) {
-    sendPrivateChatMessage('ERROR! Command is exclusive to world owners', playerId)
-    return
+  if (!isDeveloper(playerId) && !isWorldOwner(playerId)) {
+    throw new GameError('Command is exclusive to world owners', playerId)
   }
 
-  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
-    return
-  }
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   const ERROR_MESSAGE =
-    'ERROR! Correct usage is .import world_id [src_from_x src_from_y src_to_x src_to_y dest_to_x dest_to_y]'
+    'Correct usage is .import world_id [src_from_x src_from_y src_to_x src_to_y dest_to_x dest_to_y]'
 
   if (![2, 8].includes(args.length)) {
-    sendPrivateChatMessage(ERROR_MESSAGE, playerId)
-    return
+    throw new GameError(ERROR_MESSAGE, playerId)
   }
 
   const partialImportUsed = args.length === 8
@@ -263,8 +250,7 @@ async function importCommandReceived(args: string[], playerId: number) {
       !isFinite(destToX) ||
       !isFinite(destToY)
     ) {
-      sendPrivateChatMessage(ERROR_MESSAGE, playerId)
-      return
+      throw new GameError(ERROR_MESSAGE, playerId)
     }
 
     const mapWidth = getPwGameWorldHelper().width
@@ -272,11 +258,10 @@ async function importCommandReceived(args: string[], playerId: number) {
     const pasteSizeX = srcToX - srcFromX + 1
     const pasteSizeY = srcToY - srcFromY + 1
     if (destToX < 0 || destToY < 0 || destToX + pasteSizeX > mapWidth || destToY + pasteSizeY > mapHeight) {
-      sendPrivateChatMessage(
-        `ERROR! Pasted area would be placed at pos (${destToX}, ${destToY}) with size (${pasteSizeX}, ${pasteSizeY}), but that's outside world bounds`,
+      throw new GameError(
+        `Pasted area would be placed at pos (${destToX}, ${destToY}) with size (${pasteSizeX}, ${pasteSizeY}), but that's outside world bounds`,
         playerId,
       )
-      return
     }
   }
 
@@ -296,8 +281,7 @@ async function importCommandReceived(args: string[], playerId: number) {
 
   const blocksFromAnotherWorld = await getAnotherWorldBlocks(worldId)
   if (!blocksFromAnotherWorld) {
-    sendGlobalChatMessage('ERROR! Failed to get blocks from another world.')
-    return
+    throw new GameError('Failed to get blocks from another world.')
   }
 
   const partialBlocks = getDeserialisedStructureSection(blocksFromAnotherWorld, srcFromX, srcFromY, srcToX, srcToY)
@@ -318,29 +302,15 @@ async function importCommandReceived(args: string[], playerId: number) {
   addUndoItemWorldBlock(botData, allBlocks)
 
   const success = await placeMultipleBlocks(allBlocks)
-  let message: string
-  if (success) {
-    message = 'Finished importing world.'
-    sendGlobalChatMessage(message)
-  } else {
-    message = 'ERROR! Failed to place imported world blocks.'
-    sendGlobalChatMessage(message)
-  }
+  handlePlaceBlocksResult(success)
 }
 
 async function testCommandReceived(_args: string[], playerId: number) {
-  if (!isDeveloper(playerId)) {
-    sendPrivateChatMessage('ERROR! Command is exclusive to bot developers', playerId)
-    return
-  }
-
-  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
-    return
-  }
+  requireDeveloper(playerId)
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   if (getPwGameWorldHelper().width < 200 || getPwGameWorldHelper().height < 200) {
-    sendPrivateChatMessage('ERROR! To perform tests, world must be at least 200x200 size.', playerId)
-    return
+    throw new GameError('To perform tests, world must be at least 200x200 size.', playerId)
   }
 
   await performRuntimeTests()
@@ -441,22 +411,18 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage(`Example usage 2: .import legacy:PW4gnKMssUb0I 2 4 25 16 2 4`, playerId)
       break
     default:
-      sendPrivateChatMessage(`ERROR! Unrecognised command ${args[1]}. Type .help to see all commands`, playerId)
+      throw new GameError(`Unrecognised command ${args[1]}. Type .help to see all commands`, playerId)
   }
 }
 
 function undoCommandReceived(args: string[], playerId: number) {
-  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
-    return
-  }
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   let count = 1
   if (args.length >= 2) {
-    const ERROR_MESSAGE = `ERROR! Correct usage is .undo [count]`
     count = Number(args[1])
     if (!isFinite(count)) {
-      sendPrivateChatMessage(ERROR_MESSAGE, playerId)
-      return
+      throw new GameError(`Correct usage is .undo [count]`, playerId)
     }
   }
   const botData = getPlayerCopyBotData()[playerId]
@@ -464,17 +430,13 @@ function undoCommandReceived(args: string[], playerId: number) {
 }
 
 function redoCommandReceived(args: string[], playerId: number) {
-  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
-    return
-  }
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   let count = 1
   if (args.length >= 2) {
-    const ERROR_MESSAGE = `ERROR! Correct usage is .redo [count]`
     count = Number(args[1])
     if (!isFinite(count)) {
-      sendPrivateChatMessage(ERROR_MESSAGE, playerId)
-      return
+      throw new GameError(`Correct usage is .redo [count]`, playerId)
     }
   }
   const botData = getPlayerCopyBotData()[playerId]
@@ -482,16 +444,13 @@ function redoCommandReceived(args: string[], playerId: number) {
 }
 
 function pasteCommandReceived(args: string[], playerId: number, smartPaste: boolean) {
-  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
-    return
-  }
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
-  const ERROR_MESSAGE = `ERROR! Correct usage is ${smartPaste ? '.smartpaste' : '.paste'} x_times y_times [x_spacing y_spacing]`
+  const ERROR_MESSAGE = `Correct usage is ${smartPaste ? '.smartpaste' : '.paste'} x_times y_times [x_spacing y_spacing]`
   const repeatX = Number(args[1])
   const repeatY = Number(args[2])
   if (!isFinite(repeatX) || !isFinite(repeatY)) {
-    sendPrivateChatMessage(ERROR_MESSAGE, playerId)
-    return
+    throw new GameError(ERROR_MESSAGE, playerId)
   }
 
   let spacingX = 0
@@ -500,16 +459,14 @@ function pasteCommandReceived(args: string[], playerId: number, smartPaste: bool
     spacingX = Number(args[3])
     spacingY = Number(args[4])
     if (!isFinite(spacingX) || !isFinite(spacingY)) {
-      sendPrivateChatMessage(ERROR_MESSAGE, playerId)
-      return
+      throw new GameError(ERROR_MESSAGE, playerId)
     }
   }
 
   const botData = getPlayerCopyBotData()[playerId]
 
   if (botData.botState !== CopyBotState.SELECTED_TO) {
-    sendPrivateChatMessage('ERROR! You need to select area first', playerId)
-    return
+    throw new GameError('You need to select area first', playerId)
   }
 
   botData.repeatVec = vec2(repeatX, repeatY)
@@ -536,13 +493,10 @@ function placeEditedBlocks(playerId: number, editedBlocks: WorldBlock[]) {
 }
 
 function editCommandReceived(args: string[], playerId: number) {
-  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
-    return
-  }
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   if (getPlayerCopyBotData()[playerId].selectedBlocks.length === 0) {
-    sendPrivateChatMessage(`ERROR! Select blocks before replacing them!`, playerId)
-    return
+    throw new GameError(`Select blocks before replacing them!`, playerId)
   }
 
   let editedBlocks: WorldBlock[] = []
@@ -566,8 +520,7 @@ function editCommandReceived(args: string[], playerId: number) {
       editedBlocks = editSubCommand(args, playerId)
       break
     default:
-      sendPrivateChatMessage(`ERROR! Correct usage is .edit <type> arg1 arg2`, playerId)
-      return
+      throw new GameError(`Correct usage is .edit <type> arg1 arg2`, playerId)
   }
 
   placeEditedBlocks(playerId, editedBlocks)
@@ -577,9 +530,9 @@ function editNameCommand(args: string[], playerId: number): WorldBlock[] {
   let searchFor = args[2]
   let replaceWith = args[3]
   if (!searchFor || !replaceWith) {
-    sendPrivateChatMessage(`ERROR! Correct usage is .edit name find replace`, playerId)
-    return []
+    throw new GameError(`Correct usage is .edit name find replace`, playerId)
   }
+
   searchFor = searchFor.toUpperCase()
   replaceWith = replaceWith.toUpperCase()
   let counter = 0
@@ -626,19 +579,16 @@ function editIdCommand(args: string[], playerId: number): WorldBlock[] {
   const searchForId = Number(args[2])
   const replaceWithId = Number(args[3])
   if (isNaN(searchForId) || isNaN(replaceWithId)) {
-    sendPrivateChatMessage(`ERROR! Correct usage is .edit id find_id replace_id`, playerId)
-    return []
+    throw new GameError(`Correct usage is .edit id find_id replace_id`, playerId)
   }
 
   const blocksById = getPwBlocksByPwId()
   if (!(searchForId in blocksById) || !(replaceWithId in blocksById)) {
-    sendPrivateChatMessage(`ERROR! Invalid id specified`, playerId)
-    return []
+    throw new GameError(`Invalid id specified`, playerId)
   }
 
   if (searchForId === 0) {
-    sendPrivateChatMessage(`ERROR! find id=0 is not allowed`, playerId)
-    return []
+    throw new GameError(`find_id=0 is not allowed`, playerId)
   }
 
   const searchForBlock = blocksById[searchForId]
@@ -649,16 +599,14 @@ function editIdCommand(args: string[], playerId: number): WorldBlock[] {
   }
 
   if (searchForBlock.Layer !== replaceWithBlock.Layer) {
-    sendPrivateChatMessage(`ERROR! find and replace block layers must match`, playerId)
-    return []
+    throw new GameError(`find and replace block layers must match`, playerId)
   }
 
   if (
     (searchForBlock.BlockDataArgs !== undefined || replaceWithBlock.BlockDataArgs !== undefined) &&
     !isEqual(searchForBlock.BlockDataArgs, replaceWithBlock.BlockDataArgs)
   ) {
-    sendPrivateChatMessage(`ERROR! find and replace block arguments must match`, playerId)
-    return []
+    throw new GameError(`find and replace block arguments must match`, playerId)
   }
 
   const editedBlocks: WorldBlock[] = []
@@ -686,9 +634,9 @@ type mathOp = (a: number, b: number) => number
 function editArithmeticCommand(args: string[], playerId: number, op: mathOp, opPast: string): WorldBlock[] {
   const amount = Number(args[2])
   if (isNaN(amount)) {
-    sendPrivateChatMessage(`ERROR! Correct usage is .edit math_op number [name_find]`, playerId)
-    return []
+    throw new GameError(`Correct usage is .edit math_op number [name_find]`, playerId)
   }
+
   const searchFor = args[3]?.toUpperCase() ?? ''
   let counter = 0
 
@@ -725,16 +673,14 @@ function editArithmeticCommand(args: string[], playerId: number, op: mathOp, opP
 
 function editDivideCommand(args: string[], playerId: number): WorldBlock[] {
   if (Number(args[2]) <= 0) {
-    sendPrivateChatMessage(`ERROR! Cannot divide by zero or negative numbers.`, playerId)
-    return []
+    throw new GameError(`Cannot divide by zero or negative numbers.`, playerId)
   }
   return editArithmeticCommand(args, playerId, (a, b) => a / b, 'divided')
 }
 
 function editMultiplyCommand(args: string[], playerId: number): WorldBlock[] {
   if (Number(args[2]) < 0) {
-    sendPrivateChatMessage(`ERROR! Cannot multiply by negative numbers.`, playerId)
-    return []
+    throw new GameError(`Cannot multiply by negative numbers.`, playerId)
   }
   return editArithmeticCommand(args, playerId, (a, b) => a * b, 'multiplied')
 }
@@ -1056,9 +1002,7 @@ function goldCoinBlockPlaced(
   },
 ) {
   const playerId = data.playerId!
-  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
-    return
-  }
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   const worldBlocks = createOldWorldBlocks(data.positions, states.oldBlocks)
   void placeMultipleBlocks(worldBlocks)
@@ -1085,9 +1029,7 @@ function blueCoinBlockPlaced(
   },
 ) {
   const playerId = data.playerId!
-  if (!hasPlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)) {
-    return
-  }
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   const worldBlocks = createOldWorldBlocks(data.positions, states.oldBlocks)
   void placeMultipleBlocks(worldBlocks)
@@ -1100,8 +1042,7 @@ function blueCoinBlockPlaced(
   const botData = getBotData(playerId)
 
   if (botData.botState !== CopyBotState.SELECTED_TO) {
-    sendPrivateChatMessage('ERROR! You need to select area first', playerId)
-    return
+    throw new GameError('You need to select area first', playerId)
   }
 
   if (botData.moveEnabled) {

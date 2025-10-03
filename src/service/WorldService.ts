@@ -35,9 +35,9 @@ export function getBlockAt(pos: Point, layer: number): Block {
   }
 }
 
-export async function placeMultipleBlocks(worldBlocks: WorldBlock[]) {
+export async function placeMultipleBlocks(worldBlocks: WorldBlock[]): Promise<boolean> {
   if (worldBlocks.length === 0) {
-    return
+    return true
   }
 
   const packets = createBlockPackets(worldBlocks)

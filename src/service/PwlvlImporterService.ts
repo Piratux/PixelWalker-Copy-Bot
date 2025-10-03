@@ -1,9 +1,7 @@
 import { DeserialisedStructure, StructureHelper } from 'pw-js-world'
 import { placeWorldDataBlocks } from '@/service/WorldService.ts'
 import { getPwGameWorldHelper } from '@/store/PwClientStore.ts'
-import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
-import { createEmptyBlocks, hasBotEditPermission } from '@/service/PwClientService.ts'
-import { MessageService } from '@/service/MessageService.ts'
+import { createEmptyBlocks, handlePlaceBlocksResult, requireBotEditPermission } from '@/service/PwClientService.ts'
 
 export function getImportedFromPwlvlData(fileData: ArrayBuffer): DeserialisedStructure {
   const blocks = createEmptyBlocks(getPwGameWorldHelper())
@@ -23,21 +21,9 @@ export function getImportedFromPwlvlData(fileData: ArrayBuffer): DeserialisedStr
 }
 
 export async function importFromPwlvl(fileData: ArrayBuffer): Promise<void> {
-  if (!hasBotEditPermission(getPwGameWorldHelper())) {
-    return
-  }
+  requireBotEditPermission(getPwGameWorldHelper())
 
   const worldData = getImportedFromPwlvlData(fileData)
-
   const success = await placeWorldDataBlocks(worldData)
-  let message: string
-  if (success) {
-    message = 'Finished importing world.'
-    sendGlobalChatMessage(message)
-    MessageService.success(message)
-  } else {
-    message = 'ERROR! Failed to import world.'
-    sendGlobalChatMessage(message)
-    MessageService.error(message)
-  }
+  handlePlaceBlocksResult(success)
 }

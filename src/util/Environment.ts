@@ -1,4 +1,5 @@
 import { getPwGameWorldHelper } from '@/store/PwClientStore.ts'
+import { GameError } from '@/class/GameError.ts'
 
 export function getEnvDefaultWorldId() {
   if (!import.meta.env.VITE_DEFAULT_WORLD_ID) {
@@ -26,4 +27,14 @@ export function isDeveloper(playerId: number) {
     console.log('VITE_DEV_USERNAME is not defined in environment variables, assuming "PIRATUX"')
   }
   return player.username === devUsername
+}
+
+export function requireDeveloper(playerId: number): void {
+  if (!isDeveloper(playerId)) {
+    throw new GameError('Command is exclusive to bot developers')
+  }
+}
+
+export function isWorldOwner(playerId: number): boolean {
+  return getPwGameWorldHelper().getPlayer(playerId)?.isWorldOwner === true
 }

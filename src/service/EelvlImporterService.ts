@@ -7,11 +7,9 @@ import { EelvlFileHeader } from '@/type/EelvlFileHeader.ts'
 import { PwBlockName } from '@/gen/PwBlockName.ts'
 import { getBlockLayer, placeWorldDataBlocks } from '@/service/WorldService.ts'
 import { getPwBlocksByEelvlParameters, getPwGameWorldHelper } from '@/store/PwClientStore.ts'
-import { sendGlobalChatMessage } from '@/service/ChatMessageService.ts'
 import { cloneDeep } from 'lodash-es'
-import { hasBotEditPermission } from '@/service/PwClientService.ts'
+import { handlePlaceBlocksResult, requireBotEditPermission } from '@/service/PwClientService.ts'
 import { TOTAL_PW_LAYERS } from '@/constant/General.ts'
-import { MessageService } from '@/service/MessageService.ts'
 import { hasEelvlBlockOneIntParameter, isEelvlNpc } from '@/service/EelvlUtilService.ts'
 import { EelvlLayer } from '@/enum/EelvlLayer.ts'
 
@@ -95,24 +93,11 @@ function applyWorldBackground(
 }
 
 export async function importFromEelvl(fileData: ArrayBuffer) {
-  if (!hasBotEditPermission(getPwGameWorldHelper())) {
-    return
-  }
+  requireBotEditPermission(getPwGameWorldHelper())
 
   const worldData = getImportedFromEelvlData(fileData)
-
   const success = await placeWorldDataBlocks(worldData)
-
-  let message: string
-  if (success) {
-    message = 'Finished importing world.'
-    sendGlobalChatMessage(message)
-    MessageService.success(message)
-  } else {
-    message = 'ERROR! Failed to import world.'
-    sendGlobalChatMessage(message)
-    MessageService.error(message)
-  }
+  handlePlaceBlocksResult(success)
 }
 
 function readEelvlBlock(bytes: ByteArray, eelvlBlockId: number) {
