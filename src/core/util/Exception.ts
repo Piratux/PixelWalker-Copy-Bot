@@ -4,7 +4,7 @@ import { GENERAL_CONSTANTS } from '@/core/constant/General.ts'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { GameError } from '@/core/class/GameError.ts'
 
-export function getTrueExceptionMessage(exception: unknown): string {
+function getTrueExceptionMessage(exception: unknown): string {
   if (exception instanceof Error) {
     return exception.message
   } else {
@@ -17,7 +17,7 @@ interface PwJsApiErrorObject {
   error: unknown
 }
 
-export function handleInGameException(exception: unknown) {
+function handleInGameException(exception: unknown) {
   if (exception instanceof GameError) {
     printGameErrorExceptionMessage(exception)
   } else if ((exception as PwJsApiErrorObject).error instanceof GameError) {
@@ -31,7 +31,7 @@ export function handleInGameException(exception: unknown) {
   }
 }
 
-export function printGameErrorExceptionMessage(gameError: GameError) {
+function printGameErrorExceptionMessage(gameError: GameError) {
   const chatExceptionMessage = `ERROR! ${gameError.message}`
   if (gameError.playerId) {
     sendPrivateChatMessage(chatExceptionMessage, gameError.playerId)
