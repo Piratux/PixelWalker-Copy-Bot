@@ -31,7 +31,7 @@ export function isDeveloper(playerId: number) {
 
 export function requireDeveloper(playerId: number): void {
   if (!isDeveloper(playerId)) {
-    throw new GameError('Command is exclusive to bot developers')
+    throw new GameError('Command is exclusive to bot developers', playerId)
   }
 }
 
