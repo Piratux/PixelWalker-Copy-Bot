@@ -72,7 +72,7 @@ export function registerBomBotCallbacks() {
   const client = getPwGameClient()
   const helper = getPwGameWorldHelper()
   client.addHook(helper.receiveHook)
-  client.addCallback('debug', console.log)
+  // client.addCallback('debug', console.log) // Too laggy to enable it by default
   client.addCallback('error', handleBombotError)
   for (const cb of callbacks) {
     client.addCallback(cb.name, cb.fn)
@@ -357,6 +357,20 @@ function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
     return
   }
   sendPrivateChatMessage('BomBot is here! Type .start to start the round. Type .help to see commands', playerId)
+
+  mergePlayerStats(playerId)
+}
+
+function mergePlayerStats(playerId: number) {
+  // If player leaves and rejoins, keep their stats
+  const playerName = getPwGameWorldHelper().getPlayer(playerId)!.username
+  for (const [existingPlayerId, data] of Object.entries(useBomBotWorldStore().playerBombotWorldData)) {
+    if (data.username === playerName && Number(existingPlayerId) !== playerId) {
+      useBomBotWorldStore().playerBombotWorldData[playerId] = { ...data }
+      delete useBomBotWorldStore().playerBombotWorldData[Number(existingPlayerId)]
+      break
+    }
+  }
 }
 
 async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
@@ -740,6 +754,36 @@ function playerWinRound(playerId: number) {
   sendRawMessage(`/counter #${playerId} white =${getPlayerBomBotWorldData(playerId).wins}`)
 
   setBombState(BomBotState.RESET_STORE)
+
+  updateLeaderboard()
+}
+
+function updateLeaderboard() {
+  const playerDataList = Object.entries(useBomBotWorldStore().playerBombotWorldData).map(([playerId, playerData]) => ({
+    playerId: Number(playerId),
+    ...playerData,
+  }))
+
+  const leaderboardTopText = 'Daily wins leaderboard\n================'
+  const leaderboardPlayerText = playerDataList
+    .filter((player) => player.wins > 0)
+    .sort((a, b) => b.wins - a.wins)
+    .slice(0, 5)
+    .map((player, index) => {
+      const botData = getPlayerBomBotWorldData(player.playerId)
+      return `${index + 1}. ${botData.username}: ${getPlayerBomBotWorldData(player.playerId).wins}`
+    })
+    .join('\n')
+  const leaderboardFinalText = leaderboardTopText + '\n' + leaderboardPlayerText
+
+  const leaderboardSignPos = vec2(37, 58)
+  void placeMultipleBlocks([
+    {
+      block: new Block(PwBlockName.SIGN_GREEN, [leaderboardFinalText]),
+      layer: LayerType.Foreground,
+      pos: leaderboardSignPos,
+    },
+  ])
 }
 
 function abandonRoundDueToNoPlayersLeft() {
@@ -1123,7 +1167,7 @@ function isBomBotMapValid(
 
 function getPlayerBomBotWorldData(playerId: number): BomBotWorldData {
   if (!useBomBotWorldStore().playerBombotWorldData[playerId]) {
-    useBomBotWorldStore().playerBombotWorldData[playerId] = createBomBotWorldData()
+    useBomBotWorldStore().playerBombotWorldData[playerId] = createBomBotWorldData(playerId)
   }
   return useBomBotWorldStore().playerBombotWorldData[playerId]
 }
