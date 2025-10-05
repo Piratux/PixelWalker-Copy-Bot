@@ -563,7 +563,7 @@ function loadPowerups(bombotBlocks: DeserialisedStructure) {
     {
       equipPos: vec2(34, 92),
       type: BomBotPowerup.PLATFORM,
-      blocks: getBomBotStructure(bombotBlocks, vec2(27, 397), vec2(5, 1), vec2(-2, 1)),
+      blocks: getBomBotStructure(bombotBlocks, vec2(27, 396), vec2(5, 1), vec2(-2, 1)),
     },
   ]
 
