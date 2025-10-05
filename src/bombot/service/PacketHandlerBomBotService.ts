@@ -347,6 +347,7 @@ function playerTeamUpdatePacketReceived(data: ProtoGen.PlayerTeamUpdatePacket) {
     useBomBotRoundStore().totalPlayersTeleportedToMap++
     useBomBotRoundStore().playersInGame.push(getPwGameWorldHelper().players.get(playerId)!)
     getPlayerBomBotWorldData(playerId).plays++
+    sendRawMessage(`/counter #${playerId} blue =${getPlayerBomBotWorldData(playerId).plays}`)
   }
 }
 
@@ -736,6 +737,7 @@ function playerWinRound(playerId: number) {
   sendRawMessage(`/team #${playerId} ${TEAM_NONE}`)
   sendGlobalChatMessage(`${getPwGameWorldHelper().getPlayer(playerId)?.username} wins!`)
   getPlayerBomBotWorldData(playerId).wins++
+  sendRawMessage(`/counter #${playerId} white =${getPlayerBomBotWorldData(playerId).wins}`)
 
   setBombState(BomBotState.RESET_STORE)
 }
