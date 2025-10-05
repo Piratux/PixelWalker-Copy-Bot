@@ -8,7 +8,7 @@ import {
   hotReloadCallbacks,
   requirePlayerAndBotEditPermission,
 } from '@/core/service/PwClientService.ts'
-import { isWorldOwner, requireDeveloper } from '@/core/util/Environment.ts'
+import { isDeveloper, isWorldOwner, requireDeveloper } from '@/core/util/Environment.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { cloneDeep, shuffle } from 'lodash-es'
 import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
@@ -396,12 +396,6 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
     case '.afk':
       afkCommandReceived(args, playerId)
       break
-    case '.wins':
-      winsCommandReceived(args, playerId)
-      break
-    case '.plays':
-      playsCommandReceived(args, playerId)
-      break
     case '.placeallbombot':
       await placeallbombotCommandReceived(args, playerId)
       break
@@ -409,32 +403,6 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       if (args[0].startsWith('.')) {
         throw new GameError('Unrecognised command. Type .help to see all commands', playerId)
       }
-  }
-}
-
-function winsCommandReceived(args: string[], playerId: number) {
-  getPlayerStat(args, playerId, 'wins', 'won')
-}
-
-function playsCommandReceived(args: string[], playerId: number) {
-  getPlayerStat(args, playerId, 'plays', 'played')
-}
-
-function getPlayerStat(args: string[], playerId: number, stat: 'wins' | 'plays', verb: 'won' | 'played') {
-  if (args.length === 1) {
-    const botData = getPlayerBomBotWorldData(playerId)
-    sendPrivateChatMessage(`You have ${verb} ${botData[stat]} times.`, playerId)
-  } else {
-    const otherPlayerName = args[1].toLowerCase()
-    const otherPlayer = getPwGameWorldHelper()
-      .getPlayers()
-      .find((p) => p.username.toLowerCase() === otherPlayerName)
-    if (otherPlayer) {
-      const botData = getPlayerBomBotWorldData(otherPlayer.playerId)
-      sendPrivateChatMessage(`${otherPlayerName} has ${verb} ${botData[stat]} times.`, playerId)
-    } else {
-      throw new GameError(`Player ${otherPlayerName} not found.`, playerId)
-    }
   }
 }
 
@@ -455,7 +423,11 @@ function afkCommandReceived(_: string[], playerId: number) {
 
 function helpCommandReceived(args: string[], playerId: number) {
   if (args.length == 1) {
-    sendPrivateChatMessage('Commands: .help .ping .start .quickstart .stop .wins .plays', playerId)
+    if (isDeveloper(playerId) || isWorldOwner(playerId)) {
+      sendPrivateChatMessage('Commands: .help .ping .afk .start .quickstart .stop', playerId)
+    } else {
+      sendPrivateChatMessage('Commands: .help .ping .afk', playerId)
+    }
     sendPrivateChatMessage('See more info about each command via .help [command]', playerId)
     // TODO:
     // sendPrivateChatMessage('You can also host BomBot yourself at: piratux.github.io/PixelWalker-Copy-Bot/', playerId)
@@ -490,12 +462,6 @@ function helpCommandReceived(args: string[], playerId: number) {
       break
     case 'afk':
       sendPrivateChatMessage(".afk - tells bot that you're afk or not.", playerId)
-      break
-    case 'wins':
-      sendPrivateChatMessage('.wins [player_name] - shows how many times player won.', playerId)
-      break
-    case 'plays':
-      sendPrivateChatMessage('.plays [player_name] - shows how many times player played.', playerId)
       break
     default:
       throw new GameError(`Unrecognised command ${args[1]}. Type .help to see all commands`, playerId)
