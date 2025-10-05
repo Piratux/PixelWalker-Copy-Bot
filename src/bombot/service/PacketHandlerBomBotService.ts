@@ -448,7 +448,7 @@ function helpCommandReceived(args: string[], playerId: number) {
         '.help [command] - get general help, or if command is specified, get help about command.',
         playerId,
       )
-      sendPrivateChatMessage(`Example usage: .help wins`, playerId)
+      sendPrivateChatMessage(`Example usage: .help afk`, playerId)
       break
     case 'start':
       sendPrivateChatMessage('.start - starts BomBot game.', playerId)
