@@ -9,7 +9,7 @@ import { PlayerBomBotWorldData } from '@/bombot/type/BomBotPlayerWorldData.ts'
 import { BomBotPowerupData } from '@/bombot/type/BomBotPowerupData.ts'
 
 export const useBomBotWorldStore = defineStore('BomBotWorldStore', () => {
-  const bombBlocks = ref<Raw<WorldBlock[]>>([])
+  const bombDefaultBlocks = ref<Raw<WorldBlock[]>>([])
   const bombRemoveBlocks = ref<Raw<WorldBlock[]>>([])
   const powerupData = ref<Raw<BomBotPowerupData[]>>([])
   const bombTimerBgBlockTimeSpent = ref<Raw<Block>>(new Block(0))
@@ -22,7 +22,7 @@ export const useBomBotWorldStore = defineStore('BomBotWorldStore', () => {
   const everySecondUpdateIsRunning = ref<boolean>(false)
 
   return {
-    bombBlocks,
+    bombDefaultBlocks,
     bombRemoveBlocks,
     powerupData,
     bombTimerBgBlockTimeSpent,

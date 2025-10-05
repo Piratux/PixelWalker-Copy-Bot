@@ -264,7 +264,7 @@ function performBombAction(posX: number) {
   useBomBotRoundStore().bombAvailable = false
 
   const bombPos = getBombSpawnPos(posX)
-  placeStructureInsideMap(useBomBotWorldStore().bombBlocks, bombPos)
+  placeStructureInsideMap(useBomBotWorldStore().bombDefaultBlocks, bombPos)
   useBomBotRoundStore().lastBombPos = bombPos
   useBomBotRoundStore().secondsLeftBeforeBombMustBeRemoved = 2
 
@@ -580,11 +580,11 @@ async function loadBomBotData() {
     throw new GameError('Failed to load BomBot data')
   }
 
-  useBomBotWorldStore().bombTimerBgBlockTimeSpent = bombotBlocks.blocks[LayerType.Background][10][363]
-  useBomBotWorldStore().bombTimerBgBlockTimeLeft = bombotBlocks.blocks[LayerType.Background][8][363]
+  useBomBotWorldStore().bombTimerBgBlockTimeSpent = bombotBlocks.blocks[LayerType.Background][4][380]
+  useBomBotWorldStore().bombTimerBgBlockTimeLeft = bombotBlocks.blocks[LayerType.Background][2][380]
 
-  useBomBotWorldStore().bombBlocks = getBomBotStructure(bombotBlocks, vec2(3, 361), vec2(3, 3), vec2(-1, -1))
-  useBomBotWorldStore().bombRemoveBlocks = getBomBotStructure(bombotBlocks, vec2(3, 368), vec2(3, 3), vec2(-1, -1))
+  useBomBotWorldStore().bombDefaultBlocks = getBomBotStructure(bombotBlocks, vec2(9, 385), vec2(3, 3), vec2(-1, -1))
+  useBomBotWorldStore().bombRemoveBlocks = getBomBotStructure(bombotBlocks, vec2(3, 385), vec2(3, 3), vec2(-1, -1))
 
   loadPowerups(bombotBlocks)
   loadBlockTypes(bombotBlocks)
@@ -1086,7 +1086,7 @@ function isBomBotMapValid(
   mapBlocks: DeserialisedStructure,
   sectionTopLeft: vec2,
 ): boolean {
-  const mapFinishedIndicatorBlock = bombotBlocks.blocks[LayerType.Foreground][8][366]
+  const mapFinishedIndicatorBlock = bombotBlocks.blocks[LayerType.Foreground][2][360]
   const checkBlock = bombotBlocks.blocks[LayerType.Foreground][sectionTopLeft.x - 1][sectionTopLeft.y - 1]
   const mapIndicatedWithFinishedBlock = checkBlock.bId === mapFinishedIndicatorBlock.bId
   if (!mapIndicatedWithFinishedBlock) {
