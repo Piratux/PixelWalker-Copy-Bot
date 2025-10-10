@@ -183,6 +183,8 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
       return createBlock(PwBlockName.EFFECTS_CURSE, [eelvlBlock.intParameter!])
     case EelvlBlockId.EFFECTS_ZOMBIE:
       return createBlock(PwBlockName.EFFECTS_ZOMBIE, [eelvlBlock.intParameter!])
+    case EelvlBlockId.EFFECTS_POISON:
+      return createBlock(PwBlockName.EFFECTS_POISON, [eelvlBlock.intParameter!])
     case EelvlBlockId.EFFECTS_GRAVITY_FORCE:
       return getEelvlToPwEffectsGravityForceBlock(eelvlBlock)
     case EelvlBlockId.EFFECTS_MULTI_JUMP:
@@ -300,11 +302,11 @@ function getEelvlToPwEffectsJumpHeightBlock(eelvlBlock: EelvlBlock): Block {
   const jumpHeight = eelvlBlock.intParameter
   switch (jumpHeight) {
     case 2:
-      return createBlock(PwBlockName.EFFECTS_JUMP_HEIGHT, [2])
+      return createBlock(PwBlockName.EFFECTS_JUMP_HEIGHT, [75])
     case 0:
-      return createBlock(PwBlockName.EFFECTS_JUMP_HEIGHT, [3])
+      return createBlock(PwBlockName.EFFECTS_JUMP_HEIGHT, [100])
     case 1:
-      return createBlock(PwBlockName.EFFECTS_JUMP_HEIGHT, [6])
+      return createBlock(PwBlockName.EFFECTS_JUMP_HEIGHT, [130])
     default:
       return createUnknownParameterBlockSign(
         `Unknown block parameter. Name: ${PwBlockName.EFFECTS_JUMP_HEIGHT}, parameter: ${jumpHeight}`,
