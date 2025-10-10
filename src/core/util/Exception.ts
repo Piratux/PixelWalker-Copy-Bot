@@ -41,11 +41,11 @@ function printGameErrorExceptionMessage(gameError: GameError) {
 }
 
 export function handleException(exception: unknown): void {
+  console.error(exception)
+  const trueExceptionMessage = getTrueExceptionMessage(exception)
+  MessageService.error(trueExceptionMessage)
+
   if (usePwClientStore().isConnected) {
     handleInGameException(exception)
-  } else {
-    console.error(exception)
-    const trueExceptionMessage = getTrueExceptionMessage(exception)
-    MessageService.error(trueExceptionMessage)
   }
 }
