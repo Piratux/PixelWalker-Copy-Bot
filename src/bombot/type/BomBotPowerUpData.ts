@@ -1,9 +1,9 @@
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
-import { BomBotPowerup } from '@/bombot/enum/BomBotPowerup.ts'
+import { BomBotPowerUp } from '@/bombot/enum/BomBotPowerUp.ts'
 import { Point } from 'pw-js-world'
 
-export interface BomBotPowerupData {
+export interface BomBotPowerUpData {
   equipPos: Point
-  type: BomBotPowerup
+  type: BomBotPowerUp
   blocks: WorldBlock[]
 }

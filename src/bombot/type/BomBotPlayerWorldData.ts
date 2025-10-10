@@ -1,4 +1,4 @@
-import { BomBotPowerup } from '@/bombot/enum/BomBotPowerup.ts'
+import { BomBotPowerUp } from '@/bombot/enum/BomBotPowerUp.ts'
 import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { BomBotSpecialBomb } from '@/bombot/enum/BomBotSpecialBomb.ts'
 import { BomBotBombType } from '@/bombot/enum/BomBotBombType.ts'
@@ -9,7 +9,7 @@ export interface BomBotWorldData {
   plays: number
   informedHowToPlaceBombOnce: boolean
   lastTimeUpPressedMs: number
-  powerupSelected: BomBotPowerup | null
+  powerUpSelected: BomBotPowerUp | null
   specialBombSelected: BomBotSpecialBomb | null
   bombTypeChosen: BomBotBombType
 }
@@ -23,7 +23,7 @@ export function createBomBotWorldData(playerId: number): BomBotWorldData {
     plays: 0,
     informedHowToPlaceBombOnce: false,
     lastTimeUpPressedMs: 0,
-    powerupSelected: null,
+    powerUpSelected: null,
     specialBombSelected: null,
     bombTypeChosen: BomBotBombType.NORMAL,
   }

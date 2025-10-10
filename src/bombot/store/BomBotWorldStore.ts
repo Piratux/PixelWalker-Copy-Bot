@@ -6,14 +6,14 @@ import { BomBotMapEntry } from '@/bombot/type/BomBotMapEntry.ts'
 import { BomBotState } from '@/bombot/enum/BomBotState.ts'
 import { BomBotBlockType } from '@/bombot/enum/BomBotBlockType.ts'
 import { PlayerBomBotWorldData } from '@/bombot/type/BomBotPlayerWorldData.ts'
-import { BomBotPowerupData } from '@/bombot/type/BomBotPowerupData.ts'
+import { BomBotPowerUpData } from '@/bombot/type/BomBotPowerUpData.ts'
 import { BomBotSpecialBombData } from '@/bombot/type/BomBotSpecialBombData.ts'
 
 export const useBomBotWorldStore = defineStore('BomBotWorldStore', () => {
   const defaultBombBlocks = ref<Raw<WorldBlock[]>>([])
   const specialBombData = ref<Raw<BomBotSpecialBombData[]>>([])
   const bombRemoveBlocks = ref<Raw<WorldBlock[]>>([])
-  const powerupData = ref<Raw<BomBotPowerupData[]>>([])
+  const powerUpData = ref<Raw<BomBotPowerUpData[]>>([])
   const bombTimerBgBlockTimeSpent = ref<Raw<Block>>(new Block(0))
   const bombTimerBgBlockTimeLeft = ref<Raw<Block>>(new Block(0))
   const bombTypeFgBlockIndicator = ref<Raw<Block>>(new Block(0))
@@ -28,7 +28,7 @@ export const useBomBotWorldStore = defineStore('BomBotWorldStore', () => {
     defaultBombBlocks,
     specialBombData,
     bombRemoveBlocks,
-    powerupData,
+    powerUpData,
     bombTimerBgBlockTimeSpent,
     bombTimerBgBlockTimeLeft,
     bombTypeFgBlockIndicator,

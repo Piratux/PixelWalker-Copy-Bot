@@ -39,10 +39,10 @@ import { clamp } from '@/core/util/Numbers.ts'
 import { userBomBotAutomaticRestartCounterStore } from '@/bombot/store/BomBotAutomaticRestartCounterStore.ts'
 import { BomBotWorldData, createBomBotWorldData } from '@/bombot/type/BomBotPlayerWorldData.ts'
 import waitUntil from 'async-wait-until'
-import { BomBotPowerup } from '@/bombot/enum/BomBotPowerup.ts'
+import { BomBotPowerUp } from '@/bombot/enum/BomBotPowerUp.ts'
 import { BomBotRoundData, createBomBotRoundData } from '@/bombot/type/BomBotPlayerRoundData.ts'
 import { GameError } from '@/core/class/GameError.ts'
-import { BomBotPowerupData } from '@/bombot/type/BomBotPowerupData.ts'
+import { BomBotPowerUpData } from '@/bombot/type/BomBotPowerUpData.ts'
 import { BomBotSpecialBombData } from '@/bombot/type/BomBotSpecialBombData.ts'
 import { BomBotSpecialBomb } from '@/bombot/enum/BomBotSpecialBomb.ts'
 import { BomBotBombType } from '@/bombot/enum/BomBotBombType.ts'
@@ -205,7 +205,7 @@ function checkIfPowerUpUsed(data: ProtoGen.PlayerMovedPacket) {
   }
 
   const botData = getPlayerBomBotWorldData(data.playerId!)
-  if (botData.powerupSelected === null) {
+  if (botData.powerUpSelected === null) {
     return
   }
 
@@ -219,21 +219,21 @@ function checkIfPowerUpUsed(data: ProtoGen.PlayerMovedPacket) {
   }
 
   const botRoundData = getPlayerBomBotRoundData(data.playerId!)
-  if (botRoundData.powerupsLeft <= 0) {
+  if (botRoundData.powerUpsLeft <= 0) {
     return
   }
 
-  botRoundData.powerupsLeft--
+  botRoundData.powerUpsLeft--
 
-  // Require people to press powerup even amount of times to use it.
-  // That is, we want to prevent using 2 powerups when pressing up 3 times quickly.
+  // Require people to press powerUp even amount of times to use it.
+  // That is, we want to prevent using 2 powerUps when pressing up 3 times quickly.
   botData.lastTimeUpPressedMs = 0
 
   sendPrivateChatMessage(
-    `Powerup ${BomBotPowerup[botData.powerupSelected]} used! ${botRoundData.powerupsLeft} left`,
+    `PowerUp ${BomBotPowerUp[botData.powerUpSelected]} used! ${botRoundData.powerUpsLeft} left`,
     data.playerId!,
   )
-  placeStructureInsideMap(useBomBotWorldStore().powerupData[botData.powerupSelected].blocks, playerPos)
+  placeStructureInsideMap(useBomBotWorldStore().powerUpData[botData.powerUpSelected].blocks, playerPos)
 }
 
 function checkIfBombTypeChanged(data: ProtoGen.PlayerMovedPacket) {
@@ -275,10 +275,10 @@ function checkIfPowerUpEquipped(data: ProtoGen.PlayerMovedPacket) {
   const playerId = data.playerId!
   const playerPos = convertFromPixelPosToBlockPos(data.position!)
   const botData = getPlayerBomBotWorldData(playerId)
-  for (const powerup of useBomBotWorldStore().powerupData) {
-    if (vec2.eq(playerPos, powerup.equipPos)) {
-      botData.powerupSelected = powerup.type
-      sendPrivateChatMessage(`Powerup selected: ${BomBotPowerup[powerup.type]}`, playerId)
+  for (const powerUp of useBomBotWorldStore().powerUpData) {
+    if (vec2.eq(playerPos, powerUp.equipPos)) {
+      botData.powerUpSelected = powerUp.type
+      sendPrivateChatMessage(`PowerUp selected: ${BomBotPowerUp[powerUp.type]}`, playerId)
     }
   }
 }
@@ -612,37 +612,37 @@ function getBomBotStructure(bombotBlocks: DeserialisedStructure, topLeft: vec2, 
   }))
 }
 
-function loadPowerups(bombotBlocks: DeserialisedStructure) {
-  const powerupList: BomBotPowerupData[] = [
+function loadPowerUps(bombotBlocks: DeserialisedStructure) {
+  const powerUpList: BomBotPowerUpData[] = [
     {
       equipPos: vec2(6, 93),
-      type: BomBotPowerup.SHIELD,
+      type: BomBotPowerUp.SHIELD,
       blocks: getBomBotStructure(bombotBlocks, vec2(3, 395), vec2(3, 1), vec2(-1, -2)),
     },
     {
       equipPos: vec2(12, 93),
-      type: BomBotPowerup.SABOTAGE,
+      type: BomBotPowerUp.SABOTAGE,
       blocks: getBomBotStructure(bombotBlocks, vec2(9, 395), vec2(3, 3), vec2(-1, -1)),
     },
     {
       equipPos: vec2(18, 93),
-      type: BomBotPowerup.DOTS,
+      type: BomBotPowerUp.DOTS,
       blocks: getBomBotStructure(bombotBlocks, vec2(15, 395), vec2(3, 3), vec2(-1, -1)),
     },
     {
       equipPos: vec2(24, 93),
-      type: BomBotPowerup.MUD_FIELD,
+      type: BomBotPowerUp.MUD_FIELD,
       blocks: getBomBotStructure(bombotBlocks, vec2(21, 395), vec2(3, 3), vec2(-1, -1)),
     },
     {
       equipPos: vec2(31, 93),
-      type: BomBotPowerup.PLATFORM,
+      type: BomBotPowerUp.PLATFORM,
       blocks: getBomBotStructure(bombotBlocks, vec2(27, 396), vec2(5, 1), vec2(-2, 1)),
     },
   ]
 
-  for (const powerup of powerupList) {
-    useBomBotWorldStore().powerupData.push(powerup)
+  for (const powerUp of powerUpList) {
+    useBomBotWorldStore().powerUpData.push(powerUp)
   }
 }
 
@@ -722,7 +722,7 @@ async function loadBomBotData() {
   useBomBotWorldStore().defaultBombBlocks = getBomBotStructure(bombotBlocks, vec2(9, 385), vec2(3, 3), vec2(-1, -1))
   useBomBotWorldStore().bombRemoveBlocks = getBomBotStructure(bombotBlocks, vec2(3, 385), vec2(3, 3), vec2(-1, -1))
 
-  loadPowerups(bombotBlocks)
+  loadPowerUps(bombotBlocks)
   loadSpecialBombs(bombotBlocks)
   loadBlockTypes(bombotBlocks)
 

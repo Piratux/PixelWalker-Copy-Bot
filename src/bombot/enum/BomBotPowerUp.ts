@@ -1,4 +1,4 @@
-export enum BomBotPowerup {
+export enum BomBotPowerUp {
   SHIELD,
   SABOTAGE,
   DOTS,
