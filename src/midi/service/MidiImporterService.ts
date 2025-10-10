@@ -131,7 +131,7 @@ function processMidiFile(midi: Midi): Record<number, { type: string; notes: numb
 
         const distance = Math.round(note.time * multiplier)
 
-        if (!writeNotes[distance]) {
+        if (!(distance in writeNotes)) {
           writeNotes[distance] = {
             type: family,
             notes: [note.midi - 21],

@@ -200,6 +200,7 @@ export function getAllWorldBlocks(pwGameWorldHelper: PWGameWorldHelper): Deseria
 
 export function hotReloadCallbacks(callbacks: CallbackEntry[]) {
   const client = getPwGameClient()
+  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
   if (!client) {
     return
   }

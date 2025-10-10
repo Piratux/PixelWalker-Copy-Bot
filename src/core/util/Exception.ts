@@ -33,7 +33,7 @@ function handleInGameException(exception: unknown) {
 
 function printGameErrorExceptionMessage(gameError: GameError) {
   const chatExceptionMessage = `ERROR! ${gameError.message}`
-  if (gameError.playerId) {
+  if (gameError.playerId !== null) {
     sendPrivateChatMessage(chatExceptionMessage, gameError.playerId)
   } else {
     sendGlobalChatMessage(chatExceptionMessage)

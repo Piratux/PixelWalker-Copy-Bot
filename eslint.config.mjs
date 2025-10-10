@@ -20,6 +20,13 @@ export default defineConfigWithVueTs(
           trailingUnderscore: 'allow',
         },
       ],
+      '@typescript-eslint/strict-boolean-expressions': [
+        'error',
+        {
+          allowNumber: false,
+          allowString: false,
+        },
+      ],
     },
   },
   eslintConfigPrettier,

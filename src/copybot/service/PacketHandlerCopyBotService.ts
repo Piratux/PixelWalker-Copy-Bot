@@ -77,10 +77,10 @@ if (import.meta.hot) {
 
 function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
   const playerId = data.properties?.playerId
-  if (!playerId) {
+  if (playerId === undefined) {
     return
   }
-  if (!getPlayerCopyBotData()[playerId]) {
+  if (!(playerId in getPlayerCopyBotData())) {
     getPlayerCopyBotData()[playerId] = createBotData()
   }
   sendPrivateChatMessage('Copy Bot is here! Type .help to show usage!', playerId)
@@ -509,7 +509,7 @@ function editCommandReceived(args: string[], playerId: number) {
 function editNameCommand(args: string[], playerId: number): WorldBlock[] {
   let searchFor = args[2]
   let replaceWith = args[3]
-  if (!searchFor || !replaceWith) {
+  if (searchFor === '' || replaceWith === '') {
     throw new GameError(`Correct usage is .edit name find replace`, playerId)
   }
 
@@ -542,13 +542,13 @@ function editNameCommand(args: string[], playerId: number): WorldBlock[] {
       return worldBlock
     },
   )
-  if (!warning && counter == 0 && copyNamesFound.size == 1) {
+  if (warning === '' && counter == 0 && copyNamesFound.size == 1) {
     // some blocks are confusingly named, if they're trying to edit a single block type let them know that it's not valid.
     sendPrivateChatMessage(`${counter} blocks changed. ${[...copyNamesFound][0]} is not a valid block.`, playerId)
     return editedBlocks
   }
   sendPrivateChatMessage(`${counter} blocks changed ${searchFor} to ${replaceWith}`, playerId)
-  if (warning) {
+  if (warning !== '') {
     sendPrivateChatMessage(`Warning: ${warning}`, playerId)
   }
 
@@ -705,7 +705,11 @@ function applySmartTransformForBlocks(
             const nextBlockXPortalId = portalIdToNumber(nextBlockX.block.args[i] as string)
             const pastePosBlockPortalId = portalIdToNumber(pastePosBlock.block.args[i] as string)
             const blockCopyPortalId = portalIdToNumber(blockCopy.block.args[i] as string)
-            if (nextBlockXPortalId && pastePosBlockPortalId && blockCopyPortalId) {
+            if (
+              nextBlockXPortalId !== undefined &&
+              pastePosBlockPortalId !== undefined &&
+              blockCopyPortalId !== undefined
+            ) {
               const diffX = nextBlockXPortalId - pastePosBlockPortalId
               blockCopy.block.args[i] = (blockCopyPortalId + diffX * repetitionX).toString()
             }
@@ -714,7 +718,11 @@ function applySmartTransformForBlocks(
             const nextBlockYPortalId = portalIdToNumber(nextBlockY.block.args[i] as string)
             const pastePosBlockPortalId = portalIdToNumber(pastePosBlock.block.args[i] as string)
             const blockCopyPortalId = portalIdToNumber(blockCopy.block.args[i] as string)
-            if (nextBlockYPortalId && pastePosBlockPortalId && blockCopyPortalId) {
+            if (
+              nextBlockYPortalId !== undefined &&
+              pastePosBlockPortalId !== undefined &&
+              blockCopyPortalId !== undefined
+            ) {
               const diffY = nextBlockYPortalId - pastePosBlockPortalId
               blockCopy.block.args[i] = (blockCopyPortalId + diffY * repetitionY).toString()
             }
@@ -786,6 +794,8 @@ function filterByLayerMasks(allBlocks: WorldBlock[], botData: CopyBotData) {
     if (block.layer === LayerType.Overlay) {
       return botData.maskOverlayEnabled
     }
+
+    return true
   })
 }
 
@@ -943,7 +953,7 @@ function worldBlockPlacedPacketReceived(
 }
 
 function getBotData(playerId: number) {
-  if (!getPlayerCopyBotData()[playerId]) {
+  if (!(playerId in getPlayerCopyBotData())) {
     getPlayerCopyBotData()[playerId] = createBotData()
   }
   return getPlayerCopyBotData()[playerId]

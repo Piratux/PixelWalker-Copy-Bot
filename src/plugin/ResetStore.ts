@@ -14,7 +14,7 @@ interface ExtendedPinia extends Pinia {
 }
 
 export function resetAllStores() {
-  const pinia = getActivePinia() as ExtendedPinia
+  const pinia = getActivePinia() as ExtendedPinia | undefined
 
   if (!pinia) {
     throw new Error('There is no active Pinia instance')

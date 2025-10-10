@@ -21,7 +21,7 @@ import { sleep } from '@/core/util/Sleep.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { cloneDeep } from 'lodash-es'
-import { PWApiClient, PWGameClient } from 'pw-js-api'
+import { ListBlockResult, PWApiClient, PWGameClient } from 'pw-js-api'
 import { authenticate, getAllWorldBlocks, joinWorld } from '@/core/service/PwClientService.ts'
 import { handleException } from '@/core/util/Exception.ts'
 import waitUntil from 'async-wait-until'
@@ -161,8 +161,8 @@ export function getBlockName(pwBlockId: number): PwBlockName {
 }
 
 export function getBlockIdFromString(name: string): number | undefined {
-  const block = getPwBlocksByPwName()[name as PwBlockName]
-  if (!block) {
+  const block: ListBlockResult | undefined = getPwBlocksByPwName()[name]
+  if (block === undefined) {
     return undefined
   }
   return block.Id

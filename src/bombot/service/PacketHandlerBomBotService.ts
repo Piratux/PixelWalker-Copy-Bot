@@ -350,7 +350,7 @@ function disqualifyPlayerFromRound(playerId: number) {
 
 function playerGodModePacketReceived(data: ProtoGen.PlayerGodModePacket) {
   const playerId = data.playerId
-  if (!playerId) {
+  if (playerId === undefined) {
     return
   }
   disqualifyPlayerFromRound(playerId)
@@ -421,7 +421,7 @@ function playerTeamUpdatePacketReceived(data: ProtoGen.PlayerTeamUpdatePacket) {
 
 function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
   const playerId = data.properties?.playerId
-  if (!playerId) {
+  if (playerId === undefined) {
     return
   }
   sendPrivateChatMessage('BomBot is here! Type .start to start the round. Type .help to see commands', playerId)
@@ -1325,14 +1325,14 @@ function isBomBotMapValid(
 }
 
 function getPlayerBomBotWorldData(playerId: number): BomBotWorldData {
-  if (!useBomBotWorldStore().playerBomBotWorldData[playerId]) {
+  if (!(playerId in useBomBotWorldStore().playerBomBotWorldData)) {
     useBomBotWorldStore().playerBomBotWorldData[playerId] = createBomBotWorldData(playerId)
   }
   return useBomBotWorldStore().playerBomBotWorldData[playerId]
 }
 
 function getPlayerBomBotRoundData(playerId: number): BomBotRoundData {
-  if (!useBomBotRoundStore().playerBomBotRoundData[playerId]) {
+  if (!(playerId in useBomBotRoundStore().playerBomBotRoundData)) {
     useBomBotRoundStore().playerBomBotRoundData[playerId] = createBomBotRoundData()
   }
   return useBomBotRoundStore().playerBomBotRoundData[playerId]

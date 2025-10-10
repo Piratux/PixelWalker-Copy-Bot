@@ -21,7 +21,7 @@ export async function getFileAsArrayBuffer(event: Event): Promise<FileImportAsAr
     return new Promise((resolve) => {
       const reader = new FileReader()
       reader.onload = (e) => {
-        const fileData = e.target?.result as ArrayBuffer
+        const fileData = e.target?.result as ArrayBuffer | undefined
         if (fileData) {
           target.value = '' // needed, so that importing same file, triggers the event again
           resolve({ data: fileData, file: file })

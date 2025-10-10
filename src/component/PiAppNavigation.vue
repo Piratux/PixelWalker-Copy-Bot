@@ -69,7 +69,7 @@ onMounted(async () => {
 
 async function handleRouting(path: string | undefined) {
   await withLoading(loadingOverlay, async () => {
-    if (path && routePath.value !== path) {
+    if (path !== undefined && routePath.value !== path) {
       await router.push({ path })
     }
   })
