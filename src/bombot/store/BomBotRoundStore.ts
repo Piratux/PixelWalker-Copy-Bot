@@ -26,7 +26,7 @@ export const useBomBotRoundStore = defineStore('BomBotRoundStore', () => {
   const lastBombType = ref<BomBotSpecialBomb | null>(null) // null indicates normal bomb type
   const bombAvailable = ref<boolean>(false) // prevent placing multiple bombs per bomber
   const waitingForMorePlayersMessagePrintedOnce = ref<boolean>(false)
-  const playerBombotRoundData = ref<PlayerBomBotRoundData>({})
+  const playerBomBotRoundData = ref<PlayerBomBotRoundData>({})
 
   return {
     availablePlayerSpawnPositions,
@@ -48,6 +48,6 @@ export const useBomBotRoundStore = defineStore('BomBotRoundStore', () => {
     lastBombType,
     bombAvailable,
     waitingForMorePlayersMessagePrintedOnce,
-    playerBombotRoundData,
+    playerBomBotRoundData,
   }
 })

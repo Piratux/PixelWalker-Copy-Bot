@@ -78,7 +78,7 @@ export function registerBomBotCallbacks() {
   const helper = getPwGameWorldHelper()
   client.addHook(helper.receiveHook)
   // client.addCallback('debug', console.log) // Too laggy to enable it by default
-  client.addCallback('error', handleBombotError)
+  client.addCallback('error', handleBomBotError)
   for (const cb of callbacks) {
     client.addCallback(cb.name, cb.fn)
   }
@@ -115,7 +115,7 @@ function removePlayerFromPlayersInGame(playerId: number) {
   )
 }
 
-function handleBombotError(e: unknown) {
+function handleBomBotError(e: unknown) {
   handleException(e)
   // await autoRestartBomBot() // TODO FIX
 }
@@ -432,10 +432,10 @@ function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
 function mergePlayerStats(playerId: number) {
   // If player leaves and rejoins, keep their stats
   const playerName = getPwGameWorldHelper().getPlayer(playerId)!.username
-  for (const [existingPlayerId, data] of Object.entries(useBomBotWorldStore().playerBombotWorldData)) {
+  for (const [existingPlayerId, data] of Object.entries(useBomBotWorldStore().playerBomBotWorldData)) {
     if (data.username === playerName && Number(existingPlayerId) !== playerId) {
-      useBomBotWorldStore().playerBombotWorldData[playerId] = { ...data }
-      delete useBomBotWorldStore().playerBombotWorldData[Number(existingPlayerId)]
+      useBomBotWorldStore().playerBomBotWorldData[playerId] = { ...data }
+      delete useBomBotWorldStore().playerBomBotWorldData[Number(existingPlayerId)]
       break
     }
   }
@@ -595,8 +595,8 @@ async function placeBomBotMap(mapEntry: BomBotMapEntry) {
   await placeWorldDataBlocksUsingPattern(mapEntry.blocks, mapTopLeftPos)
 }
 
-function getBomBotStructure(bombotBlocks: DeserialisedStructure, topLeft: vec2, size: vec2, offset: vec2 = vec2(0, 0)) {
-  const blocks = getDeserialisedStructureSectionVec2(bombotBlocks, topLeft, vec2.addm(topLeft, size, vec2(-1, -1)))
+function getBomBotStructure(bomBotBlocks: DeserialisedStructure, topLeft: vec2, size: vec2, offset: vec2 = vec2(0, 0)) {
+  const blocks = getDeserialisedStructureSectionVec2(bomBotBlocks, topLeft, vec2.addm(topLeft, size, vec2(-1, -1)))
   let worldBlocks = convertDeserializedStructureToWorldBlocks(blocks)
   worldBlocks = worldBlocks
     .filter((wb) => wb.layer !== LayerType.Background)
@@ -612,32 +612,32 @@ function getBomBotStructure(bombotBlocks: DeserialisedStructure, topLeft: vec2, 
   }))
 }
 
-function loadPowerUps(bombotBlocks: DeserialisedStructure) {
+function loadPowerUps(bomBotBlocks: DeserialisedStructure) {
   const powerUpList: BomBotPowerUpData[] = [
     {
       equipPos: vec2(6, 93),
       type: BomBotPowerUp.SHIELD,
-      blocks: getBomBotStructure(bombotBlocks, vec2(3, 395), vec2(3, 1), vec2(-1, -2)),
+      blocks: getBomBotStructure(bomBotBlocks, vec2(3, 395), vec2(3, 1), vec2(-1, -2)),
     },
     {
       equipPos: vec2(12, 93),
       type: BomBotPowerUp.SABOTAGE,
-      blocks: getBomBotStructure(bombotBlocks, vec2(9, 395), vec2(3, 3), vec2(-1, -1)),
+      blocks: getBomBotStructure(bomBotBlocks, vec2(9, 395), vec2(3, 3), vec2(-1, -1)),
     },
     {
       equipPos: vec2(18, 93),
       type: BomBotPowerUp.DOTS,
-      blocks: getBomBotStructure(bombotBlocks, vec2(15, 395), vec2(3, 3), vec2(-1, -1)),
+      blocks: getBomBotStructure(bomBotBlocks, vec2(15, 395), vec2(3, 3), vec2(-1, -1)),
     },
     {
       equipPos: vec2(24, 93),
       type: BomBotPowerUp.MUD_FIELD,
-      blocks: getBomBotStructure(bombotBlocks, vec2(21, 395), vec2(3, 3), vec2(-1, -1)),
+      blocks: getBomBotStructure(bomBotBlocks, vec2(21, 395), vec2(3, 3), vec2(-1, -1)),
     },
     {
       equipPos: vec2(31, 93),
       type: BomBotPowerUp.PLATFORM,
-      blocks: getBomBotStructure(bombotBlocks, vec2(27, 396), vec2(5, 1), vec2(-2, 1)),
+      blocks: getBomBotStructure(bomBotBlocks, vec2(27, 396), vec2(5, 1), vec2(-2, 1)),
     },
   ]
 
@@ -646,49 +646,49 @@ function loadPowerUps(bombotBlocks: DeserialisedStructure) {
   }
 }
 
-function loadSpecialBombs(bombotBlocks: DeserialisedStructure) {
+function loadSpecialBombs(bomBotBlocks: DeserialisedStructure) {
   const specialBombList: BomBotSpecialBombData[] = [
     {
       equipPos: vec2(45, 91),
       type: BomBotSpecialBomb.PLUS,
-      blocks: getBomBotStructure(bombotBlocks, vec2(17, 385), vec2(5, 5), vec2(-2, -2)),
-      icon: bombotBlocks.blocks[LayerType.Foreground][23][385],
+      blocks: getBomBotStructure(bomBotBlocks, vec2(17, 385), vec2(5, 5), vec2(-2, -2)),
+      icon: bomBotBlocks.blocks[LayerType.Foreground][23][385],
     },
     {
       equipPos: vec2(53, 91),
       type: BomBotSpecialBomb.CROSS,
-      blocks: getBomBotStructure(bombotBlocks, vec2(27, 385), vec2(5, 5), vec2(-2, -2)),
-      icon: bombotBlocks.blocks[LayerType.Foreground][33][385],
+      blocks: getBomBotStructure(bomBotBlocks, vec2(27, 385), vec2(5, 5), vec2(-2, -2)),
+      icon: bomBotBlocks.blocks[LayerType.Foreground][33][385],
     },
     {
       equipPos: vec2(61, 91),
       type: BomBotSpecialBomb.SHRAPNEL,
-      blocks: getBomBotStructure(bombotBlocks, vec2(37, 385), vec2(5, 5), vec2(-2, -2)),
-      icon: bombotBlocks.blocks[LayerType.Foreground][43][385],
+      blocks: getBomBotStructure(bomBotBlocks, vec2(37, 385), vec2(5, 5), vec2(-2, -2)),
+      icon: bomBotBlocks.blocks[LayerType.Foreground][43][385],
     },
     {
       equipPos: vec2(69, 91),
       type: BomBotSpecialBomb.GRID,
-      blocks: getBomBotStructure(bombotBlocks, vec2(47, 385), vec2(5, 5), vec2(-2, -2)),
-      icon: bombotBlocks.blocks[LayerType.Foreground][53][385],
+      blocks: getBomBotStructure(bomBotBlocks, vec2(47, 385), vec2(5, 5), vec2(-2, -2)),
+      icon: bomBotBlocks.blocks[LayerType.Foreground][53][385],
     },
     {
       equipPos: vec2(77, 91),
       type: BomBotSpecialBomb.IMPACT,
-      blocks: getBomBotStructure(bombotBlocks, vec2(57, 385), vec2(5, 5), vec2(-2, -2)),
-      icon: bombotBlocks.blocks[LayerType.Foreground][63][385],
+      blocks: getBomBotStructure(bomBotBlocks, vec2(57, 385), vec2(5, 5), vec2(-2, -2)),
+      icon: bomBotBlocks.blocks[LayerType.Foreground][63][385],
     },
     {
       equipPos: vec2(85, 91),
       type: BomBotSpecialBomb.DIAMOND,
-      blocks: getBomBotStructure(bombotBlocks, vec2(67, 385), vec2(5, 5), vec2(-2, -2)),
-      icon: bombotBlocks.blocks[LayerType.Foreground][73][385],
+      blocks: getBomBotStructure(bomBotBlocks, vec2(67, 385), vec2(5, 5), vec2(-2, -2)),
+      icon: bomBotBlocks.blocks[LayerType.Foreground][73][385],
     },
     {
       equipPos: vec2(94, 91),
       type: BomBotSpecialBomb.LINE,
-      blocks: getBomBotStructure(bombotBlocks, vec2(77, 387), vec2(7, 1), vec2(-3, 0)),
-      icon: bombotBlocks.blocks[LayerType.Foreground][85][385],
+      blocks: getBomBotStructure(bomBotBlocks, vec2(77, 387), vec2(7, 1), vec2(-3, 0)),
+      icon: bomBotBlocks.blocks[LayerType.Foreground][85][385],
     },
   ].map((specialBombData) => {
     const bombDeletedBlocks = specialBombData.blocks.map((worldBlock) => ({ ...worldBlock, block: new Block(0) }))
@@ -710,21 +710,21 @@ function loadSpecialBombs(bombotBlocks: DeserialisedStructure) {
 async function loadBomBotData() {
   sendGlobalChatMessage('Loading BomBot data')
   const bomBotDataWorldId = getWorldIdIfUrl('lbsz7864s3a3yih')
-  const bombotBlocks = await getAnotherWorldBlocks(bomBotDataWorldId)
-  if (!bombotBlocks) {
+  const bomBotBlocks = await getAnotherWorldBlocks(bomBotDataWorldId)
+  if (!bomBotBlocks) {
     throw new GameError('Failed to load BomBot data')
   }
 
-  useBomBotWorldStore().bombTimerBgBlockTimeLeft = bombotBlocks.blocks[LayerType.Background][2][378]
-  useBomBotWorldStore().bombTimerBgBlockTimeSpent = bombotBlocks.blocks[LayerType.Background][4][378]
-  useBomBotWorldStore().bombTypeFgBlockIndicator = bombotBlocks.blocks[LayerType.Foreground][7][379]
+  useBomBotWorldStore().bombTimerBgBlockTimeLeft = bomBotBlocks.blocks[LayerType.Background][2][378]
+  useBomBotWorldStore().bombTimerBgBlockTimeSpent = bomBotBlocks.blocks[LayerType.Background][4][378]
+  useBomBotWorldStore().bombTypeFgBlockIndicator = bomBotBlocks.blocks[LayerType.Foreground][7][379]
 
-  useBomBotWorldStore().defaultBombBlocks = getBomBotStructure(bombotBlocks, vec2(9, 385), vec2(3, 3), vec2(-1, -1))
-  useBomBotWorldStore().bombRemoveBlocks = getBomBotStructure(bombotBlocks, vec2(3, 385), vec2(3, 3), vec2(-1, -1))
+  useBomBotWorldStore().defaultBombBlocks = getBomBotStructure(bomBotBlocks, vec2(9, 385), vec2(3, 3), vec2(-1, -1))
+  useBomBotWorldStore().bombRemoveBlocks = getBomBotStructure(bomBotBlocks, vec2(3, 385), vec2(3, 3), vec2(-1, -1))
 
-  loadPowerUps(bombotBlocks)
-  loadSpecialBombs(bombotBlocks)
-  loadBlockTypes(bombotBlocks)
+  loadPowerUps(bomBotBlocks)
+  loadSpecialBombs(bomBotBlocks)
+  loadBlockTypes(bomBotBlocks)
 
   const totalMapCount = vec2(15, 21)
   const mapSpacing = vec2.add(mapSize, vec2(4, 6))
@@ -733,17 +733,17 @@ async function loadBomBotData() {
     for (let y = 0; y < totalMapCount.y; y++) {
       const sectionTopLeft = vec2.add(topLeftMapOffset, vec2.mul(vec2(x, y), mapSpacing))
       const mapBlocks = getDeserialisedStructureSectionVec2(
-        bombotBlocks,
+        bomBotBlocks,
         sectionTopLeft,
         vec2.addm(sectionTopLeft, mapSize, vec2(-1, -1)),
       )
 
-      if (!isBomBotMapValid(bombotBlocks, mapBlocks, sectionTopLeft)) {
+      if (!isBomBotMapValid(bomBotBlocks, mapBlocks, sectionTopLeft)) {
         continue
       }
 
       const mapInfoSignPos = vec2.add(sectionTopLeft, mapInfoSignOffset)
-      const mapInfoSignBlock = bombotBlocks.blocks[LayerType.Foreground][mapInfoSignPos.x][mapInfoSignPos.y]
+      const mapInfoSignBlock = bomBotBlocks.blocks[LayerType.Foreground][mapInfoSignPos.x][mapInfoSignPos.y]
       const signBlockText = mapInfoSignBlock.args[0] as string
       const signBlockTextLines = signBlockText.split('\n')
       const mapName = signBlockTextLines[0].trim()
@@ -798,7 +798,7 @@ async function startCommandReceived(_args: string[], playerId: number, loadWorld
 }
 
 async function startBomBot(loadWorld: boolean) {
-  sendGlobalChatMessage('Starting Bombot...')
+  sendGlobalChatMessage('Starting BomBot...')
 
   useBomBotWorldStore().$reset()
 
@@ -809,7 +809,7 @@ async function startBomBot(loadWorld: boolean) {
 
   useBomBotWorldStore().currentState = BomBotState.RESET_STORE
 
-  sendGlobalChatMessage('Bombot started!')
+  sendGlobalChatMessage('BomBot started!')
 
   useBomBotWorldStore().everySecondUpdateIsRunning = true
   void everySecondUpdate()
@@ -862,7 +862,7 @@ function playerWinRound(playerId: number) {
 }
 
 function updateLeaderboard() {
-  const playerDataList = Object.entries(useBomBotWorldStore().playerBombotWorldData).map(([playerId, playerData]) => ({
+  const playerDataList = Object.entries(useBomBotWorldStore().playerBomBotWorldData).map(([playerId, playerData]) => ({
     playerId: Number(playerId),
     ...playerData,
   }))
@@ -1219,12 +1219,12 @@ function getRandomAvailablePlayerSpawnPosition(): vec2 {
   return vec2.add(mapTopLeftPos, availablePlayerSpawnPositions[randomIndex])
 }
 
-function loadBlockTypes(bombotBlocks: DeserialisedStructure) {
+function loadBlockTypes(bomBotBlocks: DeserialisedStructure) {
   sendGlobalChatMessage('Loading BomBot block types')
-  const bomBotIndicatorBgBlockIllegal = bombotBlocks.blocks[LayerType.Background][11][360]
-  const bomBotIndicatorBgBlockSolid = bombotBlocks.blocks[LayerType.Background][13][360]
-  const bomBotIndicatorBgBlockSemiSolid = bombotBlocks.blocks[LayerType.Background][15][360]
-  const bomBotIndicatorBgBlockNotSolid = bombotBlocks.blocks[LayerType.Background][17][360]
+  const bomBotIndicatorBgBlockIllegal = bomBotBlocks.blocks[LayerType.Background][11][360]
+  const bomBotIndicatorBgBlockSolid = bomBotBlocks.blocks[LayerType.Background][13][360]
+  const bomBotIndicatorBgBlockSemiSolid = bomBotBlocks.blocks[LayerType.Background][15][360]
+  const bomBotIndicatorBgBlockNotSolid = bomBotBlocks.blocks[LayerType.Background][17][360]
   useBomBotWorldStore().blockTypes.push(...Array(getPwBlocks().length).fill(BomBotBlockType.BACKGROUND))
 
   for (
@@ -1233,13 +1233,13 @@ function loadBlockTypes(bombotBlocks: DeserialisedStructure) {
     y += blockTypeDataSpacingY
   ) {
     for (let x = blockTypeDataStartPos.x; x < blockTypeDataEndPos.x; x++) {
-      const blockTypeIndicatorBlock = bombotBlocks.blocks[LayerType.Background][x][y + 1]
+      const blockTypeIndicatorBlock = bomBotBlocks.blocks[LayerType.Background][x][y + 1]
       if (blockTypeIndicatorBlock.bId === 0) {
         return
       }
 
-      const blockForeground = bombotBlocks.blocks[LayerType.Foreground][x][y]
-      const blockOverlay = bombotBlocks.blocks[LayerType.Overlay][x][y]
+      const blockForeground = bomBotBlocks.blocks[LayerType.Foreground][x][y]
+      const blockOverlay = bomBotBlocks.blocks[LayerType.Overlay][x][y]
       const blockId = blockForeground.bId !== 0 ? blockForeground.bId : blockOverlay.bId
 
       if (blockTypeIndicatorBlock.bId === bomBotIndicatorBgBlockIllegal.bId) {
@@ -1262,12 +1262,12 @@ async function autoRestartBomBot() {
     return
   }
 
-  sendGlobalChatMessage('Restarting bombot...')
+  sendGlobalChatMessage('Restarting BomBot...')
   await stopBomBot()
 
   const MAX_AUTOMATIC_RESTARTS = 3
   if (userBomBotAutomaticRestartCounterStore().totalAutomaticRestarts >= MAX_AUTOMATIC_RESTARTS) {
-    throw new GameError(`Bombot has automatically restarted ${MAX_AUTOMATIC_RESTARTS} times, not restarting again`)
+    throw new GameError(`BomBot has automatically restarted ${MAX_AUTOMATIC_RESTARTS} times, not restarting again`)
   }
   userBomBotAutomaticRestartCounterStore().totalAutomaticRestarts++
 
@@ -1275,12 +1275,12 @@ async function autoRestartBomBot() {
 }
 
 function isBomBotMapValid(
-  bombotBlocks: DeserialisedStructure,
+  bomBotBlocks: DeserialisedStructure,
   mapBlocks: DeserialisedStructure,
   sectionTopLeft: vec2,
 ): boolean {
-  const mapFinishedIndicatorBlock = bombotBlocks.blocks[LayerType.Foreground][2][360]
-  const checkBlock = bombotBlocks.blocks[LayerType.Foreground][sectionTopLeft.x - 1][sectionTopLeft.y - 1]
+  const mapFinishedIndicatorBlock = bomBotBlocks.blocks[LayerType.Foreground][2][360]
+  const checkBlock = bomBotBlocks.blocks[LayerType.Foreground][sectionTopLeft.x - 1][sectionTopLeft.y - 1]
   const mapIndicatedWithFinishedBlock = checkBlock.bId === mapFinishedIndicatorBlock.bId
   if (!mapIndicatedWithFinishedBlock) {
     return false
@@ -1308,7 +1308,7 @@ function isBomBotMapValid(
   }
 
   const mapInfoSignBlock =
-    bombotBlocks.blocks[LayerType.Foreground][sectionTopLeft.x + mapInfoSignOffset.x][
+    bomBotBlocks.blocks[LayerType.Foreground][sectionTopLeft.x + mapInfoSignOffset.x][
       sectionTopLeft.y + mapInfoSignOffset.y
     ]
   const signBlockText = mapInfoSignBlock.args[0] as string
@@ -1325,17 +1325,17 @@ function isBomBotMapValid(
 }
 
 function getPlayerBomBotWorldData(playerId: number): BomBotWorldData {
-  if (!useBomBotWorldStore().playerBombotWorldData[playerId]) {
-    useBomBotWorldStore().playerBombotWorldData[playerId] = createBomBotWorldData(playerId)
+  if (!useBomBotWorldStore().playerBomBotWorldData[playerId]) {
+    useBomBotWorldStore().playerBomBotWorldData[playerId] = createBomBotWorldData(playerId)
   }
-  return useBomBotWorldStore().playerBombotWorldData[playerId]
+  return useBomBotWorldStore().playerBomBotWorldData[playerId]
 }
 
 function getPlayerBomBotRoundData(playerId: number): BomBotRoundData {
-  if (!useBomBotRoundStore().playerBombotRoundData[playerId]) {
-    useBomBotRoundStore().playerBombotRoundData[playerId] = createBomBotRoundData()
+  if (!useBomBotRoundStore().playerBomBotRoundData[playerId]) {
+    useBomBotRoundStore().playerBomBotRoundData[playerId] = createBomBotRoundData()
   }
-  return useBomBotRoundStore().playerBombotRoundData[playerId]
+  return useBomBotRoundStore().playerBomBotRoundData[playerId]
 }
 
 function setBombState(newState: BomBotState) {

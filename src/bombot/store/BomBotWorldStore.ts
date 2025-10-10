@@ -21,7 +21,7 @@ export const useBomBotWorldStore = defineStore('BomBotWorldStore', () => {
   const blockTypes = ref<BomBotBlockType[]>([]) // index is block id
   const currentState = ref<BomBotState>(BomBotState.STOPPED)
   const playedOnce = ref<boolean>(false)
-  const playerBombotWorldData = ref<PlayerBomBotWorldData>({})
+  const playerBomBotWorldData = ref<PlayerBomBotWorldData>({})
   const everySecondUpdateIsRunning = ref<boolean>(false)
 
   return {
@@ -36,7 +36,7 @@ export const useBomBotWorldStore = defineStore('BomBotWorldStore', () => {
     blockTypes,
     currentState,
     playedOnce,
-    playerBombotWorldData,
+    playerBomBotWorldData,
     everySecondUpdateIsRunning,
   }
 })
