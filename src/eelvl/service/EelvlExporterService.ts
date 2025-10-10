@@ -177,7 +177,7 @@ function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock {
       return { blockId: EelvlBlockId.EFFECTS_CURSE, intParameter: pwBlock.args[0] as number }
     case PwBlockName.EFFECTS_ZOMBIE:
       return { blockId: EelvlBlockId.EFFECTS_ZOMBIE, intParameter: pwBlock.args[0] as number }
-    case PwBlockName.EFFECTS_GRAVITYFORCE:
+    case PwBlockName.EFFECTS_GRAVITY_FORCE:
       return getPwToEelvlEffectsGravityForceBlock(pwBlock)
     case PwBlockName.EFFECTS_MULTI_JUMP:
       return getPwToEelvlEffectsMultiJumpBlock(pwBlock)
@@ -318,11 +318,11 @@ function getPwToEelvlEffectsGravityForceBlock(pwBlock: Block): EelvlBlock {
   const gravityForce = pwBlock.args[0] as number
   switch (gravityForce) {
     case 15:
-      return { blockId: EelvlBlockId.EFFECTS_GRAVITYFORCE, intParameter: 1 }
+      return { blockId: EelvlBlockId.EFFECTS_GRAVITY_FORCE, intParameter: 1 }
     case 100:
-      return { blockId: EelvlBlockId.EFFECTS_GRAVITYFORCE, intParameter: 0 }
+      return { blockId: EelvlBlockId.EFFECTS_GRAVITY_FORCE, intParameter: 0 }
     default:
-      return createMissingBlockSign(`${PwBlockName.EFFECTS_GRAVITYFORCE} gravity (%): ${gravityForce}`)
+      return createMissingBlockSign(`${PwBlockName.EFFECTS_GRAVITY_FORCE} gravity (%): ${gravityForce}`)
   }
 }
 

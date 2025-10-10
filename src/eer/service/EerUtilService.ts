@@ -132,7 +132,7 @@ export function hasEerBlockOneIntParameter(eerBlockId: number): boolean {
     EerBlockId.EFFECTS_JUMP_HEIGHT,
     EerBlockId.EFFECTS_FLY,
     EerBlockId.EFFECTS_SPEED,
-    EerBlockId.EFFECTS_GRAVITYFORCE,
+    EerBlockId.EFFECTS_GRAVITY_FORCE,
     EerBlockId.EFFECTS_INVULNERABILITY,
     EerBlockId.EFFECTS_CURSE,
     EerBlockId.EFFECTS_MULTI_JUMP,

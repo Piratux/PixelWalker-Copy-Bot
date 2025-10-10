@@ -3683,7 +3683,7 @@ export const EELVL_BLOCKS: EelvlBlock[] = [
     layer: 0,
   },
   {
-    name: 'EFFECTS_GRAVITYFORCE',
+    name: 'EFFECTS_GRAVITY_FORCE',
     id: 453,
     layer: 0,
   },

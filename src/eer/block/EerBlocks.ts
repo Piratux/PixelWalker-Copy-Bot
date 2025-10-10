@@ -440,7 +440,7 @@ export const EER_BLOCKS: EerBlock[] = [
   },
 
   {
-    name: 'EFFECTS_GRAVITYFORCE',
+    name: 'EFFECTS_GRAVITY_FORCE',
     id: 453,
     layer: 1,
   },

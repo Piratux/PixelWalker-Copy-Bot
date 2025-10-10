@@ -134,7 +134,7 @@ export function hasEelvlBlockOneIntParameter(eelvlBlockId: number): boolean {
     EelvlBlockId.EFFECTS_JUMP_HEIGHT,
     EelvlBlockId.EFFECTS_FLY,
     EelvlBlockId.EFFECTS_SPEED,
-    EelvlBlockId.EFFECTS_GRAVITYFORCE,
+    EelvlBlockId.EFFECTS_GRAVITY_FORCE,
     EelvlBlockId.EFFECTS_INVULNERABILITY,
     EelvlBlockId.EFFECTS_CURSE,
     EelvlBlockId.EFFECTS_MULTI_JUMP,

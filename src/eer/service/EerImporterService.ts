@@ -133,19 +133,19 @@ function tryConvertEerBlockToPwBlock(eerBlock: EerBlock): Block[] | null {
   const eerBlockId = eerBlock.type as EerBlockId
   const eerBlockIntParameter = getEerBlockIntParameter(eerBlock)
   switch (eerBlockId) {
-    case EerBlockId.EFFECTS_GRAVITYFORCE:
+    case EerBlockId.EFFECTS_GRAVITY_FORCE:
       const gravityForce = eerBlockIntParameter
       switch (gravityForce) {
         case 1:
-          return [new Block(PwBlockName.EFFECTS_GRAVITYFORCE, [15])]
+          return [new Block(PwBlockName.EFFECTS_GRAVITY_FORCE, [15])]
         case 2:
-          return [new Block(PwBlockName.EFFECTS_GRAVITYFORCE, [150])]
+          return [new Block(PwBlockName.EFFECTS_GRAVITY_FORCE, [150])]
         case 0:
-          return [new Block(PwBlockName.EFFECTS_GRAVITYFORCE, [100])]
+          return [new Block(PwBlockName.EFFECTS_GRAVITY_FORCE, [100])]
         default:
           return [
             createUnknownParameterBlockSign(
-              `Unknown block parameter. PalleteId: ${PwBlockName.EFFECTS_GRAVITYFORCE}, EER parameter: ${gravityForce}`,
+              `Unknown block parameter. PalleteId: ${PwBlockName.EFFECTS_GRAVITY_FORCE}, EER parameter: ${gravityForce}`,
             ),
           ]
       }
