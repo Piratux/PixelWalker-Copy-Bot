@@ -284,3 +284,19 @@ export function applyPosOffsetForBlocks(offsetPos: Point, worldBlocks: WorldBloc
     return clonedBlock
   })
 }
+
+// Merges blocks into bigger WorldBlock[], but gives priority to blocks_top
+export function mergeWorldBlocks(blocksBottom: WorldBlock[], blocksTop: WorldBlock[]) {
+  const emptyBlocksMap = new Map<string, WorldBlock>()
+  for (const emptyBlock of blocksTop) {
+    const key = `${emptyBlock.pos.x},${emptyBlock.pos.y},${emptyBlock.layer}`
+    emptyBlocksMap.set(key, emptyBlock)
+  }
+
+  const filteredBlocksBottom = blocksBottom.filter((block) => {
+    const key = `${block.pos.x},${block.pos.y},${block.layer}`
+    return !emptyBlocksMap.has(key)
+  })
+
+  return filteredBlocksBottom.concat(blocksTop)
+}

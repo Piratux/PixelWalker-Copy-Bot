@@ -19,6 +19,7 @@ import {
   convertDeserializedStructureToWorldBlocks,
   getAnotherWorldBlocks,
   getDeserialisedStructureSectionVec2,
+  mergeWorldBlocks,
   placeMultipleBlocks,
   placeWorldDataBlocks,
   placeWorldDataBlocksUsingPattern,
@@ -42,6 +43,10 @@ import { BomBotPowerup } from '@/bombot/enum/BomBotPowerup.ts'
 import { BomBotRoundData, createBomBotRoundData } from '@/bombot/type/BomBotPlayerRoundData.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { BomBotPowerupData } from '@/bombot/type/BomBotPowerupData.ts'
+import { BomBotSpecialBombData } from '@/bombot/type/BomBotSpecialBombData.ts'
+import { BomBotSpecialBomb } from '@/bombot/enum/BomBotSpecialBomb.ts'
+import { BomBotBombType } from '@/bombot/enum/BomBotBombType.ts'
+import { SPECIAL_BOMB_COUNT } from '@/bombot/constant/General.ts'
 
 const blockTypeDataStartPos = vec2(20, 361) // inclusive x
 const blockTypeDataEndPos = vec2(389, 361) // exclusive x
@@ -125,17 +130,52 @@ function convertFromPixelPosToBlockPos(pixelPos: vec2): vec2 {
 function playerMovedPacketReceived(data: ProtoGen.PlayerMovedPacket) {
   checkIfBombPlaced(data)
   checkIfPowerUpUsed(data)
+  checkIfBombTypeChanged(data)
   checkIfPowerUpEquipped(data)
+  checkIfSpecialBombEquipped(data)
 }
 
 function checkIfBombPlaced(data: ProtoGen.PlayerMovedPacket) {
   if (
-    data.spaceJustDown &&
-    useBomBotWorldStore().currentState === BomBotState.PLAYING &&
-    data.playerId === useBomBotRoundStore().bomberPlayerId
+    !data.spaceJustDown ||
+    useBomBotWorldStore().currentState !== BomBotState.PLAYING ||
+    data.playerId !== useBomBotRoundStore().bomberPlayerId
   ) {
-    performBombAction(clamp(Math.round(data.position!.x / 16), mapTopLeftPos.x, mapTopLeftPos.x + mapSize.x - 1))
+    return
   }
+
+  if (!useBomBotRoundStore().bombAvailable) {
+    return
+  }
+
+  if (useBomBotRoundStore().secondsLeftBeforeBomberCanBomb > 0) {
+    return
+  }
+
+  const playerPos = convertFromPixelPosToBlockPos(data.position!)
+  const posX = clamp(playerPos.x, mapTopLeftPos.x, mapTopLeftPos.x + mapSize.x - 1)
+
+  useBomBotRoundStore().bombAvailable = false
+
+  const botData = getPlayerBomBotWorldData(data.playerId)
+  const bombPos = getBombSpawnPos(posX)
+  if (botData.bombTypeChosen === BomBotBombType.NORMAL) {
+    placeStructureInsideMap(useBomBotWorldStore().defaultBombBlocks, bombPos)
+    useBomBotRoundStore().lastBombType = null
+  } else {
+    placeStructureInsideMap(useBomBotWorldStore().specialBombData[botData.specialBombSelected!].blocks, bombPos)
+    useBomBotRoundStore().lastBombType = botData.specialBombSelected
+
+    const botRoundData = getPlayerBomBotRoundData(data.playerId)
+    botRoundData.specialBombsLeft--
+
+    placeBombTypeIndicators()
+  }
+
+  useBomBotRoundStore().lastBombPos = bombPos
+  useBomBotRoundStore().secondsLeftBeforeBombMustBeRemoved = 2
+
+  updateAvailablePlayerSpawnPositions()
 }
 
 function checkIfPowerUpUsed(data: ProtoGen.PlayerMovedPacket) {
@@ -196,6 +236,36 @@ function checkIfPowerUpUsed(data: ProtoGen.PlayerMovedPacket) {
   placeStructureInsideMap(useBomBotWorldStore().powerupData[botData.powerupSelected].blocks, playerPos)
 }
 
+function checkIfBombTypeChanged(data: ProtoGen.PlayerMovedPacket) {
+  if (
+    useBomBotWorldStore().currentState !== BomBotState.PLAYING ||
+    data.playerId !== useBomBotRoundStore().bomberPlayerId
+  ) {
+    return
+  }
+
+  const upPressed = data.vertical === -1 && data.horizontal === 0
+  if (!upPressed) {
+    return
+  }
+
+  const botData = getPlayerBomBotWorldData(data.playerId)
+  if (botData.specialBombSelected === null) {
+    return
+  }
+
+  const botRoundData = getPlayerBomBotRoundData(data.playerId)
+  if (botRoundData.specialBombsLeft <= 0) {
+    return
+  }
+
+  botData.bombTypeChosen =
+    botData.bombTypeChosen === BomBotBombType.NORMAL ? BomBotBombType.SPECIAL : BomBotBombType.NORMAL
+  placeBombTypIndicatorArrow()
+
+  useBomBotRoundStore().secondsLeftBeforeBomberCanBomb = 2
+}
+
 function checkIfPowerUpEquipped(data: ProtoGen.PlayerMovedPacket) {
   const downPressed = data.vertical === 1 && data.horizontal === 0
   if (!downPressed) {
@@ -205,10 +275,27 @@ function checkIfPowerUpEquipped(data: ProtoGen.PlayerMovedPacket) {
   const playerId = data.playerId!
   const playerPos = convertFromPixelPosToBlockPos(data.position!)
   const botData = getPlayerBomBotWorldData(playerId)
-  for (const powerupListElement of useBomBotWorldStore().powerupData) {
-    if (vec2.eq(playerPos, powerupListElement.equipPos)) {
-      botData.powerupSelected = powerupListElement.type
-      sendPrivateChatMessage(`Powerup selected: ${BomBotPowerup[powerupListElement.type]}`, playerId)
+  for (const powerup of useBomBotWorldStore().powerupData) {
+    if (vec2.eq(playerPos, powerup.equipPos)) {
+      botData.powerupSelected = powerup.type
+      sendPrivateChatMessage(`Powerup selected: ${BomBotPowerup[powerup.type]}`, playerId)
+    }
+  }
+}
+
+function checkIfSpecialBombEquipped(data: ProtoGen.PlayerMovedPacket) {
+  const downPressed = data.vertical === 1 && data.horizontal === 0
+  if (!downPressed) {
+    return
+  }
+
+  const playerId = data.playerId!
+  const playerPos = convertFromPixelPosToBlockPos(data.position!)
+  const botData = getPlayerBomBotWorldData(playerId)
+  for (const specialBomb of useBomBotWorldStore().specialBombData) {
+    if (vec2.eq(playerPos, specialBomb.equipPos)) {
+      botData.specialBombSelected = specialBomb.type
+      sendPrivateChatMessage(`Special bomb selected: ${BomBotSpecialBomb[specialBomb.type]}`, playerId)
     }
   }
 }
@@ -250,25 +337,6 @@ function filterBlocksOutsideMapArea(blocks: WorldBlock[]): WorldBlock[] {
       wb.pos.y >= mapTopLeftPos.y &&
       wb.pos.y < mapTopLeftPos.y + mapSize.y,
   )
-}
-
-function performBombAction(posX: number) {
-  if (!useBomBotRoundStore().bombAvailable) {
-    return
-  }
-
-  if (useBomBotRoundStore().secondsLeftBeforeBomberCanBomb > 0) {
-    return
-  }
-
-  useBomBotRoundStore().bombAvailable = false
-
-  const bombPos = getBombSpawnPos(posX)
-  placeStructureInsideMap(useBomBotWorldStore().bombDefaultBlocks, bombPos)
-  useBomBotRoundStore().lastBombPos = bombPos
-  useBomBotRoundStore().secondsLeftBeforeBombMustBeRemoved = 2
-
-  updateAvailablePlayerSpawnPositions()
 }
 
 function disqualifyPlayerFromRound(playerId: number) {
@@ -530,7 +598,13 @@ async function placeBomBotMap(mapEntry: BomBotMapEntry) {
 function getBomBotStructure(bombotBlocks: DeserialisedStructure, topLeft: vec2, size: vec2, offset: vec2 = vec2(0, 0)) {
   const blocks = getDeserialisedStructureSectionVec2(bombotBlocks, topLeft, vec2.addm(topLeft, size, vec2(-1, -1)))
   let worldBlocks = convertDeserializedStructureToWorldBlocks(blocks)
-  worldBlocks = worldBlocks.filter((wb) => wb.layer !== LayerType.Background)
+  worldBlocks = worldBlocks
+    .filter((wb) => wb.layer !== LayerType.Background)
+    .filter(
+      (wb) =>
+        blocks.blocks[LayerType.Foreground][wb.pos.x][wb.pos.y].bId !== 0 ||
+        blocks.blocks[LayerType.Overlay][wb.pos.x][wb.pos.y].bId !== 0,
+    )
   return worldBlocks.map((wb) => ({
     block: cloneDeep(wb.block),
     layer: wb.layer,
@@ -541,34 +615,95 @@ function getBomBotStructure(bombotBlocks: DeserialisedStructure, topLeft: vec2, 
 function loadPowerups(bombotBlocks: DeserialisedStructure) {
   const powerupList: BomBotPowerupData[] = [
     {
-      equipPos: vec2(9, 92),
+      equipPos: vec2(6, 93),
       type: BomBotPowerup.SHIELD,
       blocks: getBomBotStructure(bombotBlocks, vec2(3, 395), vec2(3, 1), vec2(-1, -2)),
     },
     {
-      equipPos: vec2(15, 92),
+      equipPos: vec2(12, 93),
       type: BomBotPowerup.SABOTAGE,
       blocks: getBomBotStructure(bombotBlocks, vec2(9, 395), vec2(3, 3), vec2(-1, -1)),
     },
     {
-      equipPos: vec2(21, 92),
+      equipPos: vec2(18, 93),
       type: BomBotPowerup.DOTS,
       blocks: getBomBotStructure(bombotBlocks, vec2(15, 395), vec2(3, 3), vec2(-1, -1)),
     },
     {
-      equipPos: vec2(27, 92),
+      equipPos: vec2(24, 93),
       type: BomBotPowerup.MUD_FIELD,
       blocks: getBomBotStructure(bombotBlocks, vec2(21, 395), vec2(3, 3), vec2(-1, -1)),
     },
     {
-      equipPos: vec2(34, 92),
+      equipPos: vec2(31, 93),
       type: BomBotPowerup.PLATFORM,
       blocks: getBomBotStructure(bombotBlocks, vec2(27, 396), vec2(5, 1), vec2(-2, 1)),
     },
   ]
 
-  for (const powerupListElement of powerupList) {
-    useBomBotWorldStore().powerupData.push(powerupListElement)
+  for (const powerup of powerupList) {
+    useBomBotWorldStore().powerupData.push(powerup)
+  }
+}
+
+function loadSpecialBombs(bombotBlocks: DeserialisedStructure) {
+  const specialBombList: BomBotSpecialBombData[] = [
+    {
+      equipPos: vec2(45, 91),
+      type: BomBotSpecialBomb.PLUS,
+      blocks: getBomBotStructure(bombotBlocks, vec2(17, 385), vec2(5, 5), vec2(-2, -2)),
+      icon: bombotBlocks.blocks[LayerType.Foreground][23][385],
+    },
+    {
+      equipPos: vec2(53, 91),
+      type: BomBotSpecialBomb.CROSS,
+      blocks: getBomBotStructure(bombotBlocks, vec2(27, 385), vec2(5, 5), vec2(-2, -2)),
+      icon: bombotBlocks.blocks[LayerType.Foreground][33][385],
+    },
+    {
+      equipPos: vec2(61, 91),
+      type: BomBotSpecialBomb.SHRAPNEL,
+      blocks: getBomBotStructure(bombotBlocks, vec2(37, 385), vec2(5, 5), vec2(-2, -2)),
+      icon: bombotBlocks.blocks[LayerType.Foreground][43][385],
+    },
+    {
+      equipPos: vec2(69, 91),
+      type: BomBotSpecialBomb.GRID,
+      blocks: getBomBotStructure(bombotBlocks, vec2(47, 385), vec2(5, 5), vec2(-2, -2)),
+      icon: bombotBlocks.blocks[LayerType.Foreground][53][385],
+    },
+    {
+      equipPos: vec2(77, 91),
+      type: BomBotSpecialBomb.IMPACT,
+      blocks: getBomBotStructure(bombotBlocks, vec2(57, 385), vec2(5, 5), vec2(-2, -2)),
+      icon: bombotBlocks.blocks[LayerType.Foreground][63][385],
+    },
+    {
+      equipPos: vec2(85, 91),
+      type: BomBotSpecialBomb.DIAMOND,
+      blocks: getBomBotStructure(bombotBlocks, vec2(67, 385), vec2(5, 5), vec2(-2, -2)),
+      icon: bombotBlocks.blocks[LayerType.Foreground][73][385],
+    },
+    {
+      equipPos: vec2(94, 91),
+      type: BomBotSpecialBomb.LINE,
+      blocks: getBomBotStructure(bombotBlocks, vec2(77, 387), vec2(7, 1), vec2(-3, 0)),
+      icon: bombotBlocks.blocks[LayerType.Foreground][85][385],
+    },
+  ].map((specialBombData) => {
+    const bombDeletedBlocks = specialBombData.blocks.map((worldBlock) => ({ ...worldBlock, block: new Block(0) }))
+
+    // We only want useBomBotWorldStore().bombRemoveBlocks to serve as "decoration" and not remove foreground blocks, like it does for normal bombs
+    const bombRemoveBlocksWithoutForegroundAir = useBomBotWorldStore().bombRemoveBlocks.filter(
+      (b) => b.layer === LayerType.Overlay,
+    )
+
+    const bombRemoveBlocks = mergeWorldBlocks(bombDeletedBlocks, bombRemoveBlocksWithoutForegroundAir)
+    return { ...specialBombData, bombRemoveBlocks }
+  })
+
+  for (const specialBomb of specialBombList) {
+    useBomBotWorldStore().specialBombData.push(specialBomb)
   }
 }
 
@@ -580,13 +715,15 @@ async function loadBomBotData() {
     throw new GameError('Failed to load BomBot data')
   }
 
-  useBomBotWorldStore().bombTimerBgBlockTimeSpent = bombotBlocks.blocks[LayerType.Background][4][380]
-  useBomBotWorldStore().bombTimerBgBlockTimeLeft = bombotBlocks.blocks[LayerType.Background][2][380]
+  useBomBotWorldStore().bombTimerBgBlockTimeLeft = bombotBlocks.blocks[LayerType.Background][2][378]
+  useBomBotWorldStore().bombTimerBgBlockTimeSpent = bombotBlocks.blocks[LayerType.Background][4][378]
+  useBomBotWorldStore().bombTypeFgBlockIndicator = bombotBlocks.blocks[LayerType.Foreground][7][379]
 
-  useBomBotWorldStore().bombDefaultBlocks = getBomBotStructure(bombotBlocks, vec2(9, 385), vec2(3, 3), vec2(-1, -1))
+  useBomBotWorldStore().defaultBombBlocks = getBomBotStructure(bombotBlocks, vec2(9, 385), vec2(3, 3), vec2(-1, -1))
   useBomBotWorldStore().bombRemoveBlocks = getBomBotStructure(bombotBlocks, vec2(3, 385), vec2(3, 3), vec2(-1, -1))
 
   loadPowerups(bombotBlocks)
+  loadSpecialBombs(bombotBlocks)
   loadBlockTypes(bombotBlocks)
 
   const totalMapCount = vec2(15, 21)
@@ -879,7 +1016,14 @@ async function everySecondBomBotUpdate() {
       if (useBomBotRoundStore().secondsLeftBeforeBombMustBeRemoved > 0) {
         useBomBotRoundStore().secondsLeftBeforeBombMustBeRemoved--
         if (useBomBotRoundStore().secondsLeftBeforeBombMustBeRemoved <= 0) {
-          placeStructureInsideMap(useBomBotWorldStore().bombRemoveBlocks, useBomBotRoundStore().lastBombPos)
+          if (useBomBotRoundStore().lastBombType === null) {
+            placeStructureInsideMap(useBomBotWorldStore().bombRemoveBlocks, useBomBotRoundStore().lastBombPos)
+          } else {
+            placeStructureInsideMap(
+              useBomBotWorldStore().specialBombData[useBomBotRoundStore().lastBombType!].bombRemoveBlocks,
+              useBomBotRoundStore().lastBombPos,
+            )
+          }
 
           // const MAX_TIMES_BOMBER_CAN_CONTINUE_BOMBING_AFTER_KILLING_SOMEONE_IN_A_ROW = 2
           //
@@ -922,6 +1066,7 @@ async function everySecondBomBotUpdate() {
         )
         prepareBomberVariables()
         informFirstTimeBomberHowToBomb()
+        placeBombTypeIndicators()
       } else {
         if (useBomBotRoundStore().secondsLeftBeforeBombMustBeRemoved <= 0) {
           useBomBotRoundStore().secondsSpentByBomber++
@@ -945,10 +1090,58 @@ function informFirstTimeBomberHowToBomb() {
   }
 }
 
+function placeBombTypeIndicators() {
+  placeBombTypIndicatorArrow()
+
+  const botData = getPlayerBomBotWorldData(useBomBotRoundStore().bomberPlayerId)
+  const botRoundData = getPlayerBomBotRoundData(useBomBotRoundStore().bomberPlayerId)
+
+  if (botData.specialBombSelected === null || botRoundData.specialBombsLeft <= 0) {
+    botData.bombTypeChosen = BomBotBombType.NORMAL
+  }
+
+  const specialBombIconBlock =
+    botData.specialBombSelected !== null
+      ? useBomBotWorldStore().specialBombData[botData.specialBombSelected].icon
+      : new Block(0)
+
+  const specialBombIconBlocks = Array.from({ length: SPECIAL_BOMB_COUNT }, (_, i) => ({
+    block: botRoundData.specialBombsLeft > i ? specialBombIconBlock : new Block(0),
+    layer: LayerType.Foreground,
+    pos: vec2(49 + i, 41),
+  }))
+
+  void placeMultipleBlocks(specialBombIconBlocks)
+}
+
+function placeBombTypIndicatorArrow() {
+  const normalBombTypeIndicatorPos = vec2(47, 40)
+  const specialBombTypeIndicatorPos = vec2(49, 40)
+  const botData = getPlayerBomBotWorldData(useBomBotRoundStore().bomberPlayerId)
+  void placeMultipleBlocks([
+    {
+      block:
+        botData.bombTypeChosen === BomBotBombType.NORMAL
+          ? useBomBotWorldStore().bombTypeFgBlockIndicator
+          : new Block(0),
+      layer: LayerType.Foreground,
+      pos: normalBombTypeIndicatorPos,
+    },
+    {
+      block:
+        botData.bombTypeChosen === BomBotBombType.SPECIAL
+          ? useBomBotWorldStore().bombTypeFgBlockIndicator
+          : new Block(0),
+      layer: LayerType.Foreground,
+      pos: specialBombTypeIndicatorPos,
+    },
+  ])
+}
+
 function prepareBomberVariables() {
   useBomBotRoundStore().secondsSpentByBomber = 0
   useBomBotRoundStore().bombAvailable = true
-  useBomBotRoundStore().secondsLeftBeforeBomberCanBomb = 1
+  useBomBotRoundStore().secondsLeftBeforeBomberCanBomb = 2
   // useBomBotRoundStore().totalTimesBomberKilledSomeoneInARow = 0
   // useBomBotRoundStore().playerWasKilledByLastBomb = false
 }
@@ -969,7 +1162,7 @@ function updateBomberTimeIndication() {
 }
 
 function disqualifyPlayerFromRoundBecauseAfk(playerId: number) {
-  const afkPos = vec2(47, 86)
+  const afkPos = vec2(47, 85)
   sendRawMessage(`/tp #${playerId} ${afkPos.x} ${afkPos.y}`)
   makePlayerAfk(playerId)
 }

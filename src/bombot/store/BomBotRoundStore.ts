@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { Player } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
 import { PlayerBomBotRoundData } from '@/bombot/type/BomBotPlayerRoundData.ts'
+import { BomBotSpecialBomb } from '@/bombot/enum/BomBotSpecialBomb.ts'
 
 export const useBomBotRoundStore = defineStore('BomBotRoundStore', () => {
   const availablePlayerSpawnPositions = ref<vec2[]>([])
@@ -22,6 +23,7 @@ export const useBomBotRoundStore = defineStore('BomBotRoundStore', () => {
   const secondsLeftBeforeBombMustBeRemoved = ref<number>(0)
   const secondsLeftBeforeBomberCanBomb = ref<number>(0) // prevent bomber from being to immediately place bombs
   const lastBombPos = ref<vec2>(vec2(0, 0))
+  const lastBombType = ref<BomBotSpecialBomb | null>(null) // null indicates normal bomb type
   const bombAvailable = ref<boolean>(false) // prevent placing multiple bombs per bomber
   const waitingForMorePlayersMessagePrintedOnce = ref<boolean>(false)
   const playerBombotRoundData = ref<PlayerBomBotRoundData>({})
@@ -43,6 +45,7 @@ export const useBomBotRoundStore = defineStore('BomBotRoundStore', () => {
     secondsLeftBeforeBombMustBeRemoved,
     secondsLeftBeforeBomberCanBomb,
     lastBombPos,
+    lastBombType,
     bombAvailable,
     waitingForMorePlayersMessagePrintedOnce,
     playerBombotRoundData,

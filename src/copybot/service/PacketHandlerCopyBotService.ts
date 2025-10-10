@@ -24,6 +24,7 @@ import {
   getBlockLayer,
   getBlockName,
   getDeserialisedStructureSection,
+  mergeWorldBlocks,
   placeMultipleBlocks,
   portalIdToNumber,
 } from '@/core/service/WorldService.ts'
@@ -737,22 +738,6 @@ function getSelectedAreaAsEmptyBlocks(botData: CopyBotData) {
     }
   }
   return emptyBlocks
-}
-
-// Merges blocks into bigger WorldBlock[], but gives priority to blocks_top
-function mergeWorldBlocks(blocksBottom: WorldBlock[], blocksTop: WorldBlock[]) {
-  const emptyBlocksMap = new Map<string, WorldBlock>()
-  for (const emptyBlock of blocksTop) {
-    const key = `${emptyBlock.pos.x},${emptyBlock.pos.y},${emptyBlock.layer}`
-    emptyBlocksMap.set(key, emptyBlock)
-  }
-
-  const filteredBlocksBottom = blocksBottom.filter((block) => {
-    const key = `${block.pos.x},${block.pos.y},${block.layer}`
-    return !emptyBlocksMap.has(key)
-  })
-
-  return filteredBlocksBottom.concat(blocksTop)
 }
 
 function applyMoveMode(botData: CopyBotData, allBlocks: WorldBlock[]) {

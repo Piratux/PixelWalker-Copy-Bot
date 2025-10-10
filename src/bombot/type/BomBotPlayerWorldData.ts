@@ -1,5 +1,7 @@
 import { BomBotPowerup } from '@/bombot/enum/BomBotPowerup.ts'
 import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
+import { BomBotSpecialBomb } from '@/bombot/enum/BomBotSpecialBomb.ts'
+import { BomBotBombType } from '@/bombot/enum/BomBotBombType.ts'
 
 export interface BomBotWorldData {
   username: string // Because when player leaves, we can't obtain username from id anymore in PWGameWorldHelper.getPlayer()
@@ -8,7 +10,8 @@ export interface BomBotWorldData {
   informedHowToPlaceBombOnce: boolean
   lastTimeUpPressedMs: number
   powerupSelected: BomBotPowerup | null
-  powerupEquippedOnce: boolean
+  specialBombSelected: BomBotSpecialBomb | null
+  bombTypeChosen: BomBotBombType
 }
 
 export type PlayerBomBotWorldData = Record<number, BomBotWorldData>
@@ -21,6 +24,7 @@ export function createBomBotWorldData(playerId: number): BomBotWorldData {
     informedHowToPlaceBombOnce: false,
     lastTimeUpPressedMs: 0,
     powerupSelected: null,
-    powerupEquippedOnce: false,
+    specialBombSelected: null,
+    bombTypeChosen: BomBotBombType.NORMAL,
   }
 }
