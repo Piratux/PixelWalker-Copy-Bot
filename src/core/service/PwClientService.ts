@@ -11,7 +11,7 @@ import { EER_MAPPINGS } from '@/eer/block/EerMappings.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { registerBomBotCallbacks } from '@/bombot/service/PacketHandlerBomBotService.ts'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
-import { MessageService } from '@/core/service/MessageService.ts'
+import { AlertService } from '@/core/service/AlertService.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { useEelvlClientStore } from '@/eelvl/store/EelvlClientStore.ts'
 import { useEerClientStore } from '@/eer/store/EerClientStore.ts'
@@ -110,6 +110,8 @@ export async function initPwClasses(botType: BotType) {
   initPwBlocks(pwBlocks)
   initEelvlBlocks(pwBlocks)
   initEerBlocks(EER_MAPPINGS)
+
+  usePwClientStore().roomType = (await getPwApiClient().getRoomTypes())[0] ?? ''
 }
 
 async function getPwBlocks(): Promise<ListBlockResult[]> {
@@ -225,7 +227,7 @@ export function handlePlaceBlocksResult(success: boolean) {
   if (success) {
     message = 'Successfully finished placing all blocks.'
     sendGlobalChatMessage(message)
-    MessageService.success(message)
+    AlertService.success(message)
   } else {
     throw new GameError('Failed to place all blocks.')
   }

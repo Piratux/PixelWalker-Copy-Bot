@@ -1,4 +1,4 @@
-import { MessageService } from '@/core/service/MessageService.ts'
+import { AlertService } from '@/core/service/AlertService.ts'
 import { sendGlobalChatMessage, sendPrivateChatMessage } from '@/core/service/ChatMessageService.ts'
 import { GENERAL_CONSTANTS } from '@/core/constant/General.ts'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
@@ -43,7 +43,7 @@ function printGameErrorExceptionMessage(gameError: GameError) {
 export function handleException(exception: unknown): void {
   console.error(exception)
   const trueExceptionMessage = getTrueExceptionMessage(exception)
-  MessageService.error(trueExceptionMessage)
+  AlertService.error(trueExceptionMessage)
 
   if (usePwClientStore().isConnected) {
     handleInGameException(exception)

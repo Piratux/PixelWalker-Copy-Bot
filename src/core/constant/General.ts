@@ -4,3 +4,5 @@ export const GENERAL_CONSTANTS = {
 }
 
 export const TOTAL_PW_LAYERS = 3
+
+export const LAST_TESTED_ROOM_TYPE_VERSION = 'pixelwalker_2025_10_08'

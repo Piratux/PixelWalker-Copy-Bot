@@ -18,6 +18,7 @@ export const usePwClientStore = defineStore('PwClientStore', () => {
   const blocksByPwId = ref<Record<number, ListBlockResult>>({})
   const blocksByPwName = ref<Record<string, ListBlockResult>>({})
   const isConnected = ref<boolean>(false)
+  const roomType = ref<string>('')
 
   return {
     pwGameClient,
@@ -33,6 +34,7 @@ export const usePwClientStore = defineStore('PwClientStore', () => {
     blocksByPwId,
     blocksByPwName,
     isConnected,
+    roomType,
   }
 })
 

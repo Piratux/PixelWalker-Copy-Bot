@@ -10,9 +10,10 @@
     "format": "npx prettier . --write --ignore-pattern dist",
     "lint": "npx eslint . --fix --ignore-pattern dist",
     "ts-check": "vue-tsc --noEmit",
-    "gen-files": "npx tsx src/script/GenerateBlockEnumFiles.ts",
     "check-dependencies": "npx npm-check-updates",
-    "update-dependencies": "npx npm-check-updates -u && npm install"
+    "update-dependencies": "npx npm-check-updates -u && npm install",
+    "gen-files": "npx tsx src/script/GenerateBlockEnumFiles.ts",
+    "gen-tests": "npx tsx src/script/GenerateTests.ts"
   },
   "dependencies": {
     "@basementuniverse/vec": "^2.4.0",
@@ -21,7 +22,6 @@
     "async-wait-until": "^2.0.30",
     "eslint-plugin-vue": "^10.5.0",
     "iconv-lite": "^0.7.0",
-    "izitoast": "^1.4.0",
     "lodash-es": "^4.17.21",
     "many-keys-map": "^3.0.3",
     "pinia": "^3.0.3",
