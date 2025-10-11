@@ -1,4 +1,5 @@
 import {
+  getPwApiClient,
   getPwBlocks,
   getPwBlocksByPwId,
   getPwBotType,
@@ -232,7 +233,7 @@ async function importCommandReceived(args: string[], playerId: number) {
 
   sendGlobalChatMessage(`Importing world from ${worldId}`)
 
-  const blocksFromAnotherWorld = await getAnotherWorldBlocks(worldId)
+  const blocksFromAnotherWorld = await getAnotherWorldBlocks(worldId, getPwApiClient())
   if (!blocksFromAnotherWorld) {
     throw new GameError('Failed to get blocks from another world.')
   }

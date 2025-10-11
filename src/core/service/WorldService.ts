@@ -211,9 +211,10 @@ export function portalIdToNumber(portalId: string): number | undefined {
   return portalIdIsInteger && portalIdHasNoLeadingZeros ? parseInt(portalId) : undefined
 }
 
-export async function getAnotherWorldBlocks(worldId: string): Promise<DeserialisedStructure | null> {
-  const pwApiClient = new PWApiClient(usePwClientStore().email, usePwClientStore().password)
-
+export async function getAnotherWorldBlocks(
+  worldId: string,
+  pwApiClient: PWApiClient,
+): Promise<DeserialisedStructure | null> {
   await authenticate(pwApiClient)
 
   const pwGameClient = new PWGameClient(pwApiClient)

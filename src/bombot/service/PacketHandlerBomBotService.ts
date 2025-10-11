@@ -1,4 +1,10 @@
-import { getPwBlocks, getPwBotType, getPwGameClient, getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
+import {
+  getPwApiClient,
+  getPwBlocks,
+  getPwBotType,
+  getPwGameClient,
+  getPwGameWorldHelper,
+} from '@/core/store/PwClientStore.ts'
 import { sendGlobalChatMessage, sendPrivateChatMessage, sendRawMessage } from '@/core/service/ChatMessageService.ts'
 import { ProtoGen } from 'pw-js-api'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
@@ -582,7 +588,7 @@ async function placeallbombotCommandReceived(_args: string[], playerId: number) 
 async function placeBomBotWorld() {
   sendGlobalChatMessage('Loading BomBot world')
   const bomBotMapWorldId = 'r3796a7103bb687'
-  const blocks = await getAnotherWorldBlocks(bomBotMapWorldId)
+  const blocks = await getAnotherWorldBlocks(bomBotMapWorldId, getPwApiClient())
   if (!blocks) {
     throw new GameError('Failed to load BomBot world')
   }
@@ -710,7 +716,7 @@ function loadSpecialBombs(bomBotBlocks: DeserialisedStructure) {
 async function loadBomBotData() {
   sendGlobalChatMessage('Loading BomBot data')
   const bomBotDataWorldId = getWorldIdIfUrl('lbsz7864s3a3yih')
-  const bomBotBlocks = await getAnotherWorldBlocks(bomBotDataWorldId)
+  const bomBotBlocks = await getAnotherWorldBlocks(bomBotDataWorldId, getPwApiClient())
   if (!bomBotBlocks) {
     throw new GameError('Failed to load BomBot data')
   }
