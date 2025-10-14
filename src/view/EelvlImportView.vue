@@ -69,13 +69,11 @@ async function onEelvlFileChange(event: Event) {
           <li>Timed gate/door [156, 157].</li>
           <li>Trophy [223, 478 - 480, 484 - 486, 1540 - 1542].</li>
           <li>Label [1000].</li>
-          <li>Poison effect [1584].</li>
           <li>Gold gate/door [200, 201].</li>
           <li>Fireworks decoration [1581].</li>
           <li>Golden easter egg decoration [1591].</li>
           <li>Green space decoration [1603].</li>
           <li>NPC [1550 - 1559, 1569 - 1579].</li>
-          <li>Zombie and curse effect duration is limited to 720 seconds, but in EELVL limit is 999 seconds.</li>
         </ul>
       </v-row>
       <v-row>All missing blocks are replaced with signs of block name.</v-row>
