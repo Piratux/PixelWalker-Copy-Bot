@@ -7,7 +7,7 @@ import {
   getPwGameWorldHelper,
   usePwClientStore,
 } from '@/core/store/PwClientStore.ts'
-import { Block, ComponentTypeHeader, IPlayer, LayerType, Point } from 'pw-js-world'
+import { Block, ComponentTypeHeader, DeserialisedStructure, IPlayer, LayerType, Point } from 'pw-js-world'
 import { cloneDeep, isEqual } from 'lodash-es'
 import { CopyBotData, createBotData } from '@/copybot/type/CopyBotData.ts'
 import { getPlayerCopyBotData } from '@/copybot/store/CopyBotStore.ts'
@@ -233,9 +233,20 @@ async function importCommandReceived(args: string[], playerId: number) {
 
   sendGlobalChatMessage(`Importing world from ${worldId}`)
 
-  const blocksFromAnotherWorld = await getAnotherWorldBlocks(worldId, getPwApiClient())
-  if (!blocksFromAnotherWorld) {
-    throw new GameError('Failed to get blocks from another world.')
+  let blocksFromAnotherWorld: DeserialisedStructure
+  try {
+    const result = await getAnotherWorldBlocks(worldId, getPwApiClient())
+    if (!result) {
+      // noinspection ExceptionCaughtLocallyJS
+      throw new Error('Getting blocks from another world took too long.')
+    }
+    blocksFromAnotherWorld = result
+  } catch (exception: unknown) {
+    if (exception instanceof Error) {
+      throw new GameError(exception.message)
+    } else {
+      throw new GameError('Failed to get blocks from another world.')
+    }
   }
 
   const partialImportUsed = args.length === 8

@@ -1,6 +1,7 @@
 PixelWalker copy bot changelog
 
 2025-10-18 Version 1.8.3
+- Bot: Improve error messages for .import command.
 - Website: Fix in game errors (such as bad command usage) being shown in website as error alerts.
 
 2025-10-11 Version 1.8.2
