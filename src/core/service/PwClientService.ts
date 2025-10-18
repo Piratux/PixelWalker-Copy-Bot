@@ -222,13 +222,17 @@ export function commonPlayerInitPacketReceived() {
   void enterEditKey(getPwGameClient(), usePwClientStore().secretEditKey)
 }
 
-export function handlePlaceBlocksResult(success: boolean) {
+export function handlePlaceBlocksResult(success: boolean, throwGameError = false): void {
   let message: string
   if (success) {
     message = 'Successfully finished placing all blocks.'
     sendGlobalChatMessage(message)
     AlertService.success(message)
   } else {
-    throw new GameError('Failed to place all blocks.')
+    if (throwGameError) {
+      throw new GameError('Failed to place all blocks.')
+    } else {
+      throw new Error('Failed to place all blocks.')
+    }
   }
 }

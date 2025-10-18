@@ -6,7 +6,6 @@ import { createEmptyBlocks, handlePlaceBlocksResult, requireBotEditPermission } 
 import { Midi } from '@tonejs/midi'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { uniq } from 'lodash-es'
-import { GameError } from '@/core/class/GameError.ts'
 
 export async function importFromMidi(fileData: ArrayBuffer, showColors: boolean) {
   requireBotEditPermission(getPwGameWorldHelper())
@@ -14,7 +13,7 @@ export async function importFromMidi(fileData: ArrayBuffer, showColors: boolean)
   const worldData = getImportedFromMidiData(fileData, showColors)
 
   if (worldData === null) {
-    throw new GameError('This midi has no piano notes')
+    throw new Error('This midi has no piano notes')
   }
 
   const success = await placeWorldDataBlocks(worldData)
