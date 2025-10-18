@@ -1,5 +1,5 @@
 import { ListBlockResult, PWApiClient, PWGameClient } from 'pw-js-api'
-import { GENERAL_CONSTANTS, TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
+import { GENERIC_CHAT_ERROR, TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { Block, DeserialisedStructure, PWGameWorldHelper } from 'pw-js-world'
 import { placeWorldDataBlocks } from '@/core/service/WorldService.ts'
 import { getPwApiClient, getPwGameClient, getPwGameWorldHelper, usePwClientStore } from '@/core/store/PwClientStore.ts'
@@ -169,7 +169,7 @@ export async function enterEditKey(pwGameClient: PWGameClient, secretEditKey: st
     if (error instanceof TimeoutError) {
       sendGlobalChatMessage('ERROR! Entered secret edit key is incorrect')
     } else {
-      sendGlobalChatMessage(GENERAL_CONSTANTS.GENERIC_ERROR)
+      sendGlobalChatMessage(GENERIC_CHAT_ERROR)
       console.error('Unexpected error:', error)
     }
   }
@@ -222,17 +222,13 @@ export function commonPlayerInitPacketReceived() {
   void enterEditKey(getPwGameClient(), usePwClientStore().secretEditKey)
 }
 
-export function handlePlaceBlocksResult(success: boolean, throwGameError = false): void {
+export function handlePlaceBlocksResult(success: boolean): void {
   let message: string
   if (success) {
     message = 'Successfully finished placing all blocks.'
     sendGlobalChatMessage(message)
     AlertService.success(message)
   } else {
-    if (throwGameError) {
-      throw new GameError('Failed to place all blocks.')
-    } else {
-      throw new Error('Failed to place all blocks.')
-    }
+    throw new GameError('Failed to place all blocks.')
   }
 }

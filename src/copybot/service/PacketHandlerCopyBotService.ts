@@ -283,7 +283,7 @@ async function importCommandReceived(args: string[], playerId: number) {
   addUndoItemWorldBlock(botData, allBlocks)
 
   const success = await placeMultipleBlocks(allBlocks)
-  handlePlaceBlocksResult(success, true)
+  handlePlaceBlocksResult(success)
 }
 
 async function testCommandReceived(_args: string[], playerId: number) {

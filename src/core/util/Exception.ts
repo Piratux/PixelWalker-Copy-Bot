@@ -1,6 +1,6 @@
 import { AlertService } from '@/core/service/AlertService.ts'
 import { sendGlobalChatMessage, sendPrivateChatMessage } from '@/core/service/ChatMessageService.ts'
-import { GENERAL_CONSTANTS } from '@/core/constant/General.ts'
+import { GENERIC_CHAT_ERROR, GENERIC_WEBSITE_ERROR } from '@/core/constant/General.ts'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { GameError } from '@/core/class/GameError.ts'
 
@@ -21,6 +21,13 @@ function getGameError(exception: unknown): GameError | null {
   return null
 }
 
+function getPwJsApiErrorObjectError(exception: unknown): Error | null {
+  if ((exception as PwJsApiErrorObject).error instanceof Error) {
+    return (exception as PwJsApiErrorObject).error as Error
+  }
+  return null
+}
+
 function printGameErrorMessageInChat(gameError: GameError) {
   if (!usePwClientStore().isConnected) {
     return
@@ -34,15 +41,28 @@ function printGameErrorMessageInChat(gameError: GameError) {
   }
 }
 
+function printGenericErrorMessageInChat() {
+  if (!usePwClientStore().isConnected) {
+    return
+  }
+
+  const chatExceptionMessage = `ERROR! ${GENERIC_CHAT_ERROR}`
+  sendGlobalChatMessage(chatExceptionMessage)
+}
+
 export function handleException(exception: unknown): void {
   const gameError = getGameError(exception)
+  const errorFromPwPacket = getPwJsApiErrorObjectError(exception)
   if (gameError) {
     printGameErrorMessageInChat(gameError)
+  } else if (errorFromPwPacket) {
+    printGenericErrorMessageInChat()
+    console.error(exception)
   } else if (exception instanceof Error) {
     console.error(exception)
     AlertService.error(exception.message)
   } else {
     console.error(exception)
-    AlertService.error(GENERAL_CONSTANTS.GENERIC_ERROR)
+    AlertService.error(GENERIC_WEBSITE_ERROR)
   }
 }
