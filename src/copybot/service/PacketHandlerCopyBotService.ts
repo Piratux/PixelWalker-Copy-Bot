@@ -104,6 +104,9 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
     case '.edit':
       editCommandReceived(args, playerId)
       break
+    case '.flip':
+      flipCommandReceived(args, playerId)
+      break
     case '.paste':
       pasteCommandReceived(args, playerId, false)
       break
@@ -346,6 +349,10 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage('edit math_op number [name_find] - edits selected block number arguments.', playerId)
       sendPrivateChatMessage('math_op - add, sub, mul or div.', playerId)
       sendPrivateChatMessage('name_find - restricts to blocks with this substring in their name', playerId)
+      break
+    case 'flip':
+      sendPrivateChatMessage('.flip [h | v] - flips selected blocks horizontally or vertically.', playerId)
+      sendPrivateChatMessage(`Example usage: .flip v`, playerId)
       break
     case 'paste':
       sendPrivateChatMessage('.paste x_times y_times [x_spacing y_spacing] - repeat next paste (x/y)_times.', playerId)
@@ -683,6 +690,34 @@ function editAddCommand(args: string[], playerId: number): WorldBlock[] {
 
 function editSubCommand(args: string[], playerId: number): WorldBlock[] {
   return editArithmeticCommand(args, playerId, (a, b) => a - b, 'subtracted')
+}
+
+function flipCommandReceived(args: string[], playerId: number) {
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+
+  if (args.length !== 2) {
+    throw new GameError(`Correct usage is .flip [h | v]`, playerId)
+  }
+  if (args[1] !== 'h' && args[1] !== 'v') {
+    throw new GameError(`Correct usage is .flip [h | v]`, playerId)
+  }
+
+  const editedBlocks: WorldBlock[] = []
+
+  const botData = getPlayerCopyBotData()[playerId]
+
+  botData.selectedBlocks = botData.selectedBlocks.map((worldBlock) => {
+    if (args[1] === 'h') {
+      worldBlock.pos.x = botData.selectionLocalBottomRightPos.x - worldBlock.pos.x
+    } else {
+      worldBlock.pos.y = botData.selectionLocalBottomRightPos.y - worldBlock.pos.y
+    }
+    const deepBlock = cloneDeep(worldBlock)
+    editedBlocks.push(deepBlock)
+    return deepBlock
+  })
+
+  placeEditedBlocks(playerId, editedBlocks)
 }
 
 function applySmartTransformForBlocks(

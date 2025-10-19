@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-10-19 Version 1.9.0
+- Bot: Added command ".flip [h | v]" - flips selected blocks horizontally or vertically.
+
 2025-10-19 Version 1.8.4
 - Website: Fix "error loading dynamically imported module" errors.
 - Website: Make navigation between tabs and disconnect instant.
