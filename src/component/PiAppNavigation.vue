@@ -38,7 +38,6 @@ import { MENU_ITEMS } from '@/core/constant/MenuItems.ts'
 import { useRoute, useRouter } from 'vue-router'
 import { DevViewRoute, LoginViewRoute } from '@/router/Routes.ts'
 import { isEnvDevViewEnabled } from '@/core/util/Environment.ts'
-import { withLoading } from '@/core/util/LoaderProxy.ts'
 import { getPwGameClient, usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { resetAllStores } from '@/plugin/ResetStore.ts'
 import PiOverlay from '@/component/PiOverlay.vue'
@@ -68,11 +67,9 @@ onMounted(async () => {
 })
 
 async function handleRouting(path: string | undefined) {
-  await withLoading(loadingOverlay, async () => {
-    if (path !== undefined && routePath.value !== path) {
-      await router.push({ path })
-    }
-  })
+  if (path !== undefined && routePath.value !== path) {
+    await router.push({ path })
+  }
 }
 
 const showDrawer = computed(() => {
@@ -86,12 +83,10 @@ function openChangelog() {
 }
 
 async function onDisconnectButtonClick() {
-  await withLoading(loadingOverlay, async () => {
-    getPwGameClient().disconnect(false)
+  getPwGameClient().disconnect(false)
 
-    resetAllStores()
+  resetAllStores()
 
-    await router.push({ name: LoginViewRoute.name })
-  })
+  await router.push({ name: LoginViewRoute.name })
 }
 </script>

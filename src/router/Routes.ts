@@ -1,55 +1,65 @@
 const basePath = '/PixelWalker-Copy-Bot'
 
+import MidiImportView from '@/view/MidiImportView.vue'
+import LoginView from '@/view/LoginView.vue'
+import HomeView from '@/view/HomeView.vue'
+import EelvlImportView from '@/view/EelvlImportView.vue'
+import EelvlExportView from '@/view/EelvlExportView.vue'
+import PngImportView from '@/view/PngImportView.vue'
+import DevView from '@/view/DevView.vue'
+import EerImportView from '@/view/EerImportView.vue'
+import NotFoundView from '@/view/NotFoundView.vue'
+
 export const LoginViewRoute = {
   path: `${basePath}/login`,
   name: 'login',
-  component: () => import('@/view/LoginView.vue'),
+  component: LoginView,
 }
 
 export const HomeViewRoute = {
   path: `${basePath}/home`,
   name: 'home',
-  component: () => import('@/view/HomeView.vue'),
+  component: HomeView,
 }
 
 export const EelvlImportViewRoute = {
   path: `${basePath}/import-eelvl`,
   name: 'import-eelvl',
-  component: () => import('@/view/EelvlImportView.vue'),
+  component: EelvlImportView,
 }
 
 export const EelvlExportViewRoute = {
   path: `${basePath}/export-eelvl`,
   name: 'export-eelvl',
-  component: () => import('@/view/EelvlExportView.vue'),
+  component: EelvlExportView,
 }
 
 export const PngImportViewRoute = {
   path: `${basePath}/import-png`,
   name: 'import-png',
-  component: () => import('@/view/PngImportView.vue'),
+  component: PngImportView,
 }
 
 export const MidiImportViewRoute = {
   path: `${basePath}/import-midi`,
   name: 'import-midi',
-  component: () => import('@/view/MidiImportView.vue'),
+  component: MidiImportView,
 }
 
 export const DevViewRoute = {
   path: `${basePath}/dev`,
   name: 'dev',
-  component: () => import('@/view/DevView.vue'),
+  component: DevView,
 }
 
 export const EerImportViewRoute = {
   path: `${basePath}/import-eer`,
   name: 'import-eer',
-  component: () => import('@/view/EerImportView.vue'),
+  component: EerImportView,
 }
 
 export const NotFoundViewRoute = {
   path: '/:pathMatch(.*)*',
   name: 'notFound',
-  component: () => import('@/view/NotFoundView.vue'),
+  component: NotFoundView,
 }
