@@ -140,17 +140,18 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
 
 function maskCommandReceived(args: string[], playerId: number) {
   const botData = getPlayerCopyBotData()[playerId]
-  if (args.includes('all')) {
-    botData.maskBackgroundEnabled = true
-    botData.maskForegroundEnabled = true
-    botData.maskOverlayEnabled = true
-    sendPrivateChatMessage(`Mask all enabled`, playerId)
-    return
-  }
 
   botData.maskBackgroundEnabled = false
   botData.maskForegroundEnabled = false
   botData.maskOverlayEnabled = false
+  botData.maskNonAirEnabled = false
+
+  if (args.includes('default')) {
+    botData.maskBackgroundEnabled = true
+    botData.maskForegroundEnabled = true
+    botData.maskOverlayEnabled = true
+    sendPrivateChatMessage(`Mask default enabled`, playerId)
+  }
 
   if (args.includes('background')) {
     botData.maskBackgroundEnabled = true
@@ -167,8 +168,18 @@ function maskCommandReceived(args: string[], playerId: number) {
     sendPrivateChatMessage(`Mask overlay enabled`, playerId)
   }
 
-  if (!botData.maskBackgroundEnabled && !botData.maskForegroundEnabled && !botData.maskOverlayEnabled) {
-    throw new GameError(`Correct usage is .mask [all | background | foreground | overlay]`, playerId)
+  if (args.includes('nonair')) {
+    botData.maskNonAirEnabled = true
+    sendPrivateChatMessage(`Mask non air enabled`, playerId)
+  }
+
+  if (
+    !botData.maskBackgroundEnabled &&
+    !botData.maskForegroundEnabled &&
+    !botData.maskOverlayEnabled &&
+    !botData.maskNonAirEnabled
+  ) {
+    throw new GameError(`Correct usage is .mask [default | background | foreground | overlay | nonair]`, playerId)
   }
 }
 
@@ -294,6 +305,7 @@ async function importCommandReceived(args: string[], playerId: number) {
 
   const botData = getPlayerCopyBotData()[playerId]
   allBlocks = filterByLayerMasks(allBlocks, botData)
+  allBlocks = filterByNonAirMask(allBlocks, botData)
   addUndoItemWorldBlock(botData, allBlocks)
 
   const success = await placeMultipleBlocks(allBlocks)
@@ -396,12 +408,16 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage('Move mode lasts until next area selection', playerId)
       break
     case 'mask':
-      sendPrivateChatMessage('.mask [all | background | foreground | overlay] - masks layers when pasting', playerId)
+      sendPrivateChatMessage(
+        '.mask [default | background | foreground | overlay | nonair] - masks layers or non empty blocks when pasting',
+        playerId,
+      )
       sendPrivateChatMessage(
         `Example usage 1: .mask foreground background (only pastes foreground and background blocks)`,
         playerId,
       )
-      sendPrivateChatMessage(`Example usage 2: .mask all (resets to default mask)`, playerId)
+      sendPrivateChatMessage(`Example usage 2: .mask default nonair (only pastes non empty blocks)`, playerId)
+      sendPrivateChatMessage(`Example usage 3: .mask default (resets to default mask)`, playerId)
       break
     case 'import':
       sendPrivateChatMessage('.import world_id [src_from_x src_from_y src_to_x src_to_y dest_to_x dest_to_y]', playerId)
@@ -821,7 +837,8 @@ function applyMoveMode(botData: CopyBotData, allBlocks: WorldBlock[]) {
   if (botData.moveOperationPerformedOnce) {
     resultBlocks = botData.replacedByLastMoveOperationBlocks
   }
-  const emptyBlocks = getSelectedAreaAsEmptyBlocks(botData)
+  let emptyBlocks = getSelectedAreaAsEmptyBlocks(botData)
+  emptyBlocks = filterByLayerMasks(emptyBlocks, botData)
   resultBlocks = mergeWorldBlocks(resultBlocks, emptyBlocks)
   resultBlocks = mergeWorldBlocks(resultBlocks, allBlocks)
 
@@ -845,6 +862,19 @@ function filterByLayerMasks(allBlocks: WorldBlock[], botData: CopyBotData) {
       return botData.maskOverlayEnabled
     }
 
+    return true
+  })
+}
+
+function filterByNonAirMask(allBlocks: WorldBlock[], botData: CopyBotData) {
+  if (!botData.maskNonAirEnabled) {
+    return allBlocks
+  }
+
+  return allBlocks.filter((block) => {
+    if (block.block.bId === 0) {
+      return !botData.maskNonAirEnabled
+    }
     return true
   })
 }
@@ -900,8 +930,9 @@ function pasteBlocks(botData: CopyBotData, blockPos: Point) {
       }
     }
 
-    allBlocks = applyMoveMode(botData, allBlocks)
     allBlocks = filterByLayerMasks(allBlocks, botData)
+    allBlocks = filterByNonAirMask(allBlocks, botData)
+    allBlocks = applyMoveMode(botData, allBlocks)
 
     addUndoItemWorldBlock(botData, allBlocks)
     void placeMultipleBlocks(allBlocks)

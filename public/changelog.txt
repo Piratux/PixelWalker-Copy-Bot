@@ -1,5 +1,9 @@
 PixelWalker copy bot changelog
 
+2025-10-25 Version 1.10.0
+- Bot: Added .mask command 'nonair' parameter.
+- Bot: Renamed .mask command 'all' parameter to 'default'.
+
 2025-10-19 Version 1.9.0
 - Bot: Added command ".flip [h | v]" - flips selected blocks horizontally or vertically.
 
