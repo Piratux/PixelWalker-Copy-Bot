@@ -850,10 +850,12 @@ function getActivePlayerCount() {
 }
 
 function getPlayerIdsInGame() {
+  console.log('useBomBotRoundStore().playersInGame: ', useBomBotRoundStore().playersInGame)
   return useBomBotRoundStore().playersInGame.map((p) => p.playerId)
 }
 
 function playerWinRound(playerId: number) {
+  console.log('Round finished')
   const winPos = vec2(55, 58)
   sendRawMessage(`/tp #${playerId} ${winPos.x} ${winPos.y}`)
   sendRawMessage(`/givecrown #${playerId}`)
@@ -903,6 +905,15 @@ function abandonRoundDueToNoPlayersLeft() {
 function selectRandomBomber(): number {
   const playerIdsInGame = getPlayerIdsInGame()
 
+  console.log(
+    'useBomBotRoundStore().playerIdsBomberQueueOriginal (before): ',
+    useBomBotRoundStore().playerIdsBomberQueueOriginal,
+  )
+  console.log(
+    'useBomBotRoundStore().playerIdsBomberQueueRemainder (before): ',
+    useBomBotRoundStore().playerIdsBomberQueueRemainder,
+  )
+
   if (useBomBotRoundStore().playerIdsBomberQueueOriginal.length === 0) {
     useBomBotRoundStore().playerIdsBomberQueueOriginal = shuffle(cloneDeep(playerIdsInGame))
   }
@@ -910,6 +921,15 @@ function selectRandomBomber(): number {
   if (useBomBotRoundStore().playerIdsBomberQueueRemainder.length === 0) {
     useBomBotRoundStore().playerIdsBomberQueueRemainder = cloneDeep(useBomBotRoundStore().playerIdsBomberQueueOriginal)
   }
+
+  console.log(
+    'useBomBotRoundStore().playerIdsBomberQueueOriginal (after): ',
+    useBomBotRoundStore().playerIdsBomberQueueOriginal,
+  )
+  console.log(
+    'useBomBotRoundStore().playerIdsBomberQueueRemainder (after): ',
+    useBomBotRoundStore().playerIdsBomberQueueRemainder,
+  )
 
   return useBomBotRoundStore().playerIdsBomberQueueRemainder.pop()!
 }
@@ -1067,6 +1087,13 @@ async function everySecondBomBotUpdate() {
         }
 
         useBomBotRoundStore().bomberPlayerId = selectRandomBomber()
+        console.log(
+          'Selected bomber: ' +
+            useBomBotRoundStore().bomberPlayerId +
+            ' (' +
+            getPwGameWorldHelper().getPlayer(useBomBotRoundStore().bomberPlayerId)?.username +
+            ')',
+        )
         sendRawMessage(
           `/tp #${useBomBotRoundStore().bomberPlayerId} ${bomberAreaTopLeft.x + getRandomInt(0, mapSize.x)} ${bomberAreaTopLeft.y}`,
         )
