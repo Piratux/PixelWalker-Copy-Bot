@@ -13,8 +13,10 @@ import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { hasEelvlBlockOneIntParameter, isEelvlNpc } from '@/eelvl/service/EelvlUtilService.ts'
 import { EelvlLayer } from '@/eelvl/enum/EelvlLayer.ts'
 import { getPwBlocksByEelvlParameters } from '@/eelvl/store/EelvlClientStore.ts'
+import { EelvlImportResult } from '@/eelvl/type/EelvlImportResult.ts'
+import { MissingBlockInfo } from '@/eelvl/type/MissingBlockInfo.ts'
 
-export function getImportedFromEelvlData(fileData: ArrayBuffer): DeserialisedStructure {
+export function getImportedFromEelvlData(fileData: ArrayBuffer): EelvlImportResult {
   const bytes = new ByteArray(new Uint8Array(fileData))
   bytes.uncompress()
 
@@ -47,6 +49,8 @@ export function getImportedFromEelvlData(fileData: ArrayBuffer): DeserialisedStr
     }
   }
 
+  const missingBlocks: MissingBlockInfo[] = []
+
   while (bytes.hashposition < bytes.length) {
     const eelvlBlockId = bytes.readInt()
     const eelvlLayer = bytes.readInt()
@@ -57,7 +61,16 @@ export function getImportedFromEelvlData(fileData: ArrayBuffer): DeserialisedStr
       continue
     }
 
-    const pwBlock: Block = mapBlockIdEelvlToPw(eelvlBlock, eelvlLayer)
+    const pwBlockOrMissingBlockInfo: Block | string = mapBlockIdEelvlToPw(eelvlBlock, eelvlLayer)
+    let pwBlock: Block
+    if (typeof pwBlockOrMissingBlockInfo === 'string') {
+      pwBlock = createMissingBlockSign(pwBlockOrMissingBlockInfo)
+      for (const pos of blockPositions) {
+        missingBlocks.push({ pos: pos, info: pwBlockOrMissingBlockInfo })
+      }
+    } else {
+      pwBlock = pwBlockOrMissingBlockInfo
+    }
     const pwLayer = getBlockLayer(pwBlock.bId)
     for (const pos of blockPositions) {
       if (pos.x >= 0 && pos.y >= 0 && pos.x < pwMapWidth && pos.y < pwMapHeight) {
@@ -68,7 +81,10 @@ export function getImportedFromEelvlData(fileData: ArrayBuffer): DeserialisedStr
 
   const deserialisedStructure = new DeserialisedStructure(pwBlock3DArray, { width: pwMapWidth, height: pwMapHeight })
   applyWorldBackground(deserialisedStructure, pwMapWidth, pwMapHeight, world.backgroundColor)
-  return deserialisedStructure
+  return {
+    blocks: deserialisedStructure,
+    missingBlocks: missingBlocks,
+  }
 }
 
 function applyWorldBackground(
@@ -93,12 +109,14 @@ function applyWorldBackground(
   }
 }
 
-export async function importFromEelvl(fileData: ArrayBuffer) {
+export async function importFromEelvl(fileData: ArrayBuffer): Promise<MissingBlockInfo[]> {
   requireBotEditPermission(getPwGameWorldHelper())
 
-  const worldData = getImportedFromEelvlData(fileData)
-  const success = await placeWorldDataBlocks(worldData)
+  const eelvlImportResult = getImportedFromEelvlData(fileData)
+  const success = await placeWorldDataBlocks(eelvlImportResult.blocks)
   handlePlaceBlocksResult(success)
+
+  return eelvlImportResult.missingBlocks
 }
 
 function readEelvlBlock(bytes: ByteArray, eelvlBlockId: number) {
@@ -157,11 +175,11 @@ function readPositionsByteArrays(bytes: ByteArray): vec2[] {
   return positions
 }
 
-function createBlock(pwBlockName: PwBlockName, args?: BlockArg[]): Block {
+export function createBlock(pwBlockName: PwBlockName, args?: BlockArg[]): Block {
   return new Block(pwBlockName, args)
 }
 
-function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Block {
+function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Block | string {
   switch (eelvlBlock.blockId as EelvlBlockId) {
     case EelvlBlockId.COIN_GOLD_DOOR:
       return createBlock(PwBlockName.COIN_GOLD_DOOR, [eelvlBlock.intParameter!])
@@ -260,7 +278,7 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
     default: {
       const eelvlBlockName = EelvlBlockId[eelvlBlock.blockId]
       if (eelvlBlockName === undefined) {
-        return createMissingBlockSign(`Unknown Block ID: ${eelvlBlock.blockId}`)
+        return `Unknown Block ID: ${eelvlBlock.blockId}`
       }
 
       const pwBlock = getPwBlocksByEelvlParameters().get(
@@ -276,13 +294,11 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
       )
 
       if (pwBlockMorph0 !== undefined) {
-        return createUnknownParameterBlockSign(
-          `Unknown block parameter. Name: ${eelvlBlockName}, parameter: ${eelvlBlock.intParameter}`,
-        )
+        return `Unknown block parameter. Name: ${eelvlBlockName}, parameter: ${eelvlBlock.intParameter}`
       }
 
       if (eelvlLayer !== EelvlLayer.BACKGROUND) {
-        return createMissingBlockSign(`Missing PixelWalker block: ${eelvlBlockName}`)
+        return `Missing PixelWalker block: ${eelvlBlockName}`
       } else {
         return createBlock(PwBlockName.EMPTY)
       }
@@ -294,11 +310,7 @@ function createMissingBlockSign(message: string): Block {
   return createBlock(PwBlockName.SIGN_NORMAL, [message])
 }
 
-export function createUnknownParameterBlockSign(message: string): Block {
-  return createBlock(PwBlockName.SIGN_GREEN, [message])
-}
-
-function getEelvlToPwEffectsJumpHeightBlock(eelvlBlock: EelvlBlock): Block {
+function getEelvlToPwEffectsJumpHeightBlock(eelvlBlock: EelvlBlock): Block | string {
   const jumpHeight = eelvlBlock.intParameter
   switch (jumpHeight) {
     case 2:
@@ -308,13 +320,11 @@ function getEelvlToPwEffectsJumpHeightBlock(eelvlBlock: EelvlBlock): Block {
     case 1:
       return createBlock(PwBlockName.EFFECTS_JUMP_HEIGHT, [130])
     default:
-      return createUnknownParameterBlockSign(
-        `Unknown block parameter. Name: ${PwBlockName.EFFECTS_JUMP_HEIGHT}, parameter: ${jumpHeight}`,
-      )
+      return `Unknown block parameter. Name: ${PwBlockName.EFFECTS_JUMP_HEIGHT}, parameter: ${jumpHeight}`
   }
 }
 
-function getEelvlToPwEffectsSpeedBlock(eelvlBlock: EelvlBlock): Block {
+function getEelvlToPwEffectsSpeedBlock(eelvlBlock: EelvlBlock): Block | string {
   const speed = eelvlBlock.intParameter
   switch (speed) {
     case 2:
@@ -324,13 +334,11 @@ function getEelvlToPwEffectsSpeedBlock(eelvlBlock: EelvlBlock): Block {
     case 1:
       return createBlock(PwBlockName.EFFECTS_SPEED, [150])
     default:
-      return createUnknownParameterBlockSign(
-        `Unknown block parameter. Name: ${PwBlockName.EFFECTS_SPEED}, parameter: ${speed}`,
-      )
+      return `Unknown block parameter. Name: ${PwBlockName.EFFECTS_SPEED}, parameter: ${speed}`
   }
 }
 
-function getEelvlToPwEffectsGravityForceBlock(eelvlBlock: EelvlBlock): Block {
+function getEelvlToPwEffectsGravityForceBlock(eelvlBlock: EelvlBlock): Block | string {
   const gravityForce = eelvlBlock.intParameter
   switch (gravityForce) {
     case 1:
@@ -338,9 +346,7 @@ function getEelvlToPwEffectsGravityForceBlock(eelvlBlock: EelvlBlock): Block {
     case 0:
       return createBlock(PwBlockName.EFFECTS_GRAVITY_FORCE, [100])
     default:
-      return createUnknownParameterBlockSign(
-        `Unknown block parameter. Name: ${PwBlockName.EFFECTS_GRAVITY_FORCE}, parameter: ${gravityForce}`,
-      )
+      return `Unknown block parameter. Name: ${PwBlockName.EFFECTS_GRAVITY_FORCE}, parameter: ${gravityForce}`
   }
 }
 

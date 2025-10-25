@@ -15,6 +15,8 @@ import { getAllWorldBlocks } from '@/core/service/PwClientService.ts'
 import { getEelvlBlocksById } from '@/eelvl/store/EelvlClientStore.ts'
 import { hasEelvlBlockOneIntParameter, isEelvlNpc, writeEeelvlFileHeader } from '@/eelvl/service/EelvlUtilService.ts'
 import { ByteArray } from 'playerioclient'
+import { EelvlExportResult } from '@/eelvl/type/EelvlExportResult.ts'
+import { MissingBlockInfo } from '@/eelvl/type/MissingBlockInfo.ts'
 
 function addBlocksEntry(blocks: ManyKeysMap<EelvlBlockEntry, vec2[]>, key: EelvlBlockEntry, x: number, y: number) {
   if (!blocks.has(key)) {
@@ -24,7 +26,7 @@ function addBlocksEntry(blocks: ManyKeysMap<EelvlBlockEntry, vec2[]>, key: Eelvl
   }
 }
 
-export function getExportedToEelvlData(worldBlocks: DeserialisedStructure): [Buffer, string] {
+export function getExportedToEelvlData(worldBlocks: DeserialisedStructure): EelvlExportResult {
   const worldMeta = getPwGameWorldHelper().meta!
   const world: EelvlFileHeader = {
     ownerName: worldMeta.owner ?? 'Unknown',
@@ -44,6 +46,8 @@ export function getExportedToEelvlData(worldBlocks: DeserialisedStructure): [Buf
   const bytes: ByteArray = new ByteArray(0)
   writeEeelvlFileHeader(bytes, world)
 
+  const missingBlocks: MissingBlockInfo[] = []
+
   const blocks = new ManyKeysMap<EelvlBlockEntry, vec2[]>()
   for (let pwLayer = 0; pwLayer < TOTAL_PW_LAYERS; pwLayer++) {
     for (let y = 0; y < getPwGameWorldHelper().height; y++) {
@@ -58,7 +62,15 @@ export function getExportedToEelvlData(worldBlocks: DeserialisedStructure): [Buf
           continue
         }
 
-        const eelvlBlock: EelvlBlock = mapBlockIdPwToEelvl(pwBlock, pwLayer)
+        const eelvlBlockOrMissingBlockInfo: EelvlBlock | string = mapBlockIdPwToEelvl(pwBlock, pwLayer)
+        let eelvlBlock: EelvlBlock
+        if (typeof eelvlBlockOrMissingBlockInfo === 'string') {
+          eelvlBlock = createMissingBlockSign(eelvlBlockOrMissingBlockInfo)
+          missingBlocks.push({ pos: vec2(x, y), info: eelvlBlockOrMissingBlockInfo })
+        } else {
+          eelvlBlock = eelvlBlockOrMissingBlockInfo
+        }
+
         const eelvlBlockId: number = eelvlBlock.blockId
 
         if ((eelvlBlockId as EelvlBlockId) === EelvlBlockId.EMPTY) {
@@ -99,13 +111,14 @@ export function getExportedToEelvlData(worldBlocks: DeserialisedStructure): [Buf
   const worldId = usePwClientStore().worldId
   const fileName = `${world.name} - ${world.width}x${world.height} - ${worldId}.eelvl`
 
-  return [bytes.buffer, fileName]
+  return { byteBuffer: bytes.buffer, fileName: fileName, missingBlocks: missingBlocks }
 }
 
-export function exportToEelvl() {
+export function exportToEelvl(): MissingBlockInfo[] {
   const worldData = getAllWorldBlocks(getPwGameWorldHelper())
-  const [byteBuffer, fileName] = getExportedToEelvlData(worldData)
-  downloadFile(byteBuffer, fileName)
+  const eelvlExportResult = getExportedToEelvlData(worldData)
+  downloadFile(eelvlExportResult.byteBuffer, eelvlExportResult.fileName)
+  return eelvlExportResult.missingBlocks
 }
 
 function getEelvlLayer(eelvlBlockId: number): EelvlLayer {
@@ -153,7 +166,7 @@ export function writePositionsByteArrays(bytes: ByteArray, positions: vec2[]) {
   bytes.writeBytes(positionsY)
 }
 
-function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock {
+function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock | string {
   const pwBlockName = getBlockName(pwBlock.bId)
 
   switch (pwBlockName) {
@@ -190,7 +203,7 @@ function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock {
     case PwBlockName.SIGN_RED:
       return { blockId: EelvlBlockId.SIGN_NORMAL, signType: 2, signText: pwBlock.args[0] as string }
     case PwBlockName.SIGN_GREEN:
-      return createMissingBlockSign(`${PwBlockName.SIGN_GREEN} text: '${pwBlock.args[0] as string}'`)
+      return `${PwBlockName.SIGN_GREEN} text: '${pwBlock.args[0] as string}'`
     case PwBlockName.SIGN_BLUE:
       return { blockId: EelvlBlockId.SIGN_NORMAL, signType: 1, signText: pwBlock.args[0] as string }
     case PwBlockName.SIGN_GOLD:
@@ -261,7 +274,7 @@ function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock {
 
       if (pwBlockName === undefined || mappedPwBlock === undefined) {
         if (pwLayer === LayerType.Foreground) {
-          return createMissingBlockSign(`Unknown Block ID: ${pwBlock.bId}`)
+          return `Unknown Block ID: ${pwBlock.bId}`
         } else {
           return { blockId: EelvlBlockId.EMPTY }
         }
@@ -276,7 +289,7 @@ function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock {
       }
 
       if (pwLayer !== LayerType.Background) {
-        return createMissingBlockSign(`Missing EELVL block: ${pwBlockName}`)
+        return `Missing EELVL block: ${pwBlockName}`
       } else {
         return { blockId: EelvlBlockId.EMPTY }
       }
@@ -288,7 +301,7 @@ function createMissingBlockSign(message: string): EelvlBlock {
   return { blockId: EelvlBlockId.SIGN_NORMAL, signType: 0, signText: message }
 }
 
-function getPwToEelvlEffectsJumpHeightBlock(pwBlock: Block): EelvlBlock {
+function getPwToEelvlEffectsJumpHeightBlock(pwBlock: Block): EelvlBlock | string {
   const jumpHeight = pwBlock.args[0] as number
   switch (jumpHeight) {
     case 75:
@@ -298,11 +311,11 @@ function getPwToEelvlEffectsJumpHeightBlock(pwBlock: Block): EelvlBlock {
     case 130:
       return { blockId: EelvlBlockId.EFFECTS_JUMP_HEIGHT, intParameter: 1 }
     default:
-      return createMissingBlockSign(`${PwBlockName.EFFECTS_JUMP_HEIGHT} jump height (blocks): ${jumpHeight}`)
+      return `${PwBlockName.EFFECTS_JUMP_HEIGHT} jump height (blocks): ${jumpHeight}`
   }
 }
 
-function getPwToEelvlEffectsSpeedBlock(pwBlock: Block): EelvlBlock {
+function getPwToEelvlEffectsSpeedBlock(pwBlock: Block): EelvlBlock | string {
   const speed = pwBlock.args[0] as number
   switch (speed) {
     case 60:
@@ -312,11 +325,11 @@ function getPwToEelvlEffectsSpeedBlock(pwBlock: Block): EelvlBlock {
     case 150:
       return { blockId: EelvlBlockId.EFFECTS_SPEED, intParameter: 1 }
     default:
-      return createMissingBlockSign(`${PwBlockName.EFFECTS_SPEED} speed (%): ${speed}`)
+      return `${PwBlockName.EFFECTS_SPEED} speed (%): ${speed}`
   }
 }
 
-function getPwToEelvlEffectsGravityForceBlock(pwBlock: Block): EelvlBlock {
+function getPwToEelvlEffectsGravityForceBlock(pwBlock: Block): EelvlBlock | string {
   const gravityForce = pwBlock.args[0] as number
   switch (gravityForce) {
     case 15:
@@ -324,7 +337,7 @@ function getPwToEelvlEffectsGravityForceBlock(pwBlock: Block): EelvlBlock {
     case 100:
       return { blockId: EelvlBlockId.EFFECTS_GRAVITY_FORCE, intParameter: 0 }
     default:
-      return createMissingBlockSign(`${PwBlockName.EFFECTS_GRAVITY_FORCE} gravity (%): ${gravityForce}`)
+      return `${PwBlockName.EFFECTS_GRAVITY_FORCE} gravity (%): ${gravityForce}`
   }
 }
 
@@ -336,7 +349,7 @@ function getPwToEelvlEffectsMultiJumpBlock(pwBlock: Block): EelvlBlock {
   return { blockId: EelvlBlockId.EFFECTS_MULTI_JUMP, intParameter: jumpCount }
 }
 
-function getPwToEelvlPortalBlock(pwBlock: Block, eelvlBlockId: EelvlBlockId): EelvlBlock {
+function getPwToEelvlPortalBlock(pwBlock: Block, eelvlBlockId: EelvlBlockId): EelvlBlock | string {
   const portalId = pwBlock.args[0] as string
   const portalTarget = pwBlock.args[1] as string
   let rotation
@@ -361,9 +374,7 @@ function getPwToEelvlPortalBlock(pwBlock: Block, eelvlBlockId: EelvlBlockId): Ee
   const portalIdInt = portalIdToNumber(portalId)
   const portalTargetInt = portalIdToNumber(portalTarget)
   if (portalIdInt === undefined || portalTargetInt === undefined) {
-    return createMissingBlockSign(
-      `${pwBlock.name} portal id: ${portalId}, portal target: ${portalTarget}, rotation: ${rotation}`,
-    )
+    return `${pwBlock.name} portal id: ${portalId}, portal target: ${portalTarget}, rotation: ${rotation}`
   }
   return {
     blockId: eelvlBlockId,
@@ -373,7 +384,11 @@ function getPwToEelvlPortalBlock(pwBlock: Block, eelvlBlockId: EelvlBlockId): Ee
   }
 }
 
-function getPwToEelvlNoteBlock(pwBlock: Block, pwBlockName: PwBlockName, eelvlBlockId: EelvlBlockId): EelvlBlock {
+function getPwToEelvlNoteBlock(
+  pwBlock: Block,
+  pwBlockName: PwBlockName,
+  eelvlBlockId: EelvlBlockId,
+): EelvlBlock | string {
   const notes = pwBlock.args[0] as Uint8Array
   if (notes.length === 1) {
     let intParameter = notes.at(0)!
@@ -382,11 +397,11 @@ function getPwToEelvlNoteBlock(pwBlock: Block, pwBlockName: PwBlockName, eelvlBl
     }
     return { blockId: eelvlBlockId, intParameter: intParameter }
   } else {
-    return createMissingBlockSign(`${pwBlockName} notes: ${Array.from(notes).toString()}`)
+    return `${pwBlockName} notes: ${Array.from(notes).toString()}`
   }
 }
 
-function getPwToEelvlSwitchActivatorBlock(pwBlock: Block, eelvlBlockId: EelvlBlockId): EelvlBlock {
+function getPwToEelvlSwitchActivatorBlock(pwBlock: Block, eelvlBlockId: EelvlBlockId): EelvlBlock | string {
   const switchIdArg = pwBlock.args[0] as number
   const switchStateArg = pwBlock.args[1] as number // 0 = OFF, 1 = ON
   if (switchStateArg === 0) {
@@ -396,11 +411,11 @@ function getPwToEelvlSwitchActivatorBlock(pwBlock: Block, eelvlBlockId: EelvlBlo
       eelvlBlockId === EelvlBlockId.SWITCH_LOCAL_ACTIVATOR
         ? PwBlockName.SWITCH_LOCAL_ACTIVATOR
         : PwBlockName.SWITCH_GLOBAL_ACTIVATOR
-    return createMissingBlockSign(`${pwBlockName} switch id: ${switchIdArg}, switch state: ON`)
+    return `${pwBlockName} switch id: ${switchIdArg}, switch state: ON`
   }
 }
 
-function getPwToEelvlSwitchResetterBlock(pwBlock: Block, isLocal: boolean): EelvlBlock {
+function getPwToEelvlSwitchResetterBlock(pwBlock: Block, isLocal: boolean): EelvlBlock | string {
   const switchStateArg = pwBlock.args[0] as number // 0 = OFF, 1 = ON
   if (switchStateArg === 0) {
     const eelvlBlockId = isLocal ? EelvlBlockId.SWITCH_LOCAL_ACTIVATOR : EelvlBlockId.SWITCH_GLOBAL_ACTIVATOR
@@ -408,5 +423,5 @@ function getPwToEelvlSwitchResetterBlock(pwBlock: Block, isLocal: boolean): Eelv
   }
 
   const pwBlockName = isLocal ? PwBlockName.SWITCH_LOCAL_RESETTER : PwBlockName.SWITCH_GLOBAL_RESETTER
-  return createMissingBlockSign(`${pwBlockName} switch state: ON}`)
+  return `${pwBlockName} switch state: ON}`
 }

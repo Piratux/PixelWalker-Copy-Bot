@@ -7,14 +7,17 @@ import PiButton from '@/component/PiButton.vue'
 import { createAsyncCallback } from '@/core/util/Promise.ts'
 import PiOverlay from '@/component/PiOverlay.vue'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
+import { MissingBlockInfo } from '@/eelvl/type/MissingBlockInfo.ts'
+import MissingBlockInfoTextArea from '@/component/MissingBlockInfoTextArea.vue'
 
 const loadingOverlay = ref(false)
+const missingBlocks = ref<MissingBlockInfo[]>([])
 
 async function onExportEelvlButtonClick() {
   await withLoading(
     loadingOverlay,
     createAsyncCallback(() => {
-      exportToEelvl()
+      missingBlocks.value = exportToEelvl()
     }),
   )
 }
@@ -38,9 +41,12 @@ async function onExportEelvlButtonClick() {
     </v-col>
   </PiCardContainer>
   <PiCardContainer>
+    <MissingBlockInfoTextArea :missing-blocks="missingBlocks" label="Blocks that couldn't be converted" />
+  </PiCardContainer>
+  <PiCardContainer>
     <v-col>
       <v-row><h3>Export info</h3></v-row>
-      <v-row> EELVL is a file format that was used by Everybody Edits (EE). </v-row>
+      <v-row> EELVL is a file format that was used by Everybody Edits (EE).</v-row>
       <v-row>
         Here you can export EE worlds from PixelWalker to .eelvl file and open it up in Everybody Edits: Offline (EEO)
         client.

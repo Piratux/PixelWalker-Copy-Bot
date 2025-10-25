@@ -8,7 +8,7 @@ import { EelvlLayer } from '@/eelvl/enum/EelvlLayer.ts'
 import { writePositionsByteArrays } from '@/eelvl/service/EelvlExporterService.ts'
 import { EerLayer } from '@/eer/enum/EerLayer.ts'
 import { EelvlFileHeader } from '@/eelvl/type/EelvlFileHeader.ts'
-import { createUnknownParameterBlockSign, importFromEelvl } from '@/eelvl/service/EelvlImporterService.ts'
+import { createBlock, importFromEelvl } from '@/eelvl/service/EelvlImporterService.ts'
 import { writeEeelvlFileHeader } from '@/eelvl/service/EelvlUtilService.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { Block } from 'pw-js-world'
@@ -81,6 +81,10 @@ function getEerBlockIntParameter(eerBlock: EerBlock) {
   } else {
     return undefined
   }
+}
+
+export function createUnknownParameterBlockSign(message: string): Block {
+  return createBlock(PwBlockName.SIGN_GREEN, [message])
 }
 
 function getBlockArgs(eerBlockId: number, eerBlock: EerBlock): EerBlockEntry {

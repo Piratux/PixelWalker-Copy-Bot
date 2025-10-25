@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-10-25 Version 1.11.0
+- Website: Added "Blocks that couldn't be converted" section for EELVL import/export. This section appears after import/export if there were blocks that couldn't be converted 1 to 1 between EEO and PW.
+
 2025-10-25 Version 1.10.0
 - Bot: Added .mask command 'nonair' parameter.
 - Bot: Renamed .mask command 'all' parameter to 'default'.

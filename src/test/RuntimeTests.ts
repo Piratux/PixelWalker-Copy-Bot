@@ -62,21 +62,21 @@ async function testEelvlImport() {
 async function testEelvlExportWithEelvlData() {
   const expectedData = await getDataFromPwlvlFile(everyBlockExportedEelvlPwlvlFile)
 
-  const [exportEelvlDataBuffer] = getExportedToEelvlData(expectedData)
-  const receivedData = getImportedFromEelvlData(bufferToArrayBuffer(exportEelvlDataBuffer))
+  const eelvlExportResult = getExportedToEelvlData(expectedData)
+  const eelvlImportResult = getImportedFromEelvlData(bufferToArrayBuffer(eelvlExportResult.byteBuffer))
 
-  compareDeserialisedStructureData(receivedData, expectedData)
+  compareDeserialisedStructureData(eelvlImportResult.blocks, expectedData)
 }
 
 async function testEelvlExportWithPwlvlData() {
   const pwlvlData = await getDataFromPwlvlFile(everyBlockOriginalPwlvlFile)
 
-  const [exportPwlvlDataBuffer] = getExportedToEelvlData(pwlvlData)
-  const receivedData = getImportedFromEelvlData(bufferToArrayBuffer(exportPwlvlDataBuffer))
+  const eelvlExportResult = getExportedToEelvlData(pwlvlData)
+  const eelvlImportResult = getImportedFromEelvlData(bufferToArrayBuffer(eelvlExportResult.byteBuffer))
 
   const expectedData = await getDataFromPwlvlFile(everyBlockExportedEelvlPwlvlFile)
 
-  compareDeserialisedStructureData(receivedData, expectedData)
+  compareDeserialisedStructureData(eelvlImportResult.blocks, expectedData)
 }
 
 async function testMapUpdateFromWorldBlockPlacedPacket() {

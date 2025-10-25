@@ -40,7 +40,7 @@ export async function getDataFromPwlvlFile(fileUrl: string): Promise<Deserialise
 export async function getDataFromEelvlFile(fileUrl: string): Promise<DeserialisedStructure> {
   const fileRaw = await fetch(fileUrl)
   const fileArrayBuffer = await fileRaw.arrayBuffer()
-  return getImportedFromEelvlData(fileArrayBuffer)
+  return getImportedFromEelvlData(fileArrayBuffer).blocks
 }
 
 export async function getDataFromPngFile(fileUrl: string, quantized: boolean): Promise<DeserialisedStructure> {

@@ -8,8 +8,11 @@ import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'
 import PiOverlay from '@/component/PiOverlay.vue'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
+import MissingBlockInfoTextArea from '@/component/MissingBlockInfoTextArea.vue'
+import { MissingBlockInfo } from '@/eelvl/type/MissingBlockInfo.ts'
 
 const loadingOverlay = ref(false)
+const missingBlocks = ref<MissingBlockInfo[]>([])
 
 const importEelvlFileInput = ref<HTMLInputElement>()
 
@@ -24,7 +27,7 @@ async function onEelvlFileChange(event: Event) {
       return
     }
     sendGlobalChatMessage(`Importing world from ${result.file.name}`)
-    await importFromEelvl(result.data)
+    missingBlocks.value = await importFromEelvl(result.data)
   })
 }
 </script>
@@ -52,6 +55,9 @@ async function onEelvlFileChange(event: Event) {
         </v-tooltip>
       </v-row>
     </v-col>
+  </PiCardContainer>
+  <PiCardContainer>
+    <MissingBlockInfoTextArea label="Blocks that couldn't be converted" :missing-blocks="missingBlocks" />
   </PiCardContainer>
   <PiCardContainer>
     <v-col>
