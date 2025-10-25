@@ -40,7 +40,7 @@ import { setCustomTimeout } from '@/core/util/Sleep.ts'
 import { BomBotBlockType } from '@/bombot/enum/BomBotBlockType.ts'
 import { handleException } from '@/core/util/Exception.ts'
 import { useBomBotRoundStore } from '@/bombot/store/BomBotRoundStore.ts'
-import { getRandomInt } from '@/core/util/Random.ts'
+import { getRandomArrayElement, getRandomInt } from '@/core/util/Random.ts'
 import { clamp } from '@/core/util/Numbers.ts'
 import { userBomBotAutomaticRestartCounterStore } from '@/bombot/store/BomBotAutomaticRestartCounterStore.ts'
 import { BomBotWorldData, createBomBotWorldData } from '@/bombot/type/BomBotPlayerWorldData.ts'
@@ -707,26 +707,7 @@ function loadSpecialBombs(bomBotBlocks: DeserialisedStructure) {
   }
 }
 
-async function loadBomBotData() {
-  sendGlobalChatMessage('Loading BomBot data')
-  const bomBotDataWorldId = getWorldIdIfUrl('lbsz7864s3a3yih')
-  const bomBotBlocks = await getAnotherWorldBlocks(bomBotDataWorldId, getPwApiClient())
-  if (!bomBotBlocks) {
-    throw new GameError('Failed to load BomBot data')
-  }
-
-  useBomBotWorldStore().bombTimerBgBlockTimeLeft = bomBotBlocks.blocks[LayerType.Background][2][378]
-  useBomBotWorldStore().bombTimerBgBlockTimeSpent = bomBotBlocks.blocks[LayerType.Background][4][378]
-  useBomBotWorldStore().bombTypeFgBlockIndicator = bomBotBlocks.blocks[LayerType.Foreground][7][379]
-
-  useBomBotWorldStore().defaultBombBlocks = getBomBotStructure(bomBotBlocks, vec2(9, 385), vec2(3, 3), vec2(-1, -1))
-  useBomBotWorldStore().bombRemoveBlocks = getBomBotStructure(bomBotBlocks, vec2(3, 385), vec2(3, 3), vec2(-1, -1))
-  useBomBotWorldStore().specialBombRemoveBlocks = getBomBotStructure(bomBotBlocks, vec2(4, 386), vec2(1, 1))
-
-  loadPowerUps(bomBotBlocks)
-  loadSpecialBombs(bomBotBlocks)
-  loadBlockTypes(bomBotBlocks)
-
+function loadMaps(bomBotBlocks: DeserialisedStructure) {
   const totalMapCount = vec2(15, 21)
   const mapSpacing = vec2.add(mapSize, vec2(4, 6))
   const topLeftMapOffset = vec2(3, 5)
@@ -756,6 +737,36 @@ async function loadBomBotData() {
       })
     }
   }
+}
+
+async function loadBomBotData() {
+  sendGlobalChatMessage('Loading BomBot data')
+  const bomBotDataWorldId = getWorldIdIfUrl('lbsz7864s3a3yih')
+  const bomBotBlocks = await getAnotherWorldBlocks(bomBotDataWorldId, getPwApiClient())
+  if (!bomBotBlocks) {
+    throw new GameError('Failed to load BomBot data')
+  }
+
+  useBomBotWorldStore().bombTimerBgBlockTimeLeft = bomBotBlocks.blocks[LayerType.Background][2][378]
+  useBomBotWorldStore().bombTimerBgBlockTimeSpent = bomBotBlocks.blocks[LayerType.Background][4][378]
+  useBomBotWorldStore().bombTypeFgBlockIndicator = bomBotBlocks.blocks[LayerType.Foreground][7][379]
+
+  useBomBotWorldStore().randomEffectBlocks = [
+    bomBotBlocks.blocks[LayerType.Foreground][17][379],
+    bomBotBlocks.blocks[LayerType.Foreground][18][379],
+    bomBotBlocks.blocks[LayerType.Foreground][19][379],
+    bomBotBlocks.blocks[LayerType.Foreground][20][379],
+    bomBotBlocks.blocks[LayerType.Foreground][21][379],
+  ]
+
+  useBomBotWorldStore().defaultBombBlocks = getBomBotStructure(bomBotBlocks, vec2(9, 385), vec2(3, 3), vec2(-1, -1))
+  useBomBotWorldStore().bombRemoveBlocks = getBomBotStructure(bomBotBlocks, vec2(3, 385), vec2(3, 3), vec2(-1, -1))
+  useBomBotWorldStore().specialBombRemoveBlocks = getBomBotStructure(bomBotBlocks, vec2(4, 386), vec2(1, 1))
+
+  loadPowerUps(bomBotBlocks)
+  loadSpecialBombs(bomBotBlocks)
+  loadBlockTypes(bomBotBlocks)
+  loadMaps(bomBotBlocks)
 
   sendGlobalChatMessage(`Total of ${useBomBotWorldStore().bomBotMaps.length} maps loaded`)
 }
@@ -862,6 +873,8 @@ function playerWinRound(playerId: number) {
   setBombState(BomBotState.RESET_STORE)
 
   updateLeaderboard()
+
+  useBomBotWorldStore().totalRoundsPassed++
 }
 
 function updateLeaderboard() {
@@ -930,8 +943,24 @@ function selectRandomBomber(): number {
 }
 
 function getRandomMap() {
-  const randomIndex = getRandomInt(0, useBomBotWorldStore().bomBotMaps.length)
-  return useBomBotWorldStore().bomBotMaps[randomIndex]
+  return getRandomArrayElement(useBomBotWorldStore().bomBotMaps)
+}
+
+function placeEffectBlock() {
+  const effectBlockPos = vec2(35, 41)
+  const EFFECT_BLOCK_EVERY_X_ROUNDS = 5
+  const effectBlock =
+    useBomBotWorldStore().totalRoundsPassed % EFFECT_BLOCK_EVERY_X_ROUNDS === 0 &&
+    useBomBotWorldStore().totalRoundsPassed !== 0
+      ? getRandomArrayElement(useBomBotWorldStore().randomEffectBlocks)
+      : new Block(0)
+  void placeMultipleBlocks([
+    {
+      pos: effectBlockPos,
+      layer: LayerType.Foreground,
+      block: effectBlock,
+    },
+  ])
 }
 
 async function everySecondBomBotUpdate() {
@@ -960,6 +989,8 @@ async function everySecondBomBotUpdate() {
       break
     }
     case BomBotState.PREPARING_FOR_NEXT_ROUND: {
+      placeEffectBlock()
+
       if (!useBomBotWorldStore().playedOnce) {
         await placeBomBotMap(useBomBotWorldStore().bomBotMaps[0])
         useBomBotWorldStore().playedOnce = true
@@ -1243,8 +1274,7 @@ function getRandomAvailablePlayerSpawnPosition(): vec2 {
   if (availablePlayerSpawnPositions.length === 0) {
     return mapTopLeftPos
   }
-  const randomIndex = getRandomInt(0, availablePlayerSpawnPositions.length)
-  return vec2.add(mapTopLeftPos, availablePlayerSpawnPositions[randomIndex])
+  return vec2.add(mapTopLeftPos, getRandomArrayElement(availablePlayerSpawnPositions))
 }
 
 function loadBlockTypes(bomBotBlocks: DeserialisedStructure) {

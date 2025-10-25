@@ -24,6 +24,8 @@ export const useBomBotWorldStore = defineStore('BomBotWorldStore', () => {
   const playedOnce = ref<boolean>(false)
   const playerBomBotWorldData = ref<PlayerBomBotWorldData>({})
   const everySecondUpdateIsRunning = ref<boolean>(false)
+  const randomEffectBlocks = ref<Raw<Block[]>>([])
+  const totalRoundsPassed = ref<number>(0)
 
   return {
     defaultBombBlocks,
@@ -40,5 +42,7 @@ export const useBomBotWorldStore = defineStore('BomBotWorldStore', () => {
     playedOnce,
     playerBomBotWorldData,
     everySecondUpdateIsRunning,
+    randomEffectBlocks,
+    totalRoundsPassed,
   }
 })
