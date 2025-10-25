@@ -698,13 +698,7 @@ function loadSpecialBombs(bomBotBlocks: DeserialisedStructure) {
     },
   ].map((specialBombData) => {
     const bombDeletedBlocks = specialBombData.blocks.map((worldBlock) => ({ ...worldBlock, block: new Block(0) }))
-
-    // We only want useBomBotWorldStore().bombRemoveBlocks to serve as "decoration" and not remove foreground blocks, like it does for normal bombs
-    const bombRemoveBlocksWithoutForegroundAir = useBomBotWorldStore().bombRemoveBlocks.filter(
-      (b) => b.layer === LayerType.Overlay,
-    )
-
-    const bombRemoveBlocks = mergeWorldBlocks(bombDeletedBlocks, bombRemoveBlocksWithoutForegroundAir)
+    const bombRemoveBlocks = mergeWorldBlocks(bombDeletedBlocks, useBomBotWorldStore().specialBombRemoveBlocks)
     return { ...specialBombData, bombRemoveBlocks }
   })
 
@@ -727,6 +721,7 @@ async function loadBomBotData() {
 
   useBomBotWorldStore().defaultBombBlocks = getBomBotStructure(bomBotBlocks, vec2(9, 385), vec2(3, 3), vec2(-1, -1))
   useBomBotWorldStore().bombRemoveBlocks = getBomBotStructure(bomBotBlocks, vec2(3, 385), vec2(3, 3), vec2(-1, -1))
+  useBomBotWorldStore().specialBombRemoveBlocks = getBomBotStructure(bomBotBlocks, vec2(4, 386), vec2(1, 1))
 
   loadPowerUps(bomBotBlocks)
   loadSpecialBombs(bomBotBlocks)

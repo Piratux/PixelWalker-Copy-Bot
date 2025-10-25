@@ -13,6 +13,7 @@ export const useBomBotWorldStore = defineStore('BomBotWorldStore', () => {
   const defaultBombBlocks = ref<Raw<WorldBlock[]>>([])
   const specialBombData = ref<Raw<BomBotSpecialBombData[]>>([])
   const bombRemoveBlocks = ref<Raw<WorldBlock[]>>([])
+  const specialBombRemoveBlocks = ref<Raw<WorldBlock[]>>([])
   const powerUpData = ref<Raw<BomBotPowerUpData[]>>([])
   const bombTimerBgBlockTimeSpent = ref<Raw<Block>>(new Block(0))
   const bombTimerBgBlockTimeLeft = ref<Raw<Block>>(new Block(0))
@@ -28,6 +29,7 @@ export const useBomBotWorldStore = defineStore('BomBotWorldStore', () => {
     defaultBombBlocks,
     specialBombData,
     bombRemoveBlocks,
+    specialBombRemoveBlocks,
     powerUpData,
     bombTimerBgBlockTimeSpent,
     bombTimerBgBlockTimeLeft,
