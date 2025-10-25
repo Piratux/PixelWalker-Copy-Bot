@@ -7,7 +7,7 @@ http://piratux.github.io/PixelWalker-Copy-Bot/
 
 ## Requirements to run project
 
-Node.js >= 24
+Node.js 24
 
 ## Local development
 
