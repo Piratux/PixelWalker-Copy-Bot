@@ -739,6 +739,37 @@ function flipCommandReceived(args: string[], playerId: number) {
   placeEditedBlocks(playerId, editedBlocks)
 }
 
+function applySmartTransformForBlockWithIntArgument(
+  pastePosBlock: WorldBlock,
+  nextBlock: WorldBlock,
+  argIdx: number,
+  blockCopy: WorldBlock,
+  repetition: number,
+) {
+  if (pastePosBlock.block.bId === nextBlock.block.bId) {
+    const diff = (nextBlock.block.args[argIdx] as number) - (pastePosBlock.block.args[argIdx] as number)
+    blockCopy.block.args[argIdx] = (blockCopy.block.args[argIdx] as number) + diff * repetition
+  }
+}
+
+function applySmartTransformForPortalBlock(
+  pastePosBlock: WorldBlock,
+  nextBlock: WorldBlock,
+  argIdx: number,
+  blockCopy: WorldBlock,
+  repetition: number,
+) {
+  if (pastePosBlock.block.bId === nextBlock.block.bId) {
+    const nextBlockPortalId = portalIdToNumber(nextBlock.block.args[argIdx] as string)
+    const pastePosBlockPortalId = portalIdToNumber(pastePosBlock.block.args[argIdx] as string)
+    const blockCopyPortalId = portalIdToNumber(blockCopy.block.args[argIdx] as string)
+    if (nextBlockPortalId !== undefined && pastePosBlockPortalId !== undefined && blockCopyPortalId !== undefined) {
+      const diff = nextBlockPortalId - pastePosBlockPortalId
+      blockCopy.block.args[argIdx] = (blockCopyPortalId + diff * repetition).toString()
+    }
+  }
+}
+
 function applySmartTransformForBlocks(
   pastedBlocks: WorldBlock[],
   pastePosBlocks: WorldBlock[],
@@ -758,41 +789,11 @@ function applySmartTransformForBlocks(
       for (let i = 0; i < blockArgTypes.length; i++) {
         const blockArgType = blockArgTypes[i]
         if (blockArgType === ComponentTypeHeader.Int32) {
-          if (pastePosBlock.block.bId === nextBlockX.block.bId) {
-            const diffX = (nextBlockX.block.args[i] as number) - (pastePosBlock.block.args[i] as number)
-            blockCopy.block.args[i] = (blockCopy.block.args[i] as number) + diffX * repetitionX
-          }
-          if (pastePosBlock.block.bId === nextBlockY.block.bId) {
-            const diffY = (nextBlockY.block.args[i] as number) - (pastePosBlock.block.args[i] as number)
-            blockCopy.block.args[i] = (blockCopy.block.args[i] as number) + diffY * repetitionY
-          }
+          applySmartTransformForBlockWithIntArgument(pastePosBlock, nextBlockX, i, blockCopy, repetitionX)
+          applySmartTransformForBlockWithIntArgument(pastePosBlock, nextBlockY, i, blockCopy, repetitionY)
         } else if (blockIsPortal(pastePosBlock.block.name)) {
-          if (pastePosBlock.block.bId === nextBlockX.block.bId) {
-            const nextBlockXPortalId = portalIdToNumber(nextBlockX.block.args[i] as string)
-            const pastePosBlockPortalId = portalIdToNumber(pastePosBlock.block.args[i] as string)
-            const blockCopyPortalId = portalIdToNumber(blockCopy.block.args[i] as string)
-            if (
-              nextBlockXPortalId !== undefined &&
-              pastePosBlockPortalId !== undefined &&
-              blockCopyPortalId !== undefined
-            ) {
-              const diffX = nextBlockXPortalId - pastePosBlockPortalId
-              blockCopy.block.args[i] = (blockCopyPortalId + diffX * repetitionX).toString()
-            }
-          }
-          if (pastePosBlock.block.bId === nextBlockY.block.bId) {
-            const nextBlockYPortalId = portalIdToNumber(nextBlockY.block.args[i] as string)
-            const pastePosBlockPortalId = portalIdToNumber(pastePosBlock.block.args[i] as string)
-            const blockCopyPortalId = portalIdToNumber(blockCopy.block.args[i] as string)
-            if (
-              nextBlockYPortalId !== undefined &&
-              pastePosBlockPortalId !== undefined &&
-              blockCopyPortalId !== undefined
-            ) {
-              const diffY = nextBlockYPortalId - pastePosBlockPortalId
-              blockCopy.block.args[i] = (blockCopyPortalId + diffY * repetitionY).toString()
-            }
-          }
+          applySmartTransformForPortalBlock(pastePosBlock, nextBlockX, i, blockCopy, repetitionX)
+          applySmartTransformForPortalBlock(pastePosBlock, nextBlockY, i, blockCopy, repetitionY)
         }
       }
     }
