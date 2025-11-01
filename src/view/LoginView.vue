@@ -8,11 +8,11 @@ import { useRouter } from 'vue-router'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { getWorldIdIfUrl } from '@/core/util/WorldIdExtractor.ts'
 import { initPwClasses } from '@/core/service/PwClientService.ts'
-import { HomeViewRoute } from '@/router/Routes.ts'
 import { withLoading } from '@/core/util/LoaderProxy.ts'
 import PiOverlay from '@/component/PiOverlay.vue'
 import { getEnvDefaultWorldId } from '@/core/util/Environment.ts'
 import { BotType } from '@/core/enum/BotType.ts'
+import { RouteName } from '@/router/RouteName.ts'
 
 const loadingOverlay = ref(false)
 const email = ref('')
@@ -48,7 +48,7 @@ async function onConnectButtonClick() {
 
     await initPwClasses(botType.value)
 
-    await router.push({ name: HomeViewRoute.name })
+    await router.push({ name: RouteName.Home })
     usePwClientStore().isConnected = true
   })
 }

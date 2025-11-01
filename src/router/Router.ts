@@ -1,34 +1,22 @@
-import type { RouteLocationNormalizedGeneric, RouteRecordRaw } from 'vue-router'
+import type { RouteLocationNormalizedGeneric } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
-import * as Routes from './Routes.ts'
-import {
-  EelvlExportViewRoute,
-  EelvlImportViewRoute,
-  EerImportViewRoute,
-  HomeViewRoute,
-  MidiImportViewRoute,
-  NotFoundViewRoute,
-  PngImportViewRoute,
-} from './Routes.ts'
+import { Routes } from './Routes.ts'
 import { LAST_TESTED_ROOM_TYPE_VERSION } from '@/core/constant/General.ts'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { AlertService } from '@/core/service/AlertService.ts'
+import { RouteName } from './RouteName.ts'
 
 function buildRouter() {
-  const routes: RouteRecordRaw[] = [...Object.values(Routes)].sort((a, b): number => {
-    return a.path.length < b.path.length ? 1 : -1
-  })
-
   const router = createRouter({
     history: createWebHistory(),
-    routes: [...routes],
+    routes: Routes,
   })
 
   router.beforeEach((to: RouteLocationNormalizedGeneric) => {
     handleAlert(to)
 
-    if (to.name === NotFoundViewRoute.name) {
-      return { name: HomeViewRoute.name }
+    if (to.name === RouteName.NotFound) {
+      return { name: RouteName.Home }
     }
   })
 
@@ -42,12 +30,12 @@ function handleAlert(to: RouteLocationNormalizedGeneric) {
 
   if (
     [
-      EelvlImportViewRoute.name,
-      EelvlExportViewRoute.name,
-      MidiImportViewRoute.name,
-      PngImportViewRoute.name,
-      EerImportViewRoute.name,
-    ].includes(to.name as string) &&
+      RouteName.ImportEelvl,
+      RouteName.ExportEelvl,
+      RouteName.ImportMidi,
+      RouteName.ImportPng,
+      RouteName.ImportEer,
+    ].includes(to.name as RouteName) &&
     usePwClientStore().roomType !== '' &&
     LAST_TESTED_ROOM_TYPE_VERSION !== usePwClientStore().roomType
   ) {

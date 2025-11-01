@@ -1,35 +1,28 @@
-import {
-  EelvlExportViewRoute,
-  EelvlImportViewRoute,
-  EerImportViewRoute,
-  HomeViewRoute,
-  MidiImportViewRoute,
-  PngImportViewRoute,
-} from '@/router/Routes.ts'
+import { RouteName } from '@/router/RouteName'
 
 export const MENU_ITEMS = [
   {
     text: 'Home',
-    link: HomeViewRoute.path,
+    routeName: RouteName.Home,
   },
   {
     text: 'Import EELVL',
-    link: EelvlImportViewRoute.path,
+    routeName: RouteName.ImportEelvl,
   },
   {
     text: 'Export EELVL',
-    link: EelvlExportViewRoute.path,
+    routeName: RouteName.ExportEelvl,
   },
   {
     text: 'Import PNG',
-    link: PngImportViewRoute.path,
+    routeName: RouteName.ImportPng,
   },
   {
     text: 'Import MIDI',
-    link: MidiImportViewRoute.path,
+    routeName: RouteName.ImportMidi,
   },
   {
     text: 'Import EER',
-    link: EerImportViewRoute.path,
+    routeName: RouteName.ImportEer,
   },
 ]

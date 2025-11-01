@@ -3,6 +3,7 @@ import PiAppNavigation from '@/component/PiAppNavigation.vue'
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 import { useUiStore } from '@/core/store/UiStore.ts'
+import { RouteName } from '@/router/RouteName.ts'
 
 const route = useRoute()
 const currentRouteName = computed(() => {
@@ -12,7 +13,7 @@ const currentRouteName = computed(() => {
 
 <template>
   <v-app>
-    <PiAppNavigation v-if="currentRouteName !== 'login'" />
+    <PiAppNavigation v-if="currentRouteName !== RouteName.Login" />
     <v-main>
       <v-container fluid>
         <v-alert

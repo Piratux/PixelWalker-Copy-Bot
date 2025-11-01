@@ -3,7 +3,7 @@
   <v-app-bar color="primary">
     <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
     <v-toolbar-title>PixelWalker copy bot</v-toolbar-title>
-    <v-btn v-if="!usePwClientStore().isConnected" icon @click="handleRouting(LoginViewRoute.name)">
+    <v-btn v-if="!usePwClientStore().isConnected" icon @click="handleRouting(RouteName.Login)">
       <v-icon icon="mdi-login"></v-icon>
       <v-tooltip activator="parent">Connect</v-tooltip>
     </v-btn>
@@ -15,11 +15,11 @@
   <v-navigation-drawer v-model="drawer" :permanent="showDrawer">
     <v-list color="primary">
       <div v-for="item in MENU_ITEMS" :key="item.text">
-        <v-list-item link @click="handleRouting(item.link)">
+        <v-list-item link @click="handleRouting(item.routeName)">
           <v-list-item-title>{{ item.text }}</v-list-item-title>
         </v-list-item>
       </div>
-      <v-list-item v-if="devViewEnabled" link @click="handleRouting(DevViewRoute.path)">
+      <v-list-item v-if="devViewEnabled" link @click="handleRouting(RouteName.Dev)">
         <v-list-item-title>Developer tools</v-list-item-title>
       </v-list-item>
       <v-list-item link @click="openChangelog">
@@ -36,15 +36,14 @@
 import { computed, onMounted, ref } from 'vue'
 import { MENU_ITEMS } from '@/core/constant/MenuItems.ts'
 import { useRoute, useRouter } from 'vue-router'
-import { DevViewRoute, LoginViewRoute } from '@/router/Routes.ts'
 import { isEnvDevViewEnabled } from '@/core/util/Environment.ts'
 import { getPwGameClient, usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { resetAllStores } from '@/plugin/ResetStore.ts'
 import PiOverlay from '@/component/PiOverlay.vue'
+import { RouteName } from '@/router/RouteName.ts'
 
 const router = useRouter()
 const route = useRoute()
-const routePath = computed(() => route.path)
 
 const changelogLocation = '/PixelWalker-Copy-Bot/changelog.txt'
 const changelogLatestVersionLine = ref('')
@@ -66,9 +65,9 @@ onMounted(async () => {
   changelogLatestVersionLine.value = text.split('\n')[2]
 })
 
-async function handleRouting(path: string | undefined) {
-  if (path !== undefined && routePath.value !== path) {
-    await router.push({ path })
+async function handleRouting(routeName: string | undefined) {
+  if (routeName !== undefined && route.name !== routeName) {
+    await router.push({ name: routeName })
   }
 }
 
@@ -87,6 +86,6 @@ async function onDisconnectButtonClick() {
 
   resetAllStores()
 
-  await router.push({ name: LoginViewRoute.name })
+  await router.push({ name: RouteName.Login })
 }
 </script>
