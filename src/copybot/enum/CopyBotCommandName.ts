@@ -1,0 +1,15 @@
+export enum CopyBotCommandName {
+  Help = 'help',
+  PlaceAll = 'placeall',
+  Ping = 'ping',
+  Edit = 'edit',
+  Flip = 'flip',
+  Paste = 'paste',
+  SmartPaste = 'smartpaste',
+  Undo = 'undo',
+  Redo = 'redo',
+  Move = 'move',
+  Mask = 'mask',
+  Test = 'test',
+  Import = 'import',
+}

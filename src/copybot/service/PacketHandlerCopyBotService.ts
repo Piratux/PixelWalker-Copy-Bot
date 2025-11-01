@@ -49,6 +49,7 @@ import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { bufferToArrayBuffer } from '@/core/util/Buffers.ts'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import { BotType } from '@/core/enum/BotType.ts'
+import { CopyBotCommandName } from '@/copybot/enum/CopyBotCommandName.ts'
 
 const callbacks: CallbackEntry[] = [
   { name: 'playerInitPacket', fn: commonPlayerInitPacketReceived },
@@ -88,53 +89,57 @@ function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
 }
 
 async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
-  const args = data.message.split(' ')
+  const command = data.message.split(' ')
+  if (!command[0].startsWith('.')) {
+    return
+  }
+
+  const commandName = command[0].toLowerCase().slice(1)
+  const commandArgs = command.slice(1)
   const playerId = data.playerId!
 
-  switch (args[0].toLowerCase()) {
-    case '.help':
-      helpCommandReceived(args, playerId)
+  switch (commandName as CopyBotCommandName) {
+    case CopyBotCommandName.Help:
+      helpCommandReceived(commandArgs, playerId)
       break
-    case '.placeall':
-      await placeallCommandReceived(args, playerId)
+    case CopyBotCommandName.PlaceAll:
+      await placeallCommandReceived(commandArgs, playerId)
       break
-    case '.ping':
+    case CopyBotCommandName.Ping:
       sendPrivateChatMessage('pong', playerId)
       break
-    case '.edit':
-      editCommandReceived(args, playerId)
+    case CopyBotCommandName.Edit:
+      editCommandReceived(commandArgs, playerId)
       break
-    case '.flip':
-      flipCommandReceived(args, playerId)
+    case CopyBotCommandName.Flip:
+      flipCommandReceived(commandArgs, playerId)
       break
-    case '.paste':
-      pasteCommandReceived(args, playerId, false)
+    case CopyBotCommandName.Paste:
+      pasteCommandReceived(commandArgs, playerId, false)
       break
-    case '.smartpaste':
-      pasteCommandReceived(args, playerId, true)
+    case CopyBotCommandName.SmartPaste:
+      pasteCommandReceived(commandArgs, playerId, true)
       break
-    case '.undo':
-      undoCommandReceived(args, playerId)
+    case CopyBotCommandName.Undo:
+      undoCommandReceived(commandArgs, playerId)
       break
-    case '.redo':
-      redoCommandReceived(args, playerId)
+    case CopyBotCommandName.Redo:
+      redoCommandReceived(commandArgs, playerId)
       break
-    case '.move':
-      moveCommandReceived(args, playerId)
+    case CopyBotCommandName.Move:
+      moveCommandReceived(commandArgs, playerId)
       break
-    case '.mask':
-      maskCommandReceived(args, playerId)
+    case CopyBotCommandName.Mask:
+      maskCommandReceived(commandArgs, playerId)
       break
-    case '.test':
-      await testCommandReceived(args, playerId)
+    case CopyBotCommandName.Test:
+      await testCommandReceived(commandArgs, playerId)
       break
-    case '.import':
-      await importCommandReceived(args, playerId)
+    case CopyBotCommandName.Import:
+      await importCommandReceived(commandArgs, playerId)
       break
     default:
-      if (args[0].startsWith('.')) {
-        throw new GameError('Unrecognised command. Type .help to see all commands', playerId)
-      }
+      throw new GameError('Unrecognised command. Type .help to see all commands', playerId)
   }
 }
 
@@ -239,11 +244,11 @@ async function importCommandReceived(args: string[], playerId: number) {
   const ERROR_MESSAGE =
     'Correct usage is .import world_id [src_from_x src_from_y src_to_x src_to_y dest_to_x dest_to_y]'
 
-  if (![2, 8].includes(args.length)) {
+  if (![1, 7].includes(args.length)) {
     throw new GameError(ERROR_MESSAGE, playerId)
   }
 
-  const worldId = getWorldIdIfUrl(args[1])
+  const worldId = getWorldIdIfUrl(args[0])
 
   sendGlobalChatMessage(`Importing world from ${worldId}`)
 
@@ -263,10 +268,10 @@ async function importCommandReceived(args: string[], playerId: number) {
     }
   }
 
-  const partialImportUsed = args.length === 8
+  const partialImportUsed = args.length === 7
   let allBlocks: WorldBlock[]
   if (partialImportUsed) {
-    const numberArgs = args.slice(2, 8).map(Number)
+    const numberArgs = args.slice(1, 7).map(Number)
     if (numberArgs.some((n) => !isFinite(n))) {
       throw new GameError(ERROR_MESSAGE, playerId)
     }
@@ -324,7 +329,7 @@ async function testCommandReceived(_args: string[], playerId: number) {
 }
 
 function helpCommandReceived(args: string[], playerId: number) {
-  if (args.length == 1) {
+  if (args.length == 0) {
     sendPrivateChatMessage('Gold coin - select blocks', playerId)
     sendPrivateChatMessage('Blue coin - paste blocks', playerId)
     sendPrivateChatMessage(
@@ -336,23 +341,25 @@ function helpCommandReceived(args: string[], playerId: number) {
     return
   }
 
-  if (args[1].startsWith('.')) {
-    args[1] = args[1].substring(1)
+  let commandName = args[0]
+
+  if (commandName.startsWith('.')) {
+    commandName = commandName.slice(1)
   }
 
-  switch (args[1]) {
-    case 'ping':
+  switch (commandName as CopyBotCommandName) {
+    case CopyBotCommandName.Ping:
       sendPrivateChatMessage('.ping - check if bot is alive by pinging it.', playerId)
       sendPrivateChatMessage(`Example usage: .ping`, playerId)
       break
-    case 'help':
+    case CopyBotCommandName.Help:
       sendPrivateChatMessage(
         '.help [command] - get general help, or if command is specified, get help about command.',
         playerId,
       )
       sendPrivateChatMessage(`Example usage: .help paste`, playerId)
       break
-    case 'edit':
+    case CopyBotCommandName.Edit:
       sendPrivateChatMessage(
         '.edit name find replace - edits selected block name substrings from "find" to "replace".',
         playerId,
@@ -365,17 +372,17 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage('math_op - add, sub, mul or div.', playerId)
       sendPrivateChatMessage('name_find - restricts to blocks with this substring in their name', playerId)
       break
-    case 'flip':
+    case CopyBotCommandName.Flip:
       sendPrivateChatMessage('.flip [h | v] - flips selected blocks horizontally or vertically.', playerId)
       sendPrivateChatMessage(`Example usage: .flip v`, playerId)
       break
-    case 'paste':
+    case CopyBotCommandName.Paste:
       sendPrivateChatMessage('.paste x_times y_times [x_spacing y_spacing] - repeat next paste (x/y)_times.', playerId)
       sendPrivateChatMessage('(x/y)_spacing - gap size to leave between pastes.', playerId)
       sendPrivateChatMessage(`Example usage 1: .paste 2 3`, playerId)
       sendPrivateChatMessage(`Example usage 2: .paste 2 3 4 1`, playerId)
       break
-    case 'smartpaste':
+    case CopyBotCommandName.SmartPaste:
       sendPrivateChatMessage(
         '.smartpaste - same as .paste, but increments special block arguments, when using repeated paste.',
         playerId,
@@ -393,21 +400,21 @@ function helpCommandReceived(args: string[], playerId: number) {
         playerId,
       )
       break
-    case 'undo':
+    case CopyBotCommandName.Undo:
       sendPrivateChatMessage('.undo [count] - undoes last paste performed by bot "count" times', playerId)
       sendPrivateChatMessage(`Example usage 1: .undo`, playerId)
       sendPrivateChatMessage(`Example usage 2: .undo 3`, playerId)
       break
-    case 'redo':
+    case CopyBotCommandName.Redo:
       sendPrivateChatMessage('.redo [count] - redoes last paste performed by bot "count" times', playerId)
       sendPrivateChatMessage(`Example usage 1: .redo`, playerId)
       sendPrivateChatMessage(`Example usage 2: .redo 3`, playerId)
       break
-    case 'move':
+    case CopyBotCommandName.Move:
       sendPrivateChatMessage('.move - enabled move mode, which deletes blocks in last selected area', playerId)
       sendPrivateChatMessage('Move mode lasts until next area selection', playerId)
       break
-    case 'mask':
+    case CopyBotCommandName.Mask:
       sendPrivateChatMessage(
         '.mask [default | background | foreground | overlay | nonair] - masks layers or non empty blocks when pasting',
         playerId,
@@ -419,7 +426,7 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage(`Example usage 2: .mask default nonair (only pastes non empty blocks)`, playerId)
       sendPrivateChatMessage(`Example usage 3: .mask default (resets to default mask)`, playerId)
       break
-    case 'import':
+    case CopyBotCommandName.Import:
       sendPrivateChatMessage('.import world_id [src_from_x src_from_y src_to_x src_to_y dest_to_x dest_to_y]', playerId)
       sendPrivateChatMessage('Copies blocks from world with "world_id" and places them into current world', playerId)
       sendPrivateChatMessage('src_from_(x/y) - top left corner position to copy from', playerId)
@@ -429,7 +436,7 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage(`Example usage 2: .import legacy:PW4gnKMssUb0I 2 4 25 16 2 4`, playerId)
       break
     default:
-      throw new GameError(`Unrecognised command ${args[1]}. Type .help to see all commands`, playerId)
+      throw new GameError(`Unrecognised command ${commandName}. Type .help to see all commands`, playerId)
   }
 }
 
@@ -437,8 +444,8 @@ function undoCommandReceived(args: string[], playerId: number) {
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   let count = 1
-  if (args.length >= 2) {
-    count = Number(args[1])
+  if (args.length >= 1) {
+    count = Number(args[0])
     if (!isFinite(count)) {
       throw new GameError(`Correct usage is .undo [count]`, playerId)
     }
@@ -451,8 +458,8 @@ function redoCommandReceived(args: string[], playerId: number) {
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   let count = 1
-  if (args.length >= 2) {
-    count = Number(args[1])
+  if (args.length >= 1) {
+    count = Number(args[0])
     if (!isFinite(count)) {
       throw new GameError(`Correct usage is .redo [count]`, playerId)
     }
@@ -461,12 +468,12 @@ function redoCommandReceived(args: string[], playerId: number) {
   performRedo(botData, playerId, count)
 }
 
-function pasteCommandReceived(args: string[], playerId: number, smartPaste: boolean) {
+export function pasteCommandReceived(args: string[], playerId: number, smartPaste: boolean) {
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   const ERROR_MESSAGE = `Correct usage is ${smartPaste ? '.smartpaste' : '.paste'} x_times y_times [x_spacing y_spacing]`
-  const repeatX = Number(args[1])
-  const repeatY = Number(args[2])
+  const repeatX = Number(args[0])
+  const repeatY = Number(args[1])
   if (!isFinite(repeatX) || !isFinite(repeatY)) {
     throw new GameError(ERROR_MESSAGE, playerId)
   }
@@ -474,8 +481,8 @@ function pasteCommandReceived(args: string[], playerId: number, smartPaste: bool
   let spacingX = 0
   let spacingY = 0
   if (args.length >= 4) {
-    spacingX = Number(args[3])
-    spacingY = Number(args[4])
+    spacingX = Number(args[2])
+    spacingY = Number(args[3])
     if (!isFinite(spacingX) || !isFinite(spacingY)) {
       throw new GameError(ERROR_MESSAGE, playerId)
     }
@@ -518,7 +525,7 @@ function editCommandReceived(args: string[], playerId: number) {
   }
 
   let editedBlocks: WorldBlock[] = []
-  switch (args[1]?.toLowerCase()) {
+  switch (args[0]?.toLowerCase()) {
     case 'name':
       editedBlocks = editNameCommand(args, playerId)
       break
@@ -545,8 +552,8 @@ function editCommandReceived(args: string[], playerId: number) {
 }
 
 function editNameCommand(args: string[], playerId: number): WorldBlock[] {
-  let searchFor = args[2]
-  let replaceWith = args[3]
+  let searchFor = args[1]
+  let replaceWith = args[2]
   if (searchFor === '' || replaceWith === '') {
     throw new GameError(`Correct usage is .edit name find replace`, playerId)
   }
@@ -594,8 +601,8 @@ function editNameCommand(args: string[], playerId: number): WorldBlock[] {
 }
 
 function editIdCommand(args: string[], playerId: number): WorldBlock[] {
-  const searchForId = Number(args[2])
-  const replaceWithId = Number(args[3])
+  const searchForId = Number(args[1])
+  const replaceWithId = Number(args[2])
   if (isNaN(searchForId) || isNaN(replaceWithId)) {
     throw new GameError(`Correct usage is .edit id find_id replace_id`, playerId)
   }
@@ -650,12 +657,12 @@ function editIdCommand(args: string[], playerId: number): WorldBlock[] {
 type mathOp = (a: number, b: number) => number
 
 function editArithmeticCommand(args: string[], playerId: number, op: mathOp, opPast: string): WorldBlock[] {
-  const amount = Number(args[2])
+  const amount = Number(args[1])
   if (isNaN(amount)) {
     throw new GameError(`Correct usage is .edit math_op number [name_find]`, playerId)
   }
 
-  const searchFor = args[3]?.toUpperCase() ?? ''
+  const searchFor = args[2]?.toUpperCase() ?? ''
   let counter = 0
 
   const editedBlocks: WorldBlock[] = []
@@ -690,14 +697,14 @@ function editArithmeticCommand(args: string[], playerId: number, op: mathOp, opP
 }
 
 function editDivideCommand(args: string[], playerId: number): WorldBlock[] {
-  if (Number(args[2]) <= 0) {
+  if (Number(args[1]) <= 0) {
     throw new GameError(`Cannot divide by zero or negative numbers.`, playerId)
   }
   return editArithmeticCommand(args, playerId, (a, b) => a / b, 'divided')
 }
 
 function editMultiplyCommand(args: string[], playerId: number): WorldBlock[] {
-  if (Number(args[2]) < 0) {
+  if (Number(args[1]) < 0) {
     throw new GameError(`Cannot multiply by negative numbers.`, playerId)
   }
   return editArithmeticCommand(args, playerId, (a, b) => a * b, 'multiplied')
@@ -714,10 +721,13 @@ function editSubCommand(args: string[], playerId: number): WorldBlock[] {
 function flipCommandReceived(args: string[], playerId: number) {
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
-  if (args.length !== 2) {
+  if (args.length !== 1) {
     throw new GameError(`Correct usage is .flip [h | v]`, playerId)
   }
-  if (args[1] !== 'h' && args[1] !== 'v') {
+
+  const flipMode = args[0].toLowerCase()
+
+  if (!['h', 'v'].includes(flipMode)) {
     throw new GameError(`Correct usage is .flip [h | v]`, playerId)
   }
 
@@ -726,7 +736,7 @@ function flipCommandReceived(args: string[], playerId: number) {
   const botData = getPlayerCopyBotData()[playerId]
 
   botData.selectedBlocks = botData.selectedBlocks.map((worldBlock) => {
-    if (args[1] === 'h') {
+    if (flipMode === 'h') {
       worldBlock.pos.x = botData.selectionLocalBottomRightPos.x - worldBlock.pos.x
     } else {
       worldBlock.pos.y = botData.selectionLocalBottomRightPos.y - worldBlock.pos.y
@@ -947,7 +957,7 @@ function resetMoveModeData(botData: CopyBotData) {
   botData.replacedByLastMoveOperationBlocks = []
 }
 
-function selectBlocks(botData: CopyBotData, blockPos: Point, playerId: number) {
+export function selectBlocks(botData: CopyBotData, blockPos: Point, playerId: number) {
   let selectedTypeText: string
   if ([CopyBotState.NONE, CopyBotState.SELECTED_TO].includes(botData.botState)) {
     selectedTypeText = 'from'
@@ -1034,7 +1044,7 @@ function worldBlockPlacedPacketReceived(
   }
 }
 
-function getBotData(playerId: number) {
+export function getBotData(playerId: number) {
   if (!(playerId in getPlayerCopyBotData())) {
     getPlayerCopyBotData()[playerId] = createBotData()
   }

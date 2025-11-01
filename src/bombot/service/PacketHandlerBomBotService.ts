@@ -53,6 +53,7 @@ import { BomBotSpecialBombData } from '@/bombot/type/BomBotSpecialBombData.ts'
 import { BomBotSpecialBomb } from '@/bombot/enum/BomBotSpecialBomb.ts'
 import { BomBotBombType } from '@/bombot/enum/BomBotBombType.ts'
 import { SPECIAL_BOMB_COUNT } from '@/bombot/constant/General.ts'
+import { BomBotCommandName } from '@/bombot/enum/BomBotCommandName.ts'
 
 const blockTypeDataStartPos = vec2(20, 361) // inclusive x
 const blockTypeDataEndPos = vec2(389, 361) // exclusive x
@@ -448,35 +449,39 @@ function mergePlayerStats(playerId: number) {
 }
 
 async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
-  const args = data.message.split(' ')
+  const command = data.message.split(' ')
+  if (!command[0].startsWith('.')) {
+    return
+  }
+
+  const commandName = command[0].toLowerCase().slice(1)
+  const commandArgs = command.slice(1)
   const playerId = data.playerId!
 
-  switch (args[0].toLowerCase()) {
-    case '.help':
-      helpCommandReceived(args, playerId)
+  switch (commandName as BomBotCommandName) {
+    case BomBotCommandName.Help:
+      helpCommandReceived(commandArgs, playerId)
       break
-    case '.ping':
+    case BomBotCommandName.Ping:
       sendPrivateChatMessage('pong', playerId)
       break
-    case '.start':
-      await startCommandReceived(args, playerId, true)
+    case BomBotCommandName.Start:
+      await startCommandReceived(commandArgs, playerId, true)
       break
-    case '.quickstart':
-      await startCommandReceived(args, playerId, false)
+    case BomBotCommandName.QuickStart:
+      await startCommandReceived(commandArgs, playerId, false)
       break
-    case '.stop':
-      await stopCommandReceived(args, playerId)
+    case BomBotCommandName.Stop:
+      await stopCommandReceived(commandArgs, playerId)
       break
-    case '.afk':
-      afkCommandReceived(args, playerId)
+    case BomBotCommandName.Afk:
+      afkCommandReceived(commandArgs, playerId)
       break
-    case '.placeallbombot':
-      await placeallbombotCommandReceived(args, playerId)
+    case BomBotCommandName.PlaceAllBomBot:
+      await placeallbombotCommandReceived(commandArgs, playerId)
       break
     default:
-      if (args[0].startsWith('.')) {
-        throw new GameError('Unrecognised command. Type .help to see all commands', playerId)
-      }
+      throw new GameError('Unrecognised command. Type .help to see all commands', playerId)
   }
 }
 
@@ -508,37 +513,39 @@ function helpCommandReceived(args: string[], playerId: number) {
     return
   }
 
-  if (args[1].startsWith('.')) {
-    args[1] = args[1].substring(1)
+  let commandName = args[0]
+
+  if (commandName.startsWith('.')) {
+    commandName = commandName.slice(1)
   }
 
-  switch (args[1]) {
-    case 'ping':
+  switch (commandName as BomBotCommandName) {
+    case BomBotCommandName.Ping:
       sendPrivateChatMessage('.ping - check if bot is alive by pinging it.', playerId)
       sendPrivateChatMessage(`Example usage: .ping`, playerId)
       break
-    case 'help':
+    case BomBotCommandName.Help:
       sendPrivateChatMessage(
         '.help [command] - get general help, or if command is specified, get help about command.',
         playerId,
       )
       sendPrivateChatMessage(`Example usage: .help afk`, playerId)
       break
-    case 'start':
+    case BomBotCommandName.Start:
       sendPrivateChatMessage('.start - starts BomBot game.', playerId)
       break
-    case 'quickstart':
+    case BomBotCommandName.QuickStart:
       sendPrivateChatMessage('.start - starts BomBot game faster by not placing BomBot world', playerId)
       sendPrivateChatMessage('This can be used to customise BomBot world', playerId)
       break
-    case 'stop':
+    case BomBotCommandName.Stop:
       sendPrivateChatMessage('.stop - stops BomBot game.', playerId)
       break
-    case 'afk':
+    case BomBotCommandName.Afk:
       sendPrivateChatMessage(".afk - tells bot that you're afk or not.", playerId)
       break
     default:
-      throw new GameError(`Unrecognised command ${args[1]}. Type .help to see all commands`, playerId)
+      throw new GameError(`Unrecognised command ${commandName}. Type .help to see all commands`, playerId)
   }
 }
 
