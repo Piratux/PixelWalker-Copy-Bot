@@ -35,7 +35,7 @@ import { performRuntimeTests } from '@/test/RuntimeTests.ts'
 import { ProtoGen } from 'pw-js-api'
 import {
   commonPlayerInitPacketReceived,
-  createEmptyBlocks,
+  createEmptyBlocksFullWorldSize,
   handlePlaceBlocksResult,
   hotReloadCallbacks,
   requirePlayerAndBotEditPermission,
@@ -115,10 +115,10 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       flipCommandReceived(commandArgs, playerId)
       break
     case CopyBotCommandName.Paste:
-      pasteCommandReceived(commandArgs, playerId, false)
+      void pasteCommandReceived(commandArgs, playerId, false)
       break
     case CopyBotCommandName.SmartPaste:
-      pasteCommandReceived(commandArgs, playerId, true)
+      void pasteCommandReceived(commandArgs, playerId, true)
       break
     case CopyBotCommandName.Undo:
       undoCommandReceived(commandArgs, playerId)
@@ -301,7 +301,7 @@ async function importCommandReceived(args: string[], playerId: number) {
     const partialBlocks = getDeserialisedStructureSection(blocksFromAnotherWorld, srcFromX, srcFromY, srcToX, srcToY)
     allBlocks = convertDeserializedStructureToWorldBlocks(partialBlocks, vec2(destToX, destToY))
   } else {
-    const emptyBlocks = createEmptyBlocks(getPwGameWorldHelper())
+    const emptyBlocks = createEmptyBlocksFullWorldSize(getPwGameWorldHelper())
     const worldData = getImportedFromPwlvlData(bufferToArrayBuffer(blocksFromAnotherWorld.toBuffer()))
     const emptyBlocksWorldBlocks = convertDeserializedStructureToWorldBlocks(emptyBlocks)
     const worldDataWorldBlocks = convertDeserializedStructureToWorldBlocks(worldData)
@@ -468,7 +468,7 @@ function redoCommandReceived(args: string[], playerId: number) {
   performRedo(botData, playerId, count)
 }
 
-export function pasteCommandReceived(args: string[], playerId: number, smartPaste: boolean) {
+export async function pasteCommandReceived(args: string[], playerId: number, smartPaste: boolean) {
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   const ERROR_MESSAGE = `Correct usage is ${smartPaste ? '.smartpaste' : '.paste'} x_times y_times [x_spacing y_spacing]`
@@ -502,7 +502,7 @@ export function pasteCommandReceived(args: string[], playerId: number, smartPast
       (spacingX !== 0 && spacingY !== 0 ? ` with spacing ${spacingX}x${spacingY}` : ''),
     playerId,
   )
-  pasteBlocks(botData, botData.selectedFromPos)
+  await pasteBlocks(botData, botData.selectedFromPos)
 }
 
 function placeEditedBlocks(playerId: number, editedBlocks: WorldBlock[]) {
@@ -890,7 +890,7 @@ function filterByNonAirMask(allBlocks: WorldBlock[], botData: CopyBotData) {
   })
 }
 
-function pasteBlocks(botData: CopyBotData, blockPos: Point) {
+async function pasteBlocks(botData: CopyBotData, blockPos: Point) {
   try {
     let allBlocks: WorldBlock[] = []
 
@@ -946,7 +946,7 @@ function pasteBlocks(botData: CopyBotData, blockPos: Point) {
     allBlocks = applyMoveMode(botData, allBlocks)
 
     addUndoItemWorldBlock(botData, allBlocks)
-    void placeMultipleBlocks(allBlocks)
+    await placeMultipleBlocks(allBlocks)
   } finally {
     botData.repeatVec = vec2(1, 1)
   }
@@ -1113,13 +1113,13 @@ function blueCoinBlockPlaced(
 
   if (botData.moveEnabled) {
     const blockPos = data.positions[data.positions.length - 1]
-    pasteBlocks(botData, blockPos)
+    void pasteBlocks(botData, blockPos)
   } else {
     // We want to prevent paste happening when player accidentally uses fill or brush tool
     // But simultaneously, if player drags blue coin across the map, there could be multiple blue coins in single packet
     // This is not ideal, but good enough
     for (const blockPos of data.positions) {
-      pasteBlocks(botData, blockPos)
+      void pasteBlocks(botData, blockPos)
     }
   }
 }

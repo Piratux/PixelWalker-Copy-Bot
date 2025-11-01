@@ -1,10 +1,14 @@
 import { DeserialisedStructure, StructureHelper } from 'pw-js-world'
 import { placeWorldDataBlocks } from '@/core/service/WorldService.ts'
 import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
-import { createEmptyBlocks, handlePlaceBlocksResult, requireBotEditPermission } from '@/core/service/PwClientService.ts'
+import {
+  createEmptyBlocksFullWorldSize,
+  handlePlaceBlocksResult,
+  requireBotEditPermission,
+} from '@/core/service/PwClientService.ts'
 
 export function getImportedFromPwlvlData(fileData: ArrayBuffer): DeserialisedStructure {
-  const blocks = createEmptyBlocks(getPwGameWorldHelper())
+  const blocks = createEmptyBlocksFullWorldSize(getPwGameWorldHelper())
   const importedBlocks = StructureHelper.read(Buffer.from(fileData))
   const layersInImportedBlocks = importedBlocks.blocks.length
   const width = Math.min(getPwGameWorldHelper().width, importedBlocks.width)

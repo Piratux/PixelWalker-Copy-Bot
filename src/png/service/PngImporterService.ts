@@ -2,7 +2,11 @@ import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
 import { placeLayerDataBlocks } from '@/core/service/WorldService.ts'
 import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
-import { createEmptyBlocks, handlePlaceBlocksResult, requireBotEditPermission } from '@/core/service/PwClientService.ts'
+import {
+  createEmptyBlocksFullWorldSize,
+  handlePlaceBlocksResult,
+  requireBotEditPermission,
+} from '@/core/service/PwClientService.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { PNG } from 'pngjs'
 
@@ -70,7 +74,7 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
     }
   }
 
-  const blocks = createEmptyBlocks(getPwGameWorldHelper())
+  const blocks = createEmptyBlocksFullWorldSize(getPwGameWorldHelper())
 
   for (const [hex, locations] of colorMap) {
     const block = new Block(PwBlockName.CUSTOM_SOLID_BG, [hex])

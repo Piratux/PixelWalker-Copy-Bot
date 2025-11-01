@@ -15,6 +15,7 @@ import { AlertService } from '@/core/service/AlertService.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { useEelvlClientStore } from '@/eelvl/store/EelvlClientStore.ts'
 import { useEerClientStore } from '@/eer/store/EerClientStore.ts'
+import { vec2 } from '@basementuniverse/vec'
 
 export async function authenticate(pwApiClient: PWApiClient): Promise<void> {
   const authenticationResult = await pwApiClient.authenticate()
@@ -125,9 +126,9 @@ async function getPwBlocks(): Promise<ListBlockResult[]> {
     }))
 }
 
-export function createEmptyBlocks(pwGameWorldHelper: PWGameWorldHelper): DeserialisedStructure {
-  const width = pwGameWorldHelper.width
-  const height = pwGameWorldHelper.height
+export function createEmptyBlocks(size: vec2): DeserialisedStructure {
+  const width = size.x
+  const height = size.y
   const pwBlock3DArray: [Block[][], Block[][], Block[][]] = [[], [], []]
   for (let layer = 0; layer < TOTAL_PW_LAYERS; layer++) {
     pwBlock3DArray[layer] = []
@@ -141,8 +142,12 @@ export function createEmptyBlocks(pwGameWorldHelper: PWGameWorldHelper): Deseria
   return new DeserialisedStructure(pwBlock3DArray, { width: width, height: height })
 }
 
+export function createEmptyBlocksFullWorldSize(pwGameWorldHelper: PWGameWorldHelper): DeserialisedStructure {
+  return createEmptyBlocks(vec2(pwGameWorldHelper.width, pwGameWorldHelper.height))
+}
+
 export async function clearWorld(): Promise<void> {
-  const emptyBlocks = createEmptyBlocks(getPwGameWorldHelper())
+  const emptyBlocks = createEmptyBlocksFullWorldSize(getPwGameWorldHelper())
   await placeWorldDataBlocks(emptyBlocks)
 }
 
