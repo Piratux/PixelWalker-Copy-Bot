@@ -31,7 +31,6 @@ import {
 } from '@/core/service/WorldService.ts'
 import { addUndoItemWorldBlock, performRedo, performUndo } from '@/copybot/service/UndoRedoService.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
-import { performRuntimeTests } from '@/test/RuntimeTests.ts'
 import { ProtoGen } from 'pw-js-api'
 import {
   commonPlayerInitPacketReceived,
@@ -102,11 +101,8 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
     case CopyBotCommandName.Help:
       helpCommandReceived(commandArgs, playerId)
       break
-    case CopyBotCommandName.PlaceAll:
-      await placeallCommandReceived(commandArgs, playerId)
-      break
     case CopyBotCommandName.Ping:
-      sendPrivateChatMessage('pong', playerId)
+      sendPrivateChatMessage('ponga123', playerId)
       break
     case CopyBotCommandName.Edit:
       editCommandReceived(commandArgs, playerId)
@@ -132,18 +128,22 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
     case CopyBotCommandName.Mask:
       maskCommandReceived(commandArgs, playerId)
       break
-    case CopyBotCommandName.Test:
-      await testCommandReceived(commandArgs, playerId)
-      break
     case CopyBotCommandName.Import:
       await importCommandReceived(commandArgs, playerId)
+      break
+    // DEV commands
+    case CopyBotCommandName.PlaceAll:
+      await placeallCommandReceived(commandArgs, playerId)
+      break
+    case CopyBotCommandName.PrintBlocks:
+      printblocksCommandReceived(commandArgs, playerId)
       break
     default:
       throw new GameError('Unrecognised command. Type .help to see all commands', playerId)
   }
 }
 
-function maskCommandReceived(args: string[], playerId: number) {
+export function maskCommandReceived(args: string[], playerId: number) {
   const botData = getPlayerCopyBotData()[playerId]
 
   botData.maskBackgroundEnabled = false
@@ -188,7 +188,7 @@ function maskCommandReceived(args: string[], playerId: number) {
   }
 }
 
-function moveCommandReceived(_args: string[], playerId: number) {
+export function moveCommandReceived(_args: string[], playerId: number) {
   const botData = getPlayerCopyBotData()[playerId]
   botData.moveEnabled = !botData.moveEnabled
 
@@ -234,7 +234,31 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
   }
 }
 
-async function importCommandReceived(args: string[], playerId: number) {
+function printblocksCommandReceived(_args: string[], playerId: number) {
+  requireDeveloper(playerId)
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+
+  const botData = getPlayerCopyBotData()[playerId]
+  console.log(
+    botData.selectedBlocks
+      .filter((block) => block.block.bId !== 0)
+      .map((block) => {
+        let result = ''
+        const pos = vec2.add(block.pos, botData.selectedFromPos)
+        result += `{ pos: vec2(${pos.x}, ${pos.y})`
+        result += `, layer: LayerType.${LayerType[block.layer]}`
+        result += `, block: new Block(PwBlockName.${block.block.name}`
+        if (block.block.args.length > 0) {
+          result += `, ${JSON.stringify(block.block.args)}`
+        }
+        result += `) },`
+        return result
+      })
+      .join('\n'),
+  )
+}
+
+export async function importCommandReceived(args: string[], playerId: number) {
   if (!isDeveloper(playerId) && !isWorldOwner(playerId)) {
     throw new GameError('Command is exclusive to world owners', playerId)
   }
@@ -317,18 +341,7 @@ async function importCommandReceived(args: string[], playerId: number) {
   handlePlaceBlocksResult(success)
 }
 
-async function testCommandReceived(_args: string[], playerId: number) {
-  requireDeveloper(playerId)
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
-
-  if (getPwGameWorldHelper().width < 200 || getPwGameWorldHelper().height < 200) {
-    throw new GameError('To perform tests, world must be at least 200x200 size.', playerId)
-  }
-
-  await performRuntimeTests()
-}
-
-function helpCommandReceived(args: string[], playerId: number) {
+export function helpCommandReceived(args: string[], playerId: number) {
   if (args.length == 0) {
     sendPrivateChatMessage('Gold coin - select blocks', playerId)
     sendPrivateChatMessage('Blue coin - paste blocks', playerId)
@@ -440,7 +453,7 @@ function helpCommandReceived(args: string[], playerId: number) {
   }
 }
 
-function undoCommandReceived(args: string[], playerId: number) {
+export function undoCommandReceived(args: string[], playerId: number) {
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   let count = 1
@@ -454,7 +467,7 @@ function undoCommandReceived(args: string[], playerId: number) {
   performUndo(botData, playerId, count)
 }
 
-function redoCommandReceived(args: string[], playerId: number) {
+export function redoCommandReceived(args: string[], playerId: number) {
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   let count = 1
@@ -517,7 +530,7 @@ function placeEditedBlocks(playerId: number, editedBlocks: WorldBlock[]) {
   void placeMultipleBlocks(editedBlocks)
 }
 
-function editCommandReceived(args: string[], playerId: number) {
+export function editCommandReceived(args: string[], playerId: number) {
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   if (getPlayerCopyBotData()[playerId].selectedBlocks.length === 0) {
@@ -718,7 +731,7 @@ function editSubCommand(args: string[], playerId: number): WorldBlock[] {
   return editArithmeticCommand(args, playerId, (a, b) => a - b, 'subtracted')
 }
 
-function flipCommandReceived(args: string[], playerId: number) {
+export function flipCommandReceived(args: string[], playerId: number) {
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   if (args.length !== 1) {

@@ -51,6 +51,18 @@ To have custom config only when running locally:
 
 NOTE: All env file entries must start with `VITE_`, otherwise value will be undefined in code.
 
+### Run tests
+
+Before running tests, you need to setup the following .env variables:
+
+- VITE_TEST_RUN_PW_ACCOUNT_EMAIL
+- VITE_TEST_RUN_PW_ACCOUNT_PASSWORD
+- VITE_TEST_RUN_PW_WORLD_ID
+
+```
+npm run test
+```
+
 ### Test production build
 
 At the root of project run:

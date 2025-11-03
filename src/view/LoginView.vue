@@ -5,7 +5,6 @@ import PiTextField from '@/component/PiTextField.vue'
 import PiButton from '@/component/PiButton.vue'
 import { VForm } from 'vuetify/components'
 import { useRouter } from 'vue-router'
-import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { getWorldIdIfUrl } from '@/core/util/WorldIdExtractor.ts'
 import { initPwClasses } from '@/core/service/PwClientService.ts'
 import { withLoading } from '@/core/util/LoaderProxy.ts'
@@ -40,16 +39,9 @@ async function onConnectButtonClick() {
       return
     }
 
-    usePwClientStore().worldId = worldId.value
-    usePwClientStore().email = email.value
-    usePwClientStore().password = password.value
-    usePwClientStore().secretEditKey = secretEditKey.value
-    usePwClientStore().botType = botType.value
-
-    await initPwClasses(botType.value)
+    await initPwClasses(worldId.value, email.value, password.value, secretEditKey.value, botType.value)
 
     await router.push({ name: RouteName.Home })
-    usePwClientStore().isConnected = true
   })
 }
 

@@ -85,7 +85,19 @@ function initEerBlocks(eerBlocks: ListBlockResult[]) {
   })
 }
 
-export async function initPwClasses(botType: BotType) {
+export async function initPwClasses(
+  worldId: string,
+  email: string,
+  password: string,
+  secretEditKey: string,
+  botType: BotType,
+) {
+  usePwClientStore().worldId = worldId
+  usePwClientStore().email = email
+  usePwClientStore().password = password
+  usePwClientStore().secretEditKey = secretEditKey
+  usePwClientStore().botType = botType
+
   usePwClientStore().pwApiClient = new PWApiClient(usePwClientStore().email, usePwClientStore().password, {
     endpoints: {
       Api: import.meta.env.VITE_PW_API_URL,
@@ -113,6 +125,11 @@ export async function initPwClasses(botType: BotType) {
   initEerBlocks(EER_MAPPINGS)
 
   usePwClientStore().roomType = (await getPwApiClient().getRoomTypes())[0] ?? ''
+
+  await waitUntil(() => usePwClientStore().isConnected, {
+    timeout: 5000,
+    intervalBetweenAttempts: 1000,
+  })
 }
 
 async function getPwBlocks(): Promise<ListBlockResult[]> {
@@ -225,6 +242,7 @@ export function hotReloadCallbacks(callbacks: CallbackEntry[]) {
 export function commonPlayerInitPacketReceived() {
   getPwGameClient().send('playerInitReceived')
   void enterEditKey(getPwGameClient(), usePwClientStore().secretEditKey)
+  usePwClientStore().isConnected = true
 }
 
 export function handlePlaceBlocksResult(success: boolean): void {

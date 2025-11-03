@@ -3,10 +3,15 @@ import { getImportedFromPwlvlData } from '@/pwlvl/service/PwlvlImporterService.t
 import { deepStrictEqual } from 'node:assert'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { getImportedFromEelvlData } from '@/eelvl/service/EelvlImporterService.ts'
-import { placeWorldDataBlocks } from '@/core/service/WorldService.ts'
-import { clearWorld } from '@/core/service/PwClientService.ts'
+import { placeMultipleBlocks, placeWorldDataBlocks } from '@/core/service/WorldService.ts'
+import { clearWorld, createEmptyBlocks } from '@/core/service/PwClientService.ts'
 import { getImportedFromPngData } from '@/png/service/PngImporterService.ts'
 import { getImportedFromMidiData } from '@/midi/service/MidiImporterService.ts'
+import { WorldBlock } from '@/core/type/WorldBlock.ts'
+import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
+import { vec2 } from '@basementuniverse/vec'
+import { getBotData, selectBlocks } from '@/copybot/service/PacketHandlerCopyBotService.ts'
+import { Promisable } from '@/core/util/Promise.ts'
 
 export function compareDeserialisedStructureData(
   receivedData: DeserialisedStructure,
@@ -66,4 +71,40 @@ export async function placePwLvlblocks(fileUrl: string): Promise<DeserialisedStr
   }
 
   return expectedData
+}
+
+export function verifyExpectedBlocks(expectedOutputBlocks: WorldBlock[], areaSize = vec2(10, 10)) {
+  const currentBlocks = getPwGameWorldHelper().sectionBlocks(0, 0, areaSize.x - 1, areaSize.y - 1)
+  const expectedBlocks = createEmptyBlocks(areaSize)
+  for (const worldBlock of expectedOutputBlocks) {
+    expectedBlocks.blocks[worldBlock.layer][worldBlock.pos.x][worldBlock.pos.y] = worldBlock.block
+  }
+
+  compareDeserialisedStructureData(currentBlocks, expectedBlocks)
+}
+
+export function selectArea(from: vec2, to: vec2) {
+  const playerId = getPwGameWorldHelper().botPlayerId
+  const botData = getBotData(playerId)
+
+  selectBlocks(botData, from, playerId)
+  selectBlocks(botData, to, playerId)
+}
+
+export async function runSelectCommandTest(
+  inputBlocks: WorldBlock[],
+  expectedOutputBlocks: WorldBlock[],
+  selectFrom: vec2,
+  selectTo: vec2,
+  command: () => Promisable<void>,
+) {
+  const testAreaSize = vec2(10, 10)
+  const clearTestAreaBlocks = createEmptyBlocks(testAreaSize)
+  await placeWorldDataBlocks(clearTestAreaBlocks)
+
+  await placeMultipleBlocks(inputBlocks)
+  selectArea(selectFrom, selectTo)
+  await command()
+
+  verifyExpectedBlocks(expectedOutputBlocks, testAreaSize)
 }

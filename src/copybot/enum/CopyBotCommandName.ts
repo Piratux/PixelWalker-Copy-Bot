@@ -1,6 +1,5 @@
 export enum CopyBotCommandName {
   Help = 'help',
-  PlaceAll = 'placeall',
   Ping = 'ping',
   Edit = 'edit',
   Flip = 'flip',
@@ -10,6 +9,7 @@ export enum CopyBotCommandName {
   Redo = 'redo',
   Move = 'move',
   Mask = 'mask',
-  Test = 'test',
   Import = 'import',
+  PlaceAll = 'placeall',
+  PrintBlocks = 'printblocks',
 }

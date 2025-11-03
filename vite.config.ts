@@ -5,6 +5,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import eslint from 'vite-plugin-eslint2'
 import checker from 'vite-plugin-checker'
+import { playwright } from '@vitest/browser-playwright'
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
@@ -35,6 +36,14 @@ export default defineConfig(() => {
 
     resolve: {
       alias: [{ find: '@', replacement: path.resolve(__dirname, 'src') }],
+    },
+    test: {
+      browser: {
+        enabled: true,
+        provider: playwright(),
+        // https://vitest.dev/guide/browser/playwright
+        instances: [{ browser: 'chromium' }],
+      },
     },
   }
 })
