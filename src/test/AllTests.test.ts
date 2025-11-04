@@ -29,6 +29,7 @@ describe.sequential('Tests', () => {
       throw new Error('To perform tests, world must be at least 200x200 size.')
     }
   })
+
   afterAll(() => {
     console.log('Disconnecting PwGameClient and resetting stores after test...')
     getPwGameClient().disconnect(false)
@@ -36,6 +37,7 @@ describe.sequential('Tests', () => {
     // NOTE: Could not get this to work, because .$reset() call in "pinia._s.forEach((store) => store.$reset())" errors out for some reason
     // resetAllStores()
   })
+
   describe.sequential('.flip', () => {
     test('.flip h', async () => {
       const playerId = getPwGameWorldHelper().botPlayerId
@@ -71,6 +73,219 @@ describe.sequential('Tests', () => {
       ]
       await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(1, 2), () =>
         flipCommandReceived(['v'], playerId),
+      )
+    })
+  })
+
+  describe.sequential('.paste', () => {
+    test('.paste 3 1', async () => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [2]) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(2, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+      ]
+      await runSelectCommandTest(
+        inputBlocks,
+        expectedOutputBlocks,
+        vec2(0, 0),
+        vec2(0, 0),
+        async () => await pasteCommandReceived(['3', '1'], playerId, false),
+      )
+    })
+
+    test('.paste 1 3', async () => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(0, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [2]) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(0, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(0, 2), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+      ]
+      await runSelectCommandTest(
+        inputBlocks,
+        expectedOutputBlocks,
+        vec2(0, 0),
+        vec2(0, 0),
+        async () => await pasteCommandReceived(['1', '3'], playerId, false),
+      )
+    })
+
+    test('.paste 2 2', async () => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [2]) },
+        { pos: vec2(0, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [3]) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(0, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(1, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+      ]
+      await runSelectCommandTest(
+        inputBlocks,
+        expectedOutputBlocks,
+        vec2(0, 0),
+        vec2(0, 0),
+        async () => await pasteCommandReceived(['2', '2'], playerId, false),
+      )
+    })
+
+    test('.paste 2 2 3 1', async () => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(2, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [2]) },
+        { pos: vec2(0, 4), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [3]) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(2, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(0, 4), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(2, 4), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+      ]
+      await runSelectCommandTest(
+        inputBlocks,
+        expectedOutputBlocks,
+        vec2(0, 0),
+        vec2(0, 0),
+        async () => await pasteCommandReceived(['2', '2', '1', '3'], playerId, false),
+      )
+    })
+
+    test('.paste -3 1', async () => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(2, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [2]) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(2, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+      ]
+      await runSelectCommandTest(
+        inputBlocks,
+        expectedOutputBlocks,
+        vec2(2, 0),
+        vec2(2, 0),
+        async () => await pasteCommandReceived(['-3', '1'], playerId, false),
+      )
+    })
+
+    test('.paste 1 -3', async () => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 2), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(0, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [2]) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 2), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(0, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+      ]
+      await runSelectCommandTest(
+        inputBlocks,
+        expectedOutputBlocks,
+        vec2(0, 2),
+        vec2(0, 2),
+        async () => await pasteCommandReceived(['1', '-3'], playerId, false),
+      )
+    })
+
+    test('.paste -2 -2', async () => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(1, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [2]) },
+        { pos: vec2(0, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [3]) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(1, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(0, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+      ]
+      await runSelectCommandTest(
+        inputBlocks,
+        expectedOutputBlocks,
+        vec2(1, 1),
+        vec2(1, 1),
+        async () => await pasteCommandReceived(['-2', '-2'], playerId, false),
+      )
+    })
+
+    test('.paste -2 -2 1 3', async () => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(2, 4), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(2, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [2]) },
+        { pos: vec2(0, 4), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [3]) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(2, 4), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(2, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(0, 4), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+      ]
+      await runSelectCommandTest(
+        inputBlocks,
+        expectedOutputBlocks,
+        vec2(2, 4),
+        vec2(2, 4),
+        async () => await pasteCommandReceived(['-2', '-2', '1', '3'], playerId, false),
+      )
+    })
+
+    test('.paste 3 2 (block mix)', async () => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GREEN) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(1, 3), layer: LayerType.Background, block: new Block(PwBlockName.MONSTER_SCALES_RED_LIGHT_BG) },
+        { pos: vec2(2, 1), layer: LayerType.Overlay, block: new Block(PwBlockName.LIQUID_WATER) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GREEN) },
+        { pos: vec2(0, 4), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GREEN) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(1, 3), layer: LayerType.Background, block: new Block(PwBlockName.MONSTER_SCALES_RED_LIGHT_BG) },
+        { pos: vec2(1, 4), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(1, 7), layer: LayerType.Background, block: new Block(PwBlockName.MONSTER_SCALES_RED_LIGHT_BG) },
+        { pos: vec2(2, 1), layer: LayerType.Overlay, block: new Block(PwBlockName.LIQUID_WATER) },
+        { pos: vec2(2, 5), layer: LayerType.Overlay, block: new Block(PwBlockName.LIQUID_WATER) },
+        { pos: vec2(3, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GREEN) },
+        { pos: vec2(3, 4), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GREEN) },
+        { pos: vec2(4, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(4, 3), layer: LayerType.Background, block: new Block(PwBlockName.MONSTER_SCALES_RED_LIGHT_BG) },
+        { pos: vec2(4, 4), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(4, 7), layer: LayerType.Background, block: new Block(PwBlockName.MONSTER_SCALES_RED_LIGHT_BG) },
+        { pos: vec2(5, 1), layer: LayerType.Overlay, block: new Block(PwBlockName.LIQUID_WATER) },
+        { pos: vec2(5, 5), layer: LayerType.Overlay, block: new Block(PwBlockName.LIQUID_WATER) },
+        { pos: vec2(6, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GREEN) },
+        { pos: vec2(6, 4), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GREEN) },
+        { pos: vec2(7, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(7, 3), layer: LayerType.Background, block: new Block(PwBlockName.MONSTER_SCALES_RED_LIGHT_BG) },
+        { pos: vec2(7, 4), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
+        { pos: vec2(7, 7), layer: LayerType.Background, block: new Block(PwBlockName.MONSTER_SCALES_RED_LIGHT_BG) },
+        { pos: vec2(8, 1), layer: LayerType.Overlay, block: new Block(PwBlockName.LIQUID_WATER) },
+        { pos: vec2(8, 5), layer: LayerType.Overlay, block: new Block(PwBlockName.LIQUID_WATER) },
+      ]
+      await runSelectCommandTest(
+        inputBlocks,
+        expectedOutputBlocks,
+        vec2(0, 0),
+        vec2(2, 3),
+        async () => await pasteCommandReceived(['3', '2'], playerId, false),
       )
     })
   })
