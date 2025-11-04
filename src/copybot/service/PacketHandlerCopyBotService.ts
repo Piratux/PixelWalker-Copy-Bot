@@ -1014,10 +1014,10 @@ export function selectBlocks(botData: CopyBotData, blockPos: Point, playerId: nu
 
 function updateWorldImportFinished(data: ProtoGen.WorldBlockPlacedPacket) {
   // Not really reliable, but good enough
-  if (usePwClientStore().totalBlocksLeftToReceiveFromWorldImport > 0) {
-    usePwClientStore().totalBlocksLeftToReceiveFromWorldImport -= data.positions.length
-    if (usePwClientStore().totalBlocksLeftToReceiveFromWorldImport <= 0) {
-      usePwClientStore().totalBlocksLeftToReceiveFromWorldImport = 0
+  if (usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket > 0) {
+    usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket -= data.positions.length
+    if (usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket <= 0) {
+      usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket = 0
     }
   }
 }

@@ -13,7 +13,7 @@ export const usePwClientStore = defineStore('PwClientStore', () => {
   const password = ref<string>('')
   const secretEditKey = ref<string>('')
   const botType = ref<BotType>(BotType.COPY_BOT)
-  const totalBlocksLeftToReceiveFromWorldImport = ref<number>(0)
+  const totalBlocksLeftToReceiveFromWorldBlockPlacedPacket = ref<number>(0)
   const blocks = ref<ListBlockResult[]>([]) // sorted and uppercased blocks
   const blocksByPwId = ref<Record<number, ListBlockResult>>({})
   const blocksByPwName = ref<Record<string, ListBlockResult>>({})
@@ -29,7 +29,7 @@ export const usePwClientStore = defineStore('PwClientStore', () => {
     password,
     secretEditKey,
     botType,
-    totalBlocksLeftToReceiveFromWorldImport,
+    totalBlocksLeftToReceiveFromWorldBlockPlacedPacket,
     blocks,
     blocksByPwId,
     blocksByPwName,

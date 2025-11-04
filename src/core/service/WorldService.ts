@@ -98,8 +98,9 @@ export async function placeLayerDataBlocks(
 
 async function placePackets(packets: SendableBlockPacket[], blockCount: number): Promise<boolean> {
   // TODO: use packet count instead of block count
-  usePwClientStore().totalBlocksLeftToReceiveFromWorldImport = blockCount
-  let lastTotalBlocksLeftToReceiveFromWorldImportValue = usePwClientStore().totalBlocksLeftToReceiveFromWorldImport
+  usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket = blockCount
+  let lasttotalBlocksLeftToReceiveFromWorldBlockPlacedPacketValue =
+    usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket
 
   for (const packet of packets) {
     placeBlockPacket(packet)
@@ -108,19 +109,21 @@ async function placePackets(packets: SendableBlockPacket[], blockCount: number):
   const TOTAL_WAIT_ATTEMPTS_BEFORE_ASSUMING_ERROR = 5
   let totalAttempts = 0
   while (totalAttempts < TOTAL_WAIT_ATTEMPTS_BEFORE_ASSUMING_ERROR) {
-    if (usePwClientStore().totalBlocksLeftToReceiveFromWorldImport === 0) {
+    if (usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket === 0) {
       return true
     }
 
     if (
-      usePwClientStore().totalBlocksLeftToReceiveFromWorldImport === lastTotalBlocksLeftToReceiveFromWorldImportValue
+      usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket ===
+      lasttotalBlocksLeftToReceiveFromWorldBlockPlacedPacketValue
     ) {
       totalAttempts++
     } else {
       totalAttempts = 0
     }
 
-    lastTotalBlocksLeftToReceiveFromWorldImportValue = usePwClientStore().totalBlocksLeftToReceiveFromWorldImport
+    lasttotalBlocksLeftToReceiveFromWorldBlockPlacedPacketValue =
+      usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket
 
     await sleep(1000)
   }
