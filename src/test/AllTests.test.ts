@@ -38,8 +38,95 @@ describe.sequential('Tests', () => {
     // resetAllStores()
   })
 
+  describe.sequential('.edit', () => {
+    test('.edit add 5', async (ctx) => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [10]) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [15]) },
+      ]
+      await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(1, 0), () =>
+        commandReceived(ctx.task.name, playerId),
+      )
+    })
+    test('.edit sub 5', async (ctx) => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [10]) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [5]) },
+      ]
+      await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(1, 0), () =>
+        commandReceived(ctx.task.name, playerId),
+      )
+    })
+    test('.edit mul 5', async (ctx) => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [10]) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [50]) },
+      ]
+      await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(1, 0), () =>
+        commandReceived(ctx.task.name, playerId),
+      )
+    })
+    test('.edit div 5', async (ctx) => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [10]) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [2]) },
+      ]
+      await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(1, 0), () =>
+        commandReceived(ctx.task.name, playerId),
+      )
+    })
+    test('.edit name green red', async (ctx) => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GREEN) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_RED) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+      ]
+      await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(1, 0), () =>
+        commandReceived(ctx.task.name, playerId),
+      )
+    })
+    test('.edit id 2 3', async (ctx) => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(1) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(2) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(1) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(3) },
+      ]
+      await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(1, 0), () =>
+        commandReceived(ctx.task.name, playerId),
+      )
+    })
+  })
+
   describe.sequential('.flip', () => {
-    test('.flip h', async () => {
+    test('.flip h', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
@@ -54,10 +141,10 @@ describe.sequential('Tests', () => {
         { pos: vec2(1, 2), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
       ]
       await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(1, 2), () =>
-        commandReceived('.flip h', playerId),
+        commandReceived(ctx.task.name, playerId),
       )
     })
-    test('.flip v', async () => {
+    test('.flip v', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
@@ -72,13 +159,13 @@ describe.sequential('Tests', () => {
         { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
       ]
       await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(1, 2), () =>
-        commandReceived('.flip v', playerId),
+        commandReceived(ctx.task.name, playerId),
       )
     })
   })
 
   describe.sequential('.paste', () => {
-    test('.paste 3 1', async () => {
+    test('.paste 3 1', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -94,11 +181,11 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await commandReceived('.paste 3 1', playerId),
+        async () => await commandReceived(ctx.task.name, playerId),
       )
     })
 
-    test('.paste 1 3', async () => {
+    test('.paste 1 3', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -114,11 +201,11 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await commandReceived('.paste 1 3', playerId),
+        async () => await commandReceived(ctx.task.name, playerId),
       )
     })
 
-    test('.paste 2 2', async () => {
+    test('.paste 2 2', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -136,11 +223,11 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await commandReceived('.paste 2 2', playerId),
+        async () => await commandReceived(ctx.task.name, playerId),
       )
     })
 
-    test('.paste 2 2 1 3', async () => {
+    test('.paste 2 2 1 3', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -158,11 +245,11 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await commandReceived('.paste 2 2 1 3', playerId),
+        async () => await commandReceived(ctx.task.name, playerId),
       )
     })
 
-    test('.paste -3 1', async () => {
+    test('.paste -3 1', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(2, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -178,11 +265,11 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(2, 0),
         vec2(2, 0),
-        async () => await commandReceived('.paste -3 1', playerId),
+        async () => await commandReceived(ctx.task.name, playerId),
       )
     })
 
-    test('.paste 1 -3', async () => {
+    test('.paste 1 -3', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(0, 2), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -198,11 +285,11 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 2),
         vec2(0, 2),
-        async () => await commandReceived('.paste 1 -3', playerId),
+        async () => await commandReceived(ctx.task.name, playerId),
       )
     })
 
-    test('.paste -2 -2', async () => {
+    test('.paste -2 -2', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(1, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -220,11 +307,11 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(1, 1),
         vec2(1, 1),
-        async () => await commandReceived('.paste -2 -2', playerId),
+        async () => await commandReceived(ctx.task.name, playerId),
       )
     })
 
-    test('.paste -2 -2 1 3', async () => {
+    test('.paste -2 -2 1 3', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(2, 4), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -242,7 +329,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(2, 4),
         vec2(2, 4),
-        async () => await commandReceived('.paste -2 -2 1 3', playerId),
+        async () => await commandReceived(ctx.task.name, playerId),
       )
     })
 
@@ -291,7 +378,7 @@ describe.sequential('Tests', () => {
   })
 
   describe.sequential('.smartpaste', () => {
-    test('.smartpaste 3 1', async () => {
+    test('.smartpaste 3 1', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -307,11 +394,11 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await commandReceived('.smartpaste 3 1', playerId),
+        async () => await commandReceived(ctx.task.name, playerId),
       )
     })
 
-    test('.smartpaste 1 3', async () => {
+    test('.smartpaste 1 3', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -327,11 +414,11 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await commandReceived('.smartpaste 1 3', playerId),
+        async () => await commandReceived(ctx.task.name, playerId),
       )
     })
 
-    test('.smartpaste 2 2', async () => {
+    test('.smartpaste 2 2', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -349,11 +436,11 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await commandReceived('.smartpaste 2 2', playerId),
+        async () => await commandReceived(ctx.task.name, playerId),
       )
     })
 
-    test('.smartpaste 2 2 1 3', async () => {
+    test('.smartpaste 2 2 1 3', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -371,11 +458,11 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await commandReceived('.smartpaste 2 2 1 3', playerId),
+        async () => await commandReceived(ctx.task.name, playerId),
       )
     })
 
-    test('.smartpaste -3 1', async () => {
+    test('.smartpaste -3 1', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(2, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -391,11 +478,11 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(2, 0),
         vec2(2, 0),
-        async () => await commandReceived('.smartpaste -3 1', playerId),
+        async () => await commandReceived(ctx.task.name, playerId),
       )
     })
 
-    test('.smartpaste 1 -3', async () => {
+    test('.smartpaste 1 -3', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(0, 2), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -411,11 +498,11 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 2),
         vec2(0, 2),
-        async () => await commandReceived('.smartpaste 1 -3', playerId),
+        async () => await commandReceived(ctx.task.name, playerId),
       )
     })
 
-    test('.smartpaste -2 -2', async () => {
+    test('.smartpaste -2 -2', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(1, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -433,11 +520,11 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(1, 1),
         vec2(1, 1),
-        async () => await commandReceived('.smartpaste -2 -2', playerId),
+        async () => await commandReceived(ctx.task.name, playerId),
       )
     })
 
-    test('.smartpaste -2 -2 1 3', async () => {
+    test('.smartpaste -2 -2 1 3', async (ctx) => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(2, 4), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -455,7 +542,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(2, 4),
         vec2(2, 4),
-        async () => await commandReceived('.smartpaste -2 -2 1 3', playerId),
+        async () => await commandReceived(ctx.task.name, playerId),
       )
     })
 
