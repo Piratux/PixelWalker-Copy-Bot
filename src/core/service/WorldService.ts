@@ -106,7 +106,7 @@ async function placePackets(packets: SendableBlockPacket[], blockCount: number):
     placeBlockPacket(packet)
   }
 
-  const TOTAL_WAIT_ATTEMPTS_BEFORE_ASSUMING_ERROR = 5
+  const TOTAL_WAIT_ATTEMPTS_BEFORE_ASSUMING_ERROR = 50
   let totalAttempts = 0
   while (totalAttempts < TOTAL_WAIT_ATTEMPTS_BEFORE_ASSUMING_ERROR) {
     if (usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket === 0) {
@@ -125,7 +125,7 @@ async function placePackets(packets: SendableBlockPacket[], blockCount: number):
     lasttotalBlocksLeftToReceiveFromWorldBlockPlacedPacketValue =
       usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket
 
-    await sleep(1000)
+    await sleep(100)
   }
   return false
 }
