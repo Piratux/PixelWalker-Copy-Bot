@@ -906,7 +906,7 @@ function filterByNonAirMask(allBlocks: WorldBlock[], botData: CopyBotData) {
   })
 }
 
-async function pasteBlocks(botData: CopyBotData, blockPos: Point) {
+export async function pasteBlocks(botData: CopyBotData, blockPos: Point) {
   try {
     let allBlocks: WorldBlock[] = []
 

@@ -12,6 +12,7 @@ import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { getBotData, selectBlocks } from '@/copybot/service/PacketHandlerCopyBotService.ts'
 import { Promisable } from '@/core/util/Promise.ts'
+import { CopyBotData } from '@/copybot/type/CopyBotData.ts'
 
 export function compareDeserialisedStructureData(
   receivedData: DeserialisedStructure,
@@ -96,7 +97,7 @@ export async function runSelectCommandTest(
   expectedOutputBlocks: WorldBlock[],
   selectFrom: vec2,
   selectTo: vec2,
-  command: () => Promisable<void>,
+  command: (botData: CopyBotData) => Promisable<void>,
 ) {
   const testAreaSize = vec2(10, 10)
   const clearTestAreaBlocks = createEmptyBlocks(testAreaSize)
@@ -104,7 +105,10 @@ export async function runSelectCommandTest(
 
   await placeMultipleBlocks(inputBlocks)
   selectArea(selectFrom, selectTo)
-  await command()
+
+  const playerId = getPwGameWorldHelper().botPlayerId
+  const botData = getBotData(playerId)
+  await command(botData)
 
   verifyExpectedBlocks(expectedOutputBlocks, testAreaSize)
 }

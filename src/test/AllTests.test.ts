@@ -8,7 +8,7 @@ import { runSelectCommandTest } from '@/test/RuntimeTestsUtil.ts'
 import { createPinia, setActivePinia } from 'pinia'
 import { initPwClasses } from '@/core/service/PwClientService.ts'
 import { BotType } from '@/core/enum/BotType.ts'
-import { commandReceived } from '@/copybot/service/PacketHandlerCopyBotService.ts'
+import { commandReceived, pasteBlocks } from '@/copybot/service/PacketHandlerCopyBotService.ts'
 
 describe.sequential('Tests', () => {
   beforeAll(async () => {
@@ -634,6 +634,77 @@ describe.sequential('Tests', () => {
         vec2(2, 1),
         async () => await commandReceived('.smartpaste 3 2', playerId),
       )
+    })
+  })
+
+  describe.sequential('.undo', () => {
+    test('.undo', async (ctx) => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+      ]
+      await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(0, 0), async (botData) => {
+        await pasteBlocks(botData, vec2(2, 3))
+        await commandReceived(ctx.task.name, playerId)
+      })
+    })
+
+    test('.undo 2', async (ctx) => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(2, 3), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+      ]
+      await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(0, 0), async (botData) => {
+        await pasteBlocks(botData, vec2(2, 3))
+        await pasteBlocks(botData, vec2(2, 4))
+        await pasteBlocks(botData, vec2(2, 5))
+        await commandReceived(ctx.task.name, playerId)
+      })
+    })
+  })
+
+  describe.sequential('.redo', () => {
+    test('.redo', async (ctx) => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(2, 3), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+      ]
+      await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(0, 0), async (botData) => {
+        await pasteBlocks(botData, vec2(2, 3))
+        await commandReceived('.undo', playerId)
+        await commandReceived(ctx.task.name, playerId)
+      })
+    })
+
+    test('.redo 2', async (ctx) => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(2, 3), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(2, 4), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(2, 5), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+      ]
+      await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(0, 0), async (botData) => {
+        await pasteBlocks(botData, vec2(2, 3))
+        await pasteBlocks(botData, vec2(2, 4))
+        await pasteBlocks(botData, vec2(2, 5))
+        await commandReceived('.undo 2', playerId)
+        await commandReceived(ctx.task.name, playerId)
+      })
     })
   })
 })
