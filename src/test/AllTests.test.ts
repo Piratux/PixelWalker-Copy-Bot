@@ -5,10 +5,10 @@ import { Block, LayerType } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { runSelectCommandTest } from '@/test/RuntimeTestsUtil.ts'
-import { flipCommandReceived, pasteCommandReceived } from '@/copybot/service/PacketHandlerCopyBotService.ts'
 import { createPinia, setActivePinia } from 'pinia'
 import { initPwClasses } from '@/core/service/PwClientService.ts'
 import { BotType } from '@/core/enum/BotType.ts'
+import { commandReceived } from '@/copybot/service/PacketHandlerCopyBotService.ts'
 
 describe.sequential('Tests', () => {
   beforeAll(async () => {
@@ -54,7 +54,7 @@ describe.sequential('Tests', () => {
         { pos: vec2(1, 2), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
       ]
       await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(1, 2), () =>
-        flipCommandReceived(['h'], playerId),
+        commandReceived('.flip h', playerId),
       )
     })
     test('.flip v', async () => {
@@ -72,7 +72,7 @@ describe.sequential('Tests', () => {
         { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
       ]
       await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(1, 2), () =>
-        flipCommandReceived(['v'], playerId),
+        commandReceived('.flip v', playerId),
       )
     })
   })
@@ -94,7 +94,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await pasteCommandReceived(['3', '1'], playerId, false),
+        async () => await commandReceived('.paste 3 1', playerId),
       )
     })
 
@@ -114,7 +114,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await pasteCommandReceived(['1', '3'], playerId, false),
+        async () => await commandReceived('.paste 1 3', playerId),
       )
     })
 
@@ -136,11 +136,11 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await pasteCommandReceived(['2', '2'], playerId, false),
+        async () => await commandReceived('.paste 2 2', playerId),
       )
     })
 
-    test('.paste 2 2 3 1', async () => {
+    test('.paste 2 2 1 3', async () => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -158,7 +158,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await pasteCommandReceived(['2', '2', '1', '3'], playerId, false),
+        async () => await commandReceived('.paste 2 2 1 3', playerId),
       )
     })
 
@@ -178,7 +178,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(2, 0),
         vec2(2, 0),
-        async () => await pasteCommandReceived(['-3', '1'], playerId, false),
+        async () => await commandReceived('.paste -3 1', playerId),
       )
     })
 
@@ -198,7 +198,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 2),
         vec2(0, 2),
-        async () => await pasteCommandReceived(['1', '-3'], playerId, false),
+        async () => await commandReceived('.paste 1 -3', playerId),
       )
     })
 
@@ -220,7 +220,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(1, 1),
         vec2(1, 1),
-        async () => await pasteCommandReceived(['-2', '-2'], playerId, false),
+        async () => await commandReceived('.paste -2 -2', playerId),
       )
     })
 
@@ -242,7 +242,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(2, 4),
         vec2(2, 4),
-        async () => await pasteCommandReceived(['-2', '-2', '1', '3'], playerId, false),
+        async () => await commandReceived('.paste -2 -2 1 3', playerId),
       )
     })
 
@@ -285,7 +285,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(2, 3),
-        async () => await pasteCommandReceived(['3', '2'], playerId, false),
+        async () => await commandReceived('.paste 3 2', playerId),
       )
     })
   })
@@ -307,7 +307,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await pasteCommandReceived(['3', '1'], playerId, true),
+        async () => await commandReceived('.smartpaste 3 1', playerId),
       )
     })
 
@@ -327,7 +327,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await pasteCommandReceived(['1', '3'], playerId, true),
+        async () => await commandReceived('.smartpaste 1 3', playerId),
       )
     })
 
@@ -349,11 +349,11 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await pasteCommandReceived(['2', '2'], playerId, true),
+        async () => await commandReceived('.smartpaste 2 2', playerId),
       )
     })
 
-    test('.smartpaste 2 2 3 1', async () => {
+    test('.smartpaste 2 2 1 3', async () => {
       const playerId = getPwGameWorldHelper().botPlayerId
       const inputBlocks: WorldBlock[] = [
         { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [1]) },
@@ -371,7 +371,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await pasteCommandReceived(['2', '2', '1', '3'], playerId, true),
+        async () => await commandReceived('.smartpaste 2 2 1 3', playerId),
       )
     })
 
@@ -391,7 +391,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(2, 0),
         vec2(2, 0),
-        async () => await pasteCommandReceived(['-3', '1'], playerId, true),
+        async () => await commandReceived('.smartpaste -3 1', playerId),
       )
     })
 
@@ -411,7 +411,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 2),
         vec2(0, 2),
-        async () => await pasteCommandReceived(['1', '-3'], playerId, true),
+        async () => await commandReceived('.smartpaste 1 -3', playerId),
       )
     })
 
@@ -433,7 +433,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(1, 1),
         vec2(1, 1),
-        async () => await pasteCommandReceived(['-2', '-2'], playerId, true),
+        async () => await commandReceived('.smartpaste -2 -2', playerId),
       )
     })
 
@@ -455,7 +455,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(2, 4),
         vec2(2, 4),
-        async () => await pasteCommandReceived(['-2', '-2', '1', '3'], playerId, true),
+        async () => await commandReceived('.smartpaste -2 -2 1 3', playerId),
       )
     })
 
@@ -505,7 +505,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(0, 0),
-        async () => await pasteCommandReceived(['2', '2'], playerId, true),
+        async () => await commandReceived('.smartpaste 2 2', playerId),
       )
     })
 
@@ -545,7 +545,7 @@ describe.sequential('Tests', () => {
         expectedOutputBlocks,
         vec2(0, 0),
         vec2(2, 1),
-        async () => await pasteCommandReceived(['3', '2'], playerId, true),
+        async () => await commandReceived('.smartpaste 3 2', playerId),
       )
     })
   })

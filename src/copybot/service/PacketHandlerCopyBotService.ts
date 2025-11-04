@@ -88,14 +88,17 @@ function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
 }
 
 async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
-  const command = data.message.split(' ')
-  if (!command[0].startsWith('.')) {
+  if (!data.message.startsWith('.')) {
     return
   }
 
+  await commandReceived(data.message, data.playerId!)
+}
+
+export async function commandReceived(message: string, playerId: number) {
+  const command = message.split(' ')
   const commandName = command[0].toLowerCase().slice(1)
   const commandArgs = command.slice(1)
-  const playerId = data.playerId!
 
   switch (commandName as CopyBotCommandName) {
     case CopyBotCommandName.Help:
@@ -143,7 +146,7 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
   }
 }
 
-export function maskCommandReceived(args: string[], playerId: number) {
+function maskCommandReceived(args: string[], playerId: number) {
   const botData = getPlayerCopyBotData()[playerId]
 
   botData.maskBackgroundEnabled = false
@@ -188,7 +191,7 @@ export function maskCommandReceived(args: string[], playerId: number) {
   }
 }
 
-export function moveCommandReceived(_args: string[], playerId: number) {
+function moveCommandReceived(_args: string[], playerId: number) {
   const botData = getPlayerCopyBotData()[playerId]
   botData.moveEnabled = !botData.moveEnabled
 
@@ -258,7 +261,7 @@ function printblocksCommandReceived(_args: string[], playerId: number) {
   )
 }
 
-export async function importCommandReceived(args: string[], playerId: number) {
+async function importCommandReceived(args: string[], playerId: number) {
   if (!isDeveloper(playerId) && !isWorldOwner(playerId)) {
     throw new GameError('Command is exclusive to world owners', playerId)
   }
@@ -341,7 +344,7 @@ export async function importCommandReceived(args: string[], playerId: number) {
   handlePlaceBlocksResult(success)
 }
 
-export function helpCommandReceived(args: string[], playerId: number) {
+function helpCommandReceived(args: string[], playerId: number) {
   if (args.length == 0) {
     sendPrivateChatMessage('Gold coin - select blocks', playerId)
     sendPrivateChatMessage('Blue coin - paste blocks', playerId)
@@ -453,7 +456,7 @@ export function helpCommandReceived(args: string[], playerId: number) {
   }
 }
 
-export function undoCommandReceived(args: string[], playerId: number) {
+function undoCommandReceived(args: string[], playerId: number) {
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   let count = 1
@@ -467,7 +470,7 @@ export function undoCommandReceived(args: string[], playerId: number) {
   performUndo(botData, playerId, count)
 }
 
-export function redoCommandReceived(args: string[], playerId: number) {
+function redoCommandReceived(args: string[], playerId: number) {
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   let count = 1
@@ -481,7 +484,7 @@ export function redoCommandReceived(args: string[], playerId: number) {
   performRedo(botData, playerId, count)
 }
 
-export async function pasteCommandReceived(args: string[], playerId: number, smartPaste: boolean) {
+async function pasteCommandReceived(args: string[], playerId: number, smartPaste: boolean) {
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   const ERROR_MESSAGE = `Correct usage is ${smartPaste ? '.smartpaste' : '.paste'} x_times y_times [x_spacing y_spacing]`
@@ -530,7 +533,7 @@ function placeEditedBlocks(playerId: number, editedBlocks: WorldBlock[]) {
   void placeMultipleBlocks(editedBlocks)
 }
 
-export function editCommandReceived(args: string[], playerId: number) {
+function editCommandReceived(args: string[], playerId: number) {
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   if (getPlayerCopyBotData()[playerId].selectedBlocks.length === 0) {
@@ -731,7 +734,7 @@ function editSubCommand(args: string[], playerId: number): WorldBlock[] {
   return editArithmeticCommand(args, playerId, (a, b) => a - b, 'subtracted')
 }
 
-export function flipCommandReceived(args: string[], playerId: number) {
+function flipCommandReceived(args: string[], playerId: number) {
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   if (args.length !== 1) {
