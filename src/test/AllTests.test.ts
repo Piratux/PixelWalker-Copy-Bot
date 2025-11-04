@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, test } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, test } from 'vitest'
 import { getPwGameClient, getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { Block, LayerType } from 'pw-js-world'
@@ -9,6 +9,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { initPwClasses } from '@/core/service/PwClientService.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { commandReceived, pasteBlocks } from '@/copybot/service/PacketHandlerCopyBotService.ts'
+import { getPlayerCopyBotData } from '@/copybot/store/CopyBotStore.ts'
 
 describe.sequential('Tests', () => {
   beforeAll(async () => {
@@ -30,12 +31,14 @@ describe.sequential('Tests', () => {
     }
   })
 
+  afterEach(() => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    delete getPlayerCopyBotData()[playerId]
+  })
+
   afterAll(() => {
     console.log('Disconnecting PwGameClient and resetting stores after test...')
     getPwGameClient().disconnect(false)
-
-    // NOTE: Could not get this to work, because .$reset() call in "pinia._s.forEach((store) => store.$reset())" errors out for some reason
-    // resetAllStores()
   })
 
   describe.sequential('.edit', () => {
@@ -704,6 +707,45 @@ describe.sequential('Tests', () => {
         await pasteBlocks(botData, vec2(2, 5))
         await commandReceived('.undo 2', playerId)
         await commandReceived(ctx.task.name, playerId)
+      })
+    })
+  })
+
+  describe.sequential('.move', () => {
+    test('.move (once)', async () => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(1, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(1, 2), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(2, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(2, 2), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+      ]
+      await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(1, 1), async (botData) => {
+        await commandReceived('.move', playerId)
+        await pasteBlocks(botData, vec2(1, 1))
+      })
+    })
+
+    test('.move (twice)', async () => {
+      const playerId = getPwGameWorldHelper().botPlayerId
+      const inputBlocks: WorldBlock[] = [
+        { pos: vec2(0, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(1, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+      ]
+      const expectedOutputBlocks: WorldBlock[] = [
+        { pos: vec2(2, 3), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(3, 2), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+        { pos: vec2(3, 3), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
+      ]
+      await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(1, 1), async (botData) => {
+        await commandReceived('.move', playerId)
+        await pasteBlocks(botData, vec2(1, 1))
+        await pasteBlocks(botData, vec2(2, 2))
       })
     })
   })

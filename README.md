@@ -63,6 +63,9 @@ Before running tests, you need to setup the following .env variables:
 npm run test
 ```
 
+When writing/modifying tests you might find `.printblocks` command useful.
+It prints array of `WorldBlock[]` that you can paste directly to tests.
+
 ### Test production build
 
 At the root of project run:
