@@ -451,6 +451,18 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage(`Example usage 1: .import https://pixelwalker.net/world/9gf53f4qf5z1f42`, playerId)
       sendPrivateChatMessage(`Example usage 2: .import legacy:PW4gnKMssUb0I 2 4 25 16 2 4`, playerId)
       break
+    // DEV commands
+    case CopyBotCommandName.PlaceAll:
+      sendPrivateChatMessage(
+        '.placeall - dev command that places all PixelWalker blocks returned from /listblocks endpoint',
+        playerId,
+      )
+      sendPrivateChatMessage('This command is used in "Every Block" world (ewki341n7ve153l)', playerId)
+      break
+    case CopyBotCommandName.PrintBlocks:
+      sendPrivateChatMessage('.printblocks - dev command that prints selected blocks to console', playerId)
+      sendPrivateChatMessage('This is useful when writing tests', playerId)
+      break
     default:
       throw new GameError(`Unrecognised command ${commandName}. Type .help to see all commands`, playerId)
   }
