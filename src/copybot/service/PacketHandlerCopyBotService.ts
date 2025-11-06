@@ -440,6 +440,7 @@ function helpCommandReceived(args: string[], playerId: number) {
         '.mask [default | background | foreground | overlay | nonair] - masks layers or non empty blocks when pasting',
         playerId,
       )
+      sendPrivateChatMessage('".mask default" is shorthand for ".mask background foreground overlay"', playerId)
       sendPrivateChatMessage(
         `Example usage 1: .mask foreground background (only pastes foreground and background blocks)`,
         playerId,
