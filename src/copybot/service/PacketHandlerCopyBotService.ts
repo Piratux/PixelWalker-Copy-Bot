@@ -147,7 +147,7 @@ export async function commandReceived(message: string, playerId: number) {
 }
 
 function maskCommandReceived(args: string[], playerId: number) {
-  const botData = getPlayerCopyBotData()[playerId]
+  const botData = getBotData(playerId)
 
   botData.maskBackgroundEnabled = false
   botData.maskForegroundEnabled = false
@@ -192,7 +192,7 @@ function maskCommandReceived(args: string[], playerId: number) {
 }
 
 function moveCommandReceived(_args: string[], playerId: number) {
-  const botData = getPlayerCopyBotData()[playerId]
+  const botData = getBotData(playerId)
   botData.moveEnabled = !botData.moveEnabled
 
   sendPrivateChatMessage(`Move mode ${botData.moveEnabled ? 'enabled' : 'disabled'}`, playerId)
@@ -241,7 +241,7 @@ function printblocksCommandReceived(_args: string[], playerId: number) {
   requireDeveloper(playerId)
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
-  const botData = getPlayerCopyBotData()[playerId]
+  const botData = getBotData(playerId)
   console.log(
     botData.selectedBlocks
       .filter((block) => block.block.bId !== 0)
@@ -335,7 +335,7 @@ async function importCommandReceived(args: string[], playerId: number) {
     allBlocks = mergeWorldBlocks(emptyBlocksWorldBlocks, worldDataWorldBlocks)
   }
 
-  const botData = getPlayerCopyBotData()[playerId]
+  const botData = getBotData(playerId)
   allBlocks = filterByLayerMasks(allBlocks, botData)
   allBlocks = filterByNonAirMask(allBlocks, botData)
   addUndoItemWorldBlock(botData, allBlocks)
@@ -478,7 +478,7 @@ function undoCommandReceived(args: string[], playerId: number) {
       throw new GameError(`Correct usage is .undo [count]`, playerId)
     }
   }
-  const botData = getPlayerCopyBotData()[playerId]
+  const botData = getBotData(playerId)
   performUndo(botData, playerId, count)
 }
 
@@ -492,7 +492,7 @@ function redoCommandReceived(args: string[], playerId: number) {
       throw new GameError(`Correct usage is .redo [count]`, playerId)
     }
   }
-  const botData = getPlayerCopyBotData()[playerId]
+  const botData = getBotData(playerId)
   performRedo(botData, playerId, count)
 }
 
@@ -516,7 +516,7 @@ async function pasteCommandReceived(args: string[], playerId: number, smartPaste
     }
   }
 
-  const botData = getPlayerCopyBotData()[playerId]
+  const botData = getBotData(playerId)
 
   if (botData.botState !== CopyBotState.SELECTED_TO) {
     throw new GameError('You need to select area first', playerId)
@@ -548,7 +548,7 @@ function placeEditedBlocks(playerId: number, editedBlocks: WorldBlock[]) {
 function editCommandReceived(args: string[], playerId: number) {
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
-  if (getPlayerCopyBotData()[playerId].selectedBlocks.length === 0) {
+  if (getBotData(playerId).selectedBlocks.length === 0) {
     throw new GameError(`Select blocks before replacing them!`, playerId)
   }
 
@@ -593,28 +593,26 @@ function editNameCommand(args: string[], playerId: number): WorldBlock[] {
   let warning = ''
 
   const editedBlocks: WorldBlock[] = []
-
-  getPlayerCopyBotData()[playerId].selectedBlocks = getPlayerCopyBotData()[playerId].selectedBlocks.map(
-    (worldBlock) => {
-      const copyName = worldBlock.block.name.replace(searchFor, replaceWith)
-      if (worldBlock.block.name !== copyName && copyName != '') {
-        copyNamesFound.add(copyName)
-        const possBlockId = getBlockIdFromString(copyName)
-        if (possBlockId !== undefined && !isNaN(possBlockId)) {
-          const deepBlock = cloneDeep(worldBlock)
-          if (getBlockLayer(possBlockId) !== getBlockLayer(worldBlock.block.bId)) {
-            warning = '.edit name does not support changing layers'
-            return worldBlock
-          }
-          deepBlock.block = new Block(possBlockId, worldBlock.block.args)
-          counter++
-          editedBlocks.push(deepBlock)
-          return deepBlock
+  const botData = getBotData(playerId)
+  botData.selectedBlocks = botData.selectedBlocks.map((worldBlock) => {
+    const copyName = worldBlock.block.name.replace(searchFor, replaceWith)
+    if (worldBlock.block.name !== copyName && copyName != '') {
+      copyNamesFound.add(copyName)
+      const possBlockId = getBlockIdFromString(copyName)
+      if (possBlockId !== undefined && !isNaN(possBlockId)) {
+        const deepBlock = cloneDeep(worldBlock)
+        if (getBlockLayer(possBlockId) !== getBlockLayer(worldBlock.block.bId)) {
+          warning = '.edit name does not support changing layers'
+          return worldBlock
         }
+        deepBlock.block = new Block(possBlockId, worldBlock.block.args)
+        counter++
+        editedBlocks.push(deepBlock)
+        return deepBlock
       }
-      return worldBlock
-    },
-  )
+    }
+    return worldBlock
+  })
   if (warning === '' && counter == 0 && copyNamesFound.size == 1) {
     // some blocks are confusingly named, if they're trying to edit a single block type let them know that it's not valid.
     sendPrivateChatMessage(`${counter} blocks changed. ${[...copyNamesFound][0]} is not a valid block.`, playerId)
@@ -665,19 +663,18 @@ function editIdCommand(args: string[], playerId: number): WorldBlock[] {
   const editedBlocks: WorldBlock[] = []
 
   let counter = 0
-  getPlayerCopyBotData()[playerId].selectedBlocks = getPlayerCopyBotData()[playerId].selectedBlocks.map(
-    (worldBlock) => {
-      if (worldBlock.block.bId !== searchForId) {
-        return worldBlock
-      } else {
-        const deepBlock = cloneDeep(worldBlock)
-        deepBlock.block = new Block(replaceWithId, worldBlock.block.args)
-        counter++
-        editedBlocks.push(deepBlock)
-        return deepBlock
-      }
-    },
-  )
+  const botData = getBotData(playerId)
+  botData.selectedBlocks = botData.selectedBlocks.map((worldBlock) => {
+    if (worldBlock.block.bId !== searchForId) {
+      return worldBlock
+    } else {
+      const deepBlock = cloneDeep(worldBlock)
+      deepBlock.block = new Block(replaceWithId, worldBlock.block.args)
+      counter++
+      editedBlocks.push(deepBlock)
+      return deepBlock
+    }
+  })
   sendPrivateChatMessage(`${counter} blocks changed ${searchForId} to ${replaceWithId}`, playerId)
   return editedBlocks
 }
@@ -694,32 +691,30 @@ function editArithmeticCommand(args: string[], playerId: number, op: mathOp, opP
   let counter = 0
 
   const editedBlocks: WorldBlock[] = []
-
-  getPlayerCopyBotData()[playerId].selectedBlocks = getPlayerCopyBotData()[playerId].selectedBlocks.map(
-    (worldBlock) => {
-      if (searchFor === '' || worldBlock.block.name.includes(searchFor)) {
-        if (worldBlock.block.args.length !== 0) {
-          const deepBlock = cloneDeep(worldBlock)
-          if (deepBlock.block.name === (PwBlockName.SWITCH_LOCAL_ACTIVATOR as string)) {
-            deepBlock.block.args[0] = Math.floor(op(deepBlock.block.args[0] as number, amount))
-            editedBlocks.push(deepBlock)
-            return deepBlock
-          }
-          deepBlock.block.args = deepBlock.block.args.map((arg) => {
-            if (typeof arg === 'number') {
-              counter++
-              return Math.floor(op(arg, amount))
-            } else {
-              return arg
-            }
-          })
+  const botData = getBotData(playerId)
+  botData.selectedBlocks = botData.selectedBlocks.map((worldBlock) => {
+    if (searchFor === '' || worldBlock.block.name.includes(searchFor)) {
+      if (worldBlock.block.args.length !== 0) {
+        const deepBlock = cloneDeep(worldBlock)
+        if (deepBlock.block.name === (PwBlockName.SWITCH_LOCAL_ACTIVATOR as string)) {
+          deepBlock.block.args[0] = Math.floor(op(deepBlock.block.args[0] as number, amount))
           editedBlocks.push(deepBlock)
           return deepBlock
         }
+        deepBlock.block.args = deepBlock.block.args.map((arg) => {
+          if (typeof arg === 'number') {
+            counter++
+            return Math.floor(op(arg, amount))
+          } else {
+            return arg
+          }
+        })
+        editedBlocks.push(deepBlock)
+        return deepBlock
       }
-      return worldBlock
-    },
-  )
+    }
+    return worldBlock
+  })
   sendPrivateChatMessage(`${counter} blocks ${opPast} by ${amount}`, playerId)
   return editedBlocks
 }
@@ -761,7 +756,7 @@ function flipCommandReceived(args: string[], playerId: number) {
 
   const editedBlocks: WorldBlock[] = []
 
-  const botData = getPlayerCopyBotData()[playerId]
+  const botData = getBotData(playerId)
 
   botData.selectedBlocks = botData.selectedBlocks.map((worldBlock) => {
     if (flipMode === 'h') {
