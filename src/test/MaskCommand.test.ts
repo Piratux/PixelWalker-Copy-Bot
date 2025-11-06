@@ -1,4 +1,4 @@
-import { describe, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { Block, LayerType } from 'pw-js-world'
@@ -131,5 +131,10 @@ describe.sequential('.mask', () => {
       await commandReceived(ctx.task.name, playerId)
       await pasteBlocks(botData, vec2(2, 1))
     })
+  })
+
+  test('Unknown modes throw error', async () => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    await expect(() => commandReceived(`.mask default nnair`, playerId)).rejects.toThrowError()
   })
 })

@@ -49,6 +49,7 @@ import { bufferToArrayBuffer } from '@/core/util/Buffers.ts'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { CopyBotCommandName } from '@/copybot/enum/CopyBotCommandName.ts'
+import { CopyBotMaskCommandMode } from '@/copybot/enum/CopyBotMaskCommandMode.ts'
 
 const callbacks: CallbackEntry[] = [
   { name: 'playerInitPacket', fn: commonPlayerInitPacketReceived },
@@ -147,6 +148,19 @@ export async function commandReceived(message: string, playerId: number) {
 }
 
 function maskCommandReceived(args: string[], playerId: number) {
+  for (const arg of args) {
+    if (!Object.values(CopyBotMaskCommandMode).includes(arg as CopyBotMaskCommandMode)) {
+      throw new GameError(
+        `Unrecognised mask mode '${arg}'. Valid modes: default, background, foreground, overlay, nonair`,
+        playerId,
+      )
+    }
+  }
+
+  if (args.length === 0) {
+    throw new GameError(`Correct usage is .mask [default | background | foreground | overlay | nonair]`, playerId)
+  }
+
   const botData = getBotData(playerId)
 
   botData.maskBackgroundEnabled = false
@@ -154,40 +168,31 @@ function maskCommandReceived(args: string[], playerId: number) {
   botData.maskOverlayEnabled = false
   botData.maskNonAirEnabled = false
 
-  if (args.includes('default')) {
+  if (args.includes(CopyBotMaskCommandMode.Default)) {
     botData.maskBackgroundEnabled = true
     botData.maskForegroundEnabled = true
     botData.maskOverlayEnabled = true
     sendPrivateChatMessage(`Mask default enabled`, playerId)
   }
 
-  if (args.includes('background')) {
+  if (args.includes(CopyBotMaskCommandMode.Background)) {
     botData.maskBackgroundEnabled = true
     sendPrivateChatMessage(`Mask background enabled`, playerId)
   }
 
-  if (args.includes('foreground')) {
+  if (args.includes(CopyBotMaskCommandMode.Foreground)) {
     botData.maskForegroundEnabled = true
     sendPrivateChatMessage(`Mask foreground enabled`, playerId)
   }
 
-  if (args.includes('overlay')) {
+  if (args.includes(CopyBotMaskCommandMode.Overlay)) {
     botData.maskOverlayEnabled = true
     sendPrivateChatMessage(`Mask overlay enabled`, playerId)
   }
 
-  if (args.includes('nonair')) {
+  if (args.includes(CopyBotMaskCommandMode.NonAir)) {
     botData.maskNonAirEnabled = true
     sendPrivateChatMessage(`Mask non air enabled`, playerId)
-  }
-
-  if (
-    !botData.maskBackgroundEnabled &&
-    !botData.maskForegroundEnabled &&
-    !botData.maskOverlayEnabled &&
-    !botData.maskNonAirEnabled
-  ) {
-    throw new GameError(`Correct usage is .mask [default | background | foreground | overlay | nonair]`, playerId)
   }
 }
 
