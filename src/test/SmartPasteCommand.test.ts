@@ -1,4 +1,4 @@
-import { describe, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { Block, LayerType } from 'pw-js-world'
@@ -264,5 +264,276 @@ describe.sequential('.smartpaste', () => {
       vec2(2, 1),
       async () => await commandReceived('.smartpaste 3 2', playerId),
     )
+  })
+
+  test('.smartpaste 2 2 (portals with letters 1a)', async () => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    const inputBlocks: WorldBlock[] = [
+      { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['1a', '1a']) },
+      { pos: vec2(0, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['3a', '3a']) },
+      { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['2a', '2a']) },
+    ]
+    const expectedOutputBlocks: WorldBlock[] = [
+      { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['1a', '1a']) },
+      { pos: vec2(0, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['3a', '3a']) },
+      { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['2a', '2a']) },
+      { pos: vec2(1, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['4a', '4a']) },
+    ]
+    await runSelectCommandTest(
+      inputBlocks,
+      expectedOutputBlocks,
+      vec2(0, 0),
+      vec2(0, 0),
+      async () => await commandReceived('.smartpaste 2 2', playerId),
+    )
+  })
+
+  test('.smartpaste 2 2 (portals with letters a1)', async () => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    const inputBlocks: WorldBlock[] = [
+      { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a1', 'a1']) },
+      { pos: vec2(0, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a3', 'a3']) },
+      { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a2', 'a2']) },
+    ]
+    const expectedOutputBlocks: WorldBlock[] = [
+      { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a1', 'a1']) },
+      { pos: vec2(0, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a3', 'a3']) },
+      { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a2', 'a2']) },
+      { pos: vec2(1, 1), layer: LayerType.Foreground, block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a4', 'a4']) },
+    ]
+    await runSelectCommandTest(
+      inputBlocks,
+      expectedOutputBlocks,
+      vec2(0, 0),
+      vec2(0, 0),
+      async () => await commandReceived('.smartpaste 2 2', playerId),
+    )
+  })
+
+  test('.smartpaste 2 2 (portals with letters a1a)', async () => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    const inputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a1a', 'a1a']),
+      },
+      {
+        pos: vec2(0, 1),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a3a', 'a3a']),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a2a', 'a2a']),
+      },
+    ]
+    const expectedOutputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a1a', 'a1a']),
+      },
+      {
+        pos: vec2(0, 1),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a3a', 'a3a']),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a2a', 'a2a']),
+      },
+      {
+        pos: vec2(1, 1),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a4a', 'a4a']),
+      },
+    ]
+    await runSelectCommandTest(
+      inputBlocks,
+      expectedOutputBlocks,
+      vec2(0, 0),
+      vec2(0, 0),
+      async () => await commandReceived('.smartpaste 2 2', playerId),
+    )
+  })
+
+  test('.smartpaste 2 2 (portals with letters 1a1)', async () => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    const inputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['1a1', '1a1']),
+      },
+      {
+        pos: vec2(0, 1),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['3a3', '3a3']),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['2a2', '2a2']),
+      },
+    ]
+    const expectedOutputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['1a1', '1a1']),
+      },
+      {
+        pos: vec2(0, 1),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['3a3', '3a3']),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['2a2', '2a2']),
+      },
+      {
+        pos: vec2(1, 1),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['4a4', '4a4']),
+      },
+    ]
+    await runSelectCommandTest(
+      inputBlocks,
+      expectedOutputBlocks,
+      vec2(0, 0),
+      vec2(0, 0),
+      async () => await commandReceived('.smartpaste 2 2', playerId),
+    )
+  })
+
+  test('.smartpaste 2 2 (portals with letters 3ab1c)', async () => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    const inputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['3ab1c', '3ab1c']),
+      },
+      {
+        pos: vec2(0, 1),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['5ab3c', '5ab3c']),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['7ab2c', '7ab2c']),
+      },
+    ]
+    const expectedOutputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['3ab1c', '3ab1c']),
+      },
+      {
+        pos: vec2(0, 1),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['5ab3c', '5ab3c']),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['7ab2c', '7ab2c']),
+      },
+      {
+        pos: vec2(1, 1),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['9ab4c', '9ab4c']),
+      },
+    ]
+    await runSelectCommandTest(
+      inputBlocks,
+      expectedOutputBlocks,
+      vec2(0, 0),
+      vec2(0, 0),
+      async () => await commandReceived('.smartpaste 2 2', playerId),
+    )
+  })
+
+  test('.smartpaste 2 2 (portals with letters a15b3)', async () => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    const inputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a15b3', 'a15b3']),
+      },
+      {
+        pos: vec2(0, 1),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a45b4', 'a45b4']),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a30b5', 'a30b5']),
+      },
+    ]
+    const expectedOutputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a15b3', 'a15b3']),
+      },
+      {
+        pos: vec2(0, 1),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a45b4', 'a45b4']),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a30b5', 'a30b5']),
+      },
+      {
+        pos: vec2(1, 1),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['a60b6', 'a60b6']),
+      },
+    ]
+    await runSelectCommandTest(
+      inputBlocks,
+      expectedOutputBlocks,
+      vec2(0, 0),
+      vec2(0, 0),
+      async () => await commandReceived('.smartpaste 2 2', playerId),
+    )
+  })
+
+  test('.smartpaste 2 2 (portals with letters aaaa7, aaaa8, aaaa9 -> aaaa10 throws, due to 5 char portal id limit)', async () => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    const inputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['aaaa7', 'aaaa7']),
+      },
+      {
+        pos: vec2(0, 1),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['aaaa9', 'aaaa9']),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.PORTAL_VISIBLE_LEFT, ['aaaa8', 'aaaa8']),
+      },
+    ]
+    const expectedOutputBlocks: WorldBlock[] = []
+    await expect(async () => {
+      await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(0, 0), async () => {
+        await commandReceived('.smartpaste 2 2', playerId)
+      })
+    }).rejects.toThrowError(/Computed portal ID is longer than 5 characters, which cannot be placed/)
   })
 })

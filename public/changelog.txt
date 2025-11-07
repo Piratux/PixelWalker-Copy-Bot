@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-11-07 Version 1.12.0
+- Bot: .smartpaste now applies smart pasting logic for portal ids that have numbers and letters. For ex.: a1, a2 -> a3.
+
 2025-10-25 Version 1.11.0
 - Website: Added "Blocks that couldn't be converted" section for EELVL import/export. This section appears after import/export if there were blocks that couldn't be converted 1 to 1 between EEO and PW.
 

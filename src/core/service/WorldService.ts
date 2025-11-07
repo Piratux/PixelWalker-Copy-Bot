@@ -214,6 +214,49 @@ export function portalIdToNumber(portalId: string): number | undefined {
   return portalIdIsInteger && portalIdHasNoLeadingZeros ? parseInt(portalId) : undefined
 }
 
+// Example:
+// - Input: "12a3b"
+// - Output: [12, 'a', 3, 'b']
+export function portalIdToNumberAndStringArray(portalId: string): (number | string)[] {
+  const result: (number | string)[] = []
+  let currentNumberStr = ''
+  for (const char of portalId) {
+    if (/\d/.test(char)) {
+      currentNumberStr += char
+    } else {
+      if (currentNumberStr.length > 0) {
+        result.push(parseInt(currentNumberStr))
+        currentNumberStr = ''
+      }
+      result.push(char)
+    }
+  }
+  if (currentNumberStr.length > 0) {
+    result.push(parseInt(currentNumberStr))
+  }
+  return result
+}
+
+// Example:
+// - Input: [12, 'a', 3, 'b'], [5, 'a', 30, 'b']
+// - Output: true
+// Example 2:
+// - Input: [12, 'a', 3, 'b'], [5, 'a', 'b', 30]
+// - Output: true
+export function numberAndStringArrayTypesMatch(array1: (number | string)[], array2: (number | string)[]): boolean {
+  if (array1.length !== array2.length) {
+    return false
+  }
+
+  for (let i = 0; i < array1.length; i++) {
+    if (typeof array1[i] !== typeof array2[i]) {
+      return false
+    }
+  }
+
+  return true
+}
+
 export async function getAnotherWorldBlocks(
   worldId: string,
   pwApiClient: PWApiClient,

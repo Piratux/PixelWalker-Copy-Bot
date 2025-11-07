@@ -26,8 +26,9 @@ import {
   getBlockName,
   getDeserialisedStructureSection,
   mergeWorldBlocks,
+  numberAndStringArrayTypesMatch,
   placeMultipleBlocks,
-  portalIdToNumber,
+  portalIdToNumberAndStringArray,
 } from '@/core/service/WorldService.ts'
 import { addUndoItemWorldBlock, performRedo, performUndo } from '@/copybot/service/UndoRedoService.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
@@ -115,10 +116,10 @@ export async function commandReceived(message: string, playerId: number) {
       flipCommandReceived(commandArgs, playerId)
       break
     case CopyBotCommandName.Paste:
-      void pasteCommandReceived(commandArgs, playerId, false)
+      await pasteCommandReceived(commandArgs, playerId, false)
       break
     case CopyBotCommandName.SmartPaste:
-      void pasteCommandReceived(commandArgs, playerId, true)
+      await pasteCommandReceived(commandArgs, playerId, true)
       break
     case CopyBotCommandName.Undo:
       undoCommandReceived(commandArgs, playerId)
@@ -531,12 +532,21 @@ async function pasteCommandReceived(args: string[], playerId: number, smartPaste
   botData.repeatVec = vec2(repeatX, repeatY)
   botData.spacingVec = vec2(spacingX, spacingY)
   botData.smartRepeatEnabled = smartPaste
-  sendPrivateChatMessage(
-    `Selection repeated ${repeatX}x${repeatY} times` +
-      (spacingX !== 0 && spacingY !== 0 ? ` with spacing ${spacingX}x${spacingY}` : ''),
-    playerId,
-  )
-  await pasteBlocks(botData, botData.selectedFromPos)
+
+  try {
+    await pasteBlocks(botData, botData.selectedFromPos)
+    sendPrivateChatMessage(
+      `Selection repeated ${repeatX}x${repeatY} times` +
+        (spacingX !== 0 && spacingY !== 0 ? ` with spacing ${spacingX}x${spacingY}` : ''),
+      playerId,
+    )
+  } catch (e) {
+    // pasteBlocks doesn't know about playerId, so we catch and rethrow it with playerId
+    if (e instanceof GameError) {
+      throw new GameError(e.message, playerId)
+    }
+    throw e
+  }
 }
 
 function placeEditedBlocks(playerId: number, editedBlocks: WorldBlock[]) {
@@ -785,12 +795,24 @@ function applySmartTransformForBlockWithIntArgument(
   blockCopy: WorldBlock,
   repetition: number,
 ) {
-  if (pastePosBlock.block.bId === nextBlock.block.bId) {
-    const diff = (nextBlock.block.args[argIdx] as number) - (pastePosBlock.block.args[argIdx] as number)
-    blockCopy.block.args[argIdx] = (blockCopy.block.args[argIdx] as number) + diff * repetition
+  if (pastePosBlock.block.bId !== nextBlock.block.bId) {
+    return
   }
+
+  const diff = (nextBlock.block.args[argIdx] as number) - (pastePosBlock.block.args[argIdx] as number)
+  blockCopy.block.args[argIdx] = (blockCopy.block.args[argIdx] as number) + diff * repetition
 }
 
+// Smart increment for portals.
+// Example:
+// - Input: "5", "6"
+// - Output: "7"
+// Example 2:
+// - Input: "a1", "a2"
+// - Output: "a3"
+// Example 3:
+// - Input: "14a3b", "28a5b"
+// - Output: "42a7b"
 function applySmartTransformForPortalBlock(
   pastePosBlock: WorldBlock,
   nextBlock: WorldBlock,
@@ -798,15 +820,35 @@ function applySmartTransformForPortalBlock(
   blockCopy: WorldBlock,
   repetition: number,
 ) {
-  if (pastePosBlock.block.bId === nextBlock.block.bId) {
-    const nextBlockPortalId = portalIdToNumber(nextBlock.block.args[argIdx] as string)
-    const pastePosBlockPortalId = portalIdToNumber(pastePosBlock.block.args[argIdx] as string)
-    const blockCopyPortalId = portalIdToNumber(blockCopy.block.args[argIdx] as string)
-    if (nextBlockPortalId !== undefined && pastePosBlockPortalId !== undefined && blockCopyPortalId !== undefined) {
-      const diff = nextBlockPortalId - pastePosBlockPortalId
-      blockCopy.block.args[argIdx] = (blockCopyPortalId + diff * repetition).toString()
-    }
+  if (pastePosBlock.block.bId !== nextBlock.block.bId) {
+    return
   }
+
+  const pastePosBlockPortalIdPartArray = portalIdToNumberAndStringArray(pastePosBlock.block.args[argIdx] as string)
+  const nextBlockPortalIdPartArray = portalIdToNumberAndStringArray(nextBlock.block.args[argIdx] as string)
+
+  if (!numberAndStringArrayTypesMatch(pastePosBlockPortalIdPartArray, nextBlockPortalIdPartArray)) {
+    return
+  }
+
+  const blockCopyPortalIdPartArray = portalIdToNumberAndStringArray(blockCopy.block.args[argIdx] as string)
+
+  const portalId = pastePosBlockPortalIdPartArray
+    .map((pastePosBlockPortalIdPart, i) => {
+      if (typeof pastePosBlockPortalIdPart === 'number') {
+        const diff = (nextBlockPortalIdPartArray[i] as number) - pastePosBlockPortalIdPart
+        return ((blockCopyPortalIdPartArray[i] as number) + diff * repetition).toString()
+      } else {
+        return pastePosBlockPortalIdPart
+      }
+    })
+    .join('')
+
+  if (portalId.length > 5) {
+    throw new GameError(`Computed portal ID is longer than 5 characters, which cannot be placed: "${portalId}"`)
+  }
+
+  blockCopy.block.args[argIdx] = portalId
 }
 
 function applySmartTransformForBlocks(

@@ -135,6 +135,6 @@ describe.sequential('.mask', () => {
 
   test('Unknown modes throw error', async () => {
     const playerId = getPwGameWorldHelper().botPlayerId
-    await expect(() => commandReceived(`.mask default nnair`, playerId)).rejects.toThrowError()
+    await expect(() => commandReceived(`.mask default nnair`, playerId)).rejects.toThrowError(/Unrecognised mask mode/)
   })
 })
