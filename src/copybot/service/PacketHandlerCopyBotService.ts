@@ -51,6 +51,7 @@ import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { CopyBotCommandName } from '@/copybot/enum/CopyBotCommandName.ts'
 import { CopyBotMaskCommandMode } from '@/copybot/enum/CopyBotMaskCommandMode.ts'
+import { createUnrecognisedMaskModeError } from '@/copybot/service/CopyBotGameErrorFactoryService.ts'
 
 const callbacks: CallbackEntry[] = [
   { name: 'playerInitPacket', fn: commonPlayerInitPacketReceived },
@@ -151,10 +152,7 @@ export async function commandReceived(message: string, playerId: number) {
 function maskCommandReceived(args: string[], playerId: number) {
   for (const arg of args) {
     if (!Object.values(CopyBotMaskCommandMode).includes(arg as CopyBotMaskCommandMode)) {
-      throw new GameError(
-        `Unrecognised mask mode '${arg}'. Valid modes: default, background, foreground, overlay, nonair`,
-        playerId,
-      )
+      throw createUnrecognisedMaskModeError(arg, playerId)
     }
   }
 

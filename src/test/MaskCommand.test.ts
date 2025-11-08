@@ -6,6 +6,7 @@ import { vec2 } from '@basementuniverse/vec'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { runSelectCommandTest } from '@/test/RuntimeTestsUtil.ts'
 import { commandReceived, pasteBlocks } from '@/copybot/service/PacketHandlerCopyBotService.ts'
+import { createUnrecognisedMaskModeError } from '@/copybot/service/CopyBotGameErrorFactoryService.ts'
 
 describe.sequential('.mask', () => {
   test('.mask default', async (ctx) => {
@@ -135,6 +136,8 @@ describe.sequential('.mask', () => {
 
   test('Unknown modes throw error', async () => {
     const playerId = getPwGameWorldHelper().botPlayerId
-    await expect(() => commandReceived(`.mask default nnair`, playerId)).rejects.toThrowError(/Unrecognised mask mode/)
+    await expect(() => commandReceived(`.mask default nnair`, playerId)).rejects.toThrowError(
+      createUnrecognisedMaskModeError('nnair', playerId),
+    )
   })
 })
