@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "test": "vitest",
+    "coverage": "vitest run --coverage",
     "build": "vite build",
     "preview": "vite preview",
     "format": "npx prettier . --write --ignore-pattern dist",
@@ -45,6 +46,7 @@
     "@types/pngjs": "^6.0.5",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vitest/browser-playwright": "^4.0.7",
+    "@vitest/coverage-v8": "^4.0.7",
     "@vue/eslint-config-typescript": "^14.6.0",
     "eslint": "^9.36.0",
     "eslint-config-prettier": "^10.1.8",
