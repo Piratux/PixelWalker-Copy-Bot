@@ -63,6 +63,9 @@ Before running tests, you need to setup the following .env variables:
 npm run test
 ```
 
+When running tests, do not modify the source code, because that will automatically restart the tests and may cause some
+tests to fail. Only modify source code before tests run or after tests finished.
+
 When writing/modifying tests you might find `.printblocks` command useful.
 It prints array of `WorldBlock[]` that you can paste directly to tests.
 
@@ -80,11 +83,18 @@ http://localhost:4173/PixelWalker-Copy-Bot/
 
 Vite's HMR won't work for production build, so you need to run build and preview commands when you make code changes.
 
-### Runtime tests
+### Coverage report
 
-This repository contains runtime tests.
+To run coverage report, run the following command at the root of project:
 
-To use them, run `.test` while in game.
+```
+npm run coverage
+```
+
+Then you can open up coverage report in browser UI.
+See more info here:
+
+https://vitest.dev/guide/coverage.html#vitest-ui
 
 ### Disable ESLint/Vue-tsc
 

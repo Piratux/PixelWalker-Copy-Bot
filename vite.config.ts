@@ -44,6 +44,10 @@ export default defineConfig(() => {
         // https://vitest.dev/guide/browser/playwright
         instances: [{ browser: 'chromium' }],
       },
+      coverage: {
+        reporter: ['html'],
+        exclude: ['src/test/**', 'src/**/gen/**'],
+      },
       setupFiles: './src/test/VitestSetup.ts',
       isolate: false, // necessary for setupFiles to not have fresh context for each test file run. That way bot doesn't need to be reconnected for each test file.
     },
