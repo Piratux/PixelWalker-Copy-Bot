@@ -6,7 +6,7 @@ import { vec2 } from '@basementuniverse/vec'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { runSelectCommandTest } from '@/test/RuntimeTestsUtil.ts'
 import { commandReceived, pasteBlocks } from '@/copybot/service/PacketHandlerCopyBotService.ts'
-import { createUnrecognisedMaskModeError } from '@/copybot/service/CopyBotGameErrorFactoryService.ts'
+import { createUnrecognisedMaskModeError } from '@/copybot/service/CopyBotErrorService.ts'
 
 describe.sequential('.mask', () => {
   test('.mask default', async (ctx) => {

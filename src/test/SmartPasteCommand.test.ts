@@ -7,7 +7,7 @@ import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { runSelectCommandTest } from '@/test/RuntimeTestsUtil.ts'
 import { commandReceived } from '@/copybot/service/PacketHandlerCopyBotService.ts'
 import { GameError } from '@/core/class/GameError.ts'
-import { createPortalIdTooLongErrorString } from '@/copybot/service/CopyBotGameErrorFactoryService.ts'
+import { createPortalIdTooLongErrorString } from '@/copybot/service/CopyBotErrorService.ts'
 
 describe.sequential('.smartpaste', () => {
   test('.smartpaste 3 1', async (ctx) => {

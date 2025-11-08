@@ -54,7 +54,7 @@ import { CopyBotMaskCommandMode } from '@/copybot/enum/CopyBotMaskCommandMode.ts
 import {
   createPortalIdTooLongErrorString,
   createUnrecognisedMaskModeError,
-} from '@/copybot/service/CopyBotGameErrorFactoryService.ts'
+} from '@/copybot/service/CopyBotErrorService.ts'
 
 const callbacks: CallbackEntry[] = [
   { name: 'playerInitPacket', fn: commonPlayerInitPacketReceived },
