@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-11-08 Version 1.12.1
+- Bot: When bot or player joins the world, "[BOT] Copy Bot is here! Type .help to show usage!" is now only sent to world owner.
+
 2025-11-07 Version 1.12.0
 - Bot: .smartpaste now applies smart pasting logic for portal ids that have numbers and letters. For ex.: a1, a2 -> a3.
 - Bot: Improved .mask command error messages when using invalid mask modes.

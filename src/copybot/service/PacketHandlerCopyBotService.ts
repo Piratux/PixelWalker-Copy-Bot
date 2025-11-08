@@ -88,7 +88,11 @@ function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
   if (!(playerId in getPlayerCopyBotData())) {
     getPlayerCopyBotData()[playerId] = createBotData()
   }
-  sendPrivateChatMessage('Copy Bot is here! Type .help to show usage!', playerId)
+
+  // Joey from PW mentioned players complained when they all got pings on private messages when bot joins
+  if (isWorldOwner(playerId)) {
+    sendPrivateChatMessage('Copy Bot is here! Type .help to show usage!', playerId)
+  }
 }
 
 async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
