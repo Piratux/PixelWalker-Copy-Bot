@@ -41,12 +41,10 @@ import {
   requirePlayerAndBotEditPermission,
 } from '@/core/service/PwClientService.ts'
 import { isDeveloper, isWorldOwner, requireDeveloper } from '@/core/util/Environment.ts'
-import { getImportedFromPwlvlData } from '@/pwlvl/service/PwlvlImporterService.ts'
 import { getWorldIdIfUrl } from '@/core/util/WorldIdExtractor.ts'
 import { handleException } from '@/core/util/Exception.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
-import { bufferToArrayBuffer } from '@/core/util/Buffers.ts'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { CopyBotCommandName } from '@/copybot/enum/CopyBotCommandName.ts'
@@ -336,9 +334,8 @@ async function importCommandReceived(args: string[], playerId: number) {
     allBlocks = convertDeserializedStructureToWorldBlocks(partialBlocks, vec2(destToX, destToY))
   } else {
     const emptyBlocks = createEmptyBlocksFullWorldSize(getPwGameWorldHelper())
-    const worldData = getImportedFromPwlvlData(bufferToArrayBuffer(blocksFromAnotherWorld.toBuffer()))
     const emptyBlocksWorldBlocks = convertDeserializedStructureToWorldBlocks(emptyBlocks)
-    const worldDataWorldBlocks = convertDeserializedStructureToWorldBlocks(worldData)
+    const worldDataWorldBlocks = convertDeserializedStructureToWorldBlocks(blocksFromAnotherWorld)
     allBlocks = mergeWorldBlocks(emptyBlocksWorldBlocks, worldDataWorldBlocks)
   }
 
