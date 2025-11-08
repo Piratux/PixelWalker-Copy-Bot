@@ -6,6 +6,8 @@ import { vec2 } from '@basementuniverse/vec'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { runSelectCommandTest } from '@/test/RuntimeTestsUtil.ts'
 import { commandReceived } from '@/copybot/service/PacketHandlerCopyBotService.ts'
+import { GameError } from '@/core/class/GameError.ts'
+import { createPortalIdTooLongErrorString } from '@/copybot/service/CopyBotGameErrorFactoryService.ts'
 
 describe.sequential('.smartpaste', () => {
   test('.smartpaste 3 1', async (ctx) => {
@@ -534,6 +536,6 @@ describe.sequential('.smartpaste', () => {
       await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(0, 0), async () => {
         await commandReceived('.smartpaste 2 2', playerId)
       })
-    }).rejects.toThrowError(/Computed portal ID is longer than 5 characters, which cannot be placed/)
+    }).rejects.toThrowError(new GameError(createPortalIdTooLongErrorString('aaaa10'), playerId))
   })
 })

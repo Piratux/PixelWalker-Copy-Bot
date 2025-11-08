@@ -6,3 +6,7 @@ export function createUnrecognisedMaskModeError(arg: string, playerId: number): 
     playerId,
   )
 }
+
+export function createPortalIdTooLongErrorString(portalId: string): string {
+  return `Computed portal ID is longer than 5 characters, which cannot be placed: '${portalId}'`
+}

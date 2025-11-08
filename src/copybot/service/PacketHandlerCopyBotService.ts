@@ -51,7 +51,10 @@ import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { CopyBotCommandName } from '@/copybot/enum/CopyBotCommandName.ts'
 import { CopyBotMaskCommandMode } from '@/copybot/enum/CopyBotMaskCommandMode.ts'
-import { createUnrecognisedMaskModeError } from '@/copybot/service/CopyBotGameErrorFactoryService.ts'
+import {
+  createPortalIdTooLongErrorString,
+  createUnrecognisedMaskModeError,
+} from '@/copybot/service/CopyBotGameErrorFactoryService.ts'
 
 const callbacks: CallbackEntry[] = [
   { name: 'playerInitPacket', fn: commonPlayerInitPacketReceived },
@@ -843,7 +846,7 @@ function applySmartTransformForPortalBlock(
     .join('')
 
   if (portalId.length > 5) {
-    throw new GameError(`Computed portal ID is longer than 5 characters, which cannot be placed: "${portalId}"`)
+    throw new GameError(createPortalIdTooLongErrorString(portalId))
   }
 
   blockCopy.block.args[argIdx] = portalId
