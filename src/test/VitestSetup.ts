@@ -17,8 +17,8 @@ if (getActivePinia() === undefined) {
     BotType.COPY_BOT,
   )
 
-  if (getPwGameWorldHelper().width < 200 || getPwGameWorldHelper().height < 200) {
-    throw new Error('To perform tests, world must be at least 200x200 size.')
+  if (getPwGameWorldHelper().width !== 200 || getPwGameWorldHelper().height !== 200) {
+    throw new Error('To perform tests, world must be exactly 200x200 size.')
   }
 }
 

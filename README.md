@@ -57,7 +57,7 @@ Before running tests, you need to setup the following .env variables:
 
 - VITE_TEST_RUN_PW_ACCOUNT_EMAIL
 - VITE_TEST_RUN_PW_ACCOUNT_PASSWORD
-- VITE_TEST_RUN_PW_WORLD_ID
+- VITE_TEST_RUN_PW_WORLD_ID (world needs to be exactly of size 200x200)
 
 ```
 npm run test
@@ -65,6 +65,9 @@ npm run test
 
 When running tests, do not modify the source code, because that will automatically restart the tests and may cause some
 tests to fail. Only modify source code before tests run or after tests finished.
+
+Currently, one of the tests expects that there is a second person in the world. Therefore when
+running tests, make sure to be in that world.
 
 When writing/modifying tests you might find `.printblocks` command useful.
 It prints array of `WorldBlock[]` that you can paste directly to tests.
