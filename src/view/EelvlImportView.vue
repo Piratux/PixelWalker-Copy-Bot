@@ -2,14 +2,14 @@
 import { ref } from 'vue'
 import { FileImportAsArrayBufferResult, getFileAsArrayBuffer } from '@/core/service/FileService.ts'
 import { sendGlobalChatMessage } from '@/core/service/ChatMessageService.ts'
-import { importFromEelvl } from '@/eelvl/service/EelvlImporterService.ts'
+import { importFromEelvl } from '@/webtool/eelvl/service/EelvlImporterService.ts'
 import { withLoading } from '@/core/util/LoaderProxy.ts'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'
 import PiOverlay from '@/component/PiOverlay.vue'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 import MissingBlockInfoTextArea from '@/component/MissingBlockInfoTextArea.vue'
-import { MissingBlockInfo } from '@/eelvl/type/MissingBlockInfo.ts'
+import { MissingBlockInfo } from '@/webtool/eelvl/type/MissingBlockInfo.ts'
 
 const loadingOverlay = ref(false)
 const missingBlocks = ref<MissingBlockInfo[]>([])

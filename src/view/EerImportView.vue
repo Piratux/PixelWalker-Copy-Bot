@@ -8,7 +8,7 @@ import PiTextField from '@/component/PiTextField.vue'
 import { VForm } from 'vuetify/components'
 import { withLoading } from '@/core/util/LoaderProxy.ts'
 import { sendGlobalChatMessage } from '@/core/service/ChatMessageService.ts'
-import { importFromEer } from '@/eer/service/EerImporterService.ts'
+import { importFromEer } from '@/webtool/eer/service/EerImporterService.ts'
 
 const loadingOverlay = ref(false)
 const eerRoomId = ref('')

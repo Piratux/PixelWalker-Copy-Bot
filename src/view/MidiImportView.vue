@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { FileImportAsArrayBufferResult, getFileAsArrayBuffer } from '@/core/service/FileService.ts'
 import { sendGlobalChatMessage } from '@/core/service/ChatMessageService.ts'
-import { importFromMidi } from '@/midi/service/MidiImporterService.ts'
+import { importFromMidi } from '@/webtool/midi/service/MidiImporterService.ts'
 import { withLoading } from '@/core/util/LoaderProxy.ts'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'

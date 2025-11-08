@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { exportToPwlvl } from '@/pwlvl/service/PwlvlExporterService.ts'
+import { exportToPwlvl } from '@/webtool/pwlvl/service/PwlvlExporterService.ts'
 import { FileImportAsArrayBufferResult, getFileAsArrayBuffer } from '@/core/service/FileService.ts'
 import { sendGlobalChatMessage } from '@/core/service/ChatMessageService.ts'
-import { importFromPwlvl } from '@/pwlvl/service/PwlvlImporterService.ts'
+import { importFromPwlvl } from '@/webtool/pwlvl/service/PwlvlImporterService.ts'
 import { withLoading } from '@/core/util/LoaderProxy.ts'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'

@@ -1,22 +1,26 @@
-import { EelvlBlockId } from '@/eelvl/gen/EelvlBlockId.ts'
+import { EelvlBlockId } from '@/webtool/eelvl/gen/EelvlBlockId.ts'
 import { getPwBlocksByPwId, getPwGameWorldHelper, usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
-import { EelvlBlock } from '@/eelvl/type/EelvlBlock.ts'
+import { EelvlBlock } from '@/webtool/eelvl/type/EelvlBlock.ts'
 import { downloadFile } from '@/core/service/FileService.ts'
 import ManyKeysMap from 'many-keys-map'
 import { vec2 } from '@basementuniverse/vec'
-import { EelvlFileHeader } from '@/eelvl/type/EelvlFileHeader.ts'
+import { EelvlFileHeader } from '@/webtool/eelvl/type/EelvlFileHeader.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { getBlockName, portalIdToNumber } from '@/core/service/WorldService.ts'
-import { EelvlLayer } from '@/eelvl/enum/EelvlLayer.ts'
+import { EelvlLayer } from '@/webtool/eelvl/enum/EelvlLayer.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
-import { EelvlBlockEntry } from '@/eelvl/type/EelvlBlockEntry.ts'
+import { EelvlBlockEntry } from '@/webtool/eelvl/type/EelvlBlockEntry.ts'
 import { getAllWorldBlocks } from '@/core/service/PwClientService.ts'
-import { getEelvlBlocksById } from '@/eelvl/store/EelvlClientStore.ts'
-import { hasEelvlBlockOneIntParameter, isEelvlNpc, writeEeelvlFileHeader } from '@/eelvl/service/EelvlUtilService.ts'
+import { getEelvlBlocksById } from '@/webtool/eelvl/store/EelvlClientStore.ts'
+import {
+  hasEelvlBlockOneIntParameter,
+  isEelvlNpc,
+  writeEeelvlFileHeader,
+} from '@/webtool/eelvl/service/EelvlUtilService.ts'
 import { ByteArray } from 'playerioclient'
-import { EelvlExportResult } from '@/eelvl/type/EelvlExportResult.ts'
-import { MissingBlockInfo } from '@/eelvl/type/MissingBlockInfo.ts'
+import { EelvlExportResult } from '@/webtool/eelvl/type/EelvlExportResult.ts'
+import { MissingBlockInfo } from '@/webtool/eelvl/type/MissingBlockInfo.ts'
 
 function addBlocksEntry(blocks: ManyKeysMap<EelvlBlockEntry, vec2[]>, key: EelvlBlockEntry, x: number, y: number) {
   if (!blocks.has(key)) {

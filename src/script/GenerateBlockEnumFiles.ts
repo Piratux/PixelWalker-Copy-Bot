@@ -1,7 +1,7 @@
 import { writeFile } from 'fs/promises'
-import { EELVL_BLOCKS } from '../eelvl/block/EelvlBlocks.ts'
+import { EELVL_BLOCKS } from '@/webtool/eelvl/block/EelvlBlocks.ts'
 import { ListBlockResult } from 'pw-js-api'
-import { EER_BLOCKS } from '@/eer/block/EerBlocks.ts'
+import { EER_BLOCKS } from '@/webtool/eer/block/EerBlocks.ts'
 
 await generateBlockEnumFiles()
 

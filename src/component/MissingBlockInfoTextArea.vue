@@ -4,7 +4,7 @@
 
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
-import { MissingBlockInfo } from '@/eelvl/type/MissingBlockInfo.ts'
+import { MissingBlockInfo } from '@/webtool/eelvl/type/MissingBlockInfo.ts'
 
 const resultText = ref('')
 

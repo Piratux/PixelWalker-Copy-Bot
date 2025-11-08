@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { FileImportAsArrayBufferResult, getFileAsArrayBuffer } from '@/core/service/FileService.ts'
 import { sendGlobalChatMessage } from '@/core/service/ChatMessageService.ts'
-import { importFromPng } from '@/png/service/PngImporterService.ts'
+import { importFromPng } from '@/webtool/png/service/PngImporterService.ts'
 import { withLoading } from '@/core/util/LoaderProxy.ts'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'

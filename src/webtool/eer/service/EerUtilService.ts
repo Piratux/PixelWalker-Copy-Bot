@@ -1,4 +1,4 @@
-import { EerBlockId } from '@/eer/gen/EerBlockId.ts'
+import { EerBlockId } from '@/webtool/eer/gen/EerBlockId.ts'
 
 export function hasEerBlockOneIntParameter(eerBlockId: number): boolean {
   return [

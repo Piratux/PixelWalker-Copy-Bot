@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { exportToEelvl } from '@/eelvl/service/EelvlExporterService.ts'
+import { exportToEelvl } from '@/webtool/eelvl/service/EelvlExporterService.ts'
 import { withLoading } from '@/core/util/LoaderProxy.ts'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'
 import { createAsyncCallback } from '@/core/util/Promise.ts'
 import PiOverlay from '@/component/PiOverlay.vue'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
-import { MissingBlockInfo } from '@/eelvl/type/MissingBlockInfo.ts'
+import { MissingBlockInfo } from '@/webtool/eelvl/type/MissingBlockInfo.ts'
 import MissingBlockInfoTextArea from '@/component/MissingBlockInfoTextArea.vue'
 
 const loadingOverlay = ref(false)

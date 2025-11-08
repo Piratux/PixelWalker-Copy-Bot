@@ -1,4 +1,4 @@
-import { EerLayer } from '@/eer/enum/EerLayer.ts'
+import { EerLayer } from '@/webtool/eer/enum/EerLayer.ts'
 
 export interface EerBlock {
   name: string

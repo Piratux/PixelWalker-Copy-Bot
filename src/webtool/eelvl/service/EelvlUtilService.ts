@@ -1,6 +1,6 @@
-import { EelvlBlockId } from '@/eelvl/gen/EelvlBlockId.ts'
+import { EelvlBlockId } from '@/webtool/eelvl/gen/EelvlBlockId.ts'
 import { ByteArray } from 'playerioclient'
-import { EelvlFileHeader } from '@/eelvl/type/EelvlFileHeader.ts'
+import { EelvlFileHeader } from '@/webtool/eelvl/type/EelvlFileHeader.ts'
 
 export function hasEelvlBlockOneIntParameter(eelvlBlockId: number): boolean {
   return [

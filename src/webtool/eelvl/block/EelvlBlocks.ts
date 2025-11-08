@@ -1,4 +1,4 @@
-import { EelvlLayer } from '@/eelvl/enum/EelvlLayer.ts'
+import { EelvlLayer } from '@/webtool/eelvl/enum/EelvlLayer.ts'
 
 export interface EelvlBlock {
   name: string

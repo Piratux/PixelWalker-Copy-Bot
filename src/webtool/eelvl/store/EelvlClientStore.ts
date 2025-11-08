@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { EELVL_BLOCKS, EelvlBlock } from '@/eelvl/block/EelvlBlocks.ts'
+import { EELVL_BLOCKS, EelvlBlock } from '@/webtool/eelvl/block/EelvlBlocks.ts'
 import ManyKeysMap from 'many-keys-map'
 import { ListBlockResult } from 'pw-js-api'
 

@@ -6,9 +6,9 @@ import piratuxPfpUnquantizedPwlvlFile from '@/test/resources/piratux-pfp-unquant
 import piratuxPfpPngFile from '@/test/resources/piratux-pfp.png?url'
 import thomasBergersenAuraPianoPwlvlFile from '@/test/resources/Thomas_Bergersen-Aura_Piano.pwlvl?url'
 import thomasBergersenAuraPianoMidFile from '@/test/resources/Thomas_Bergersen-Aura_Piano.mid?url'
-import { getImportedFromEelvlData } from '@/eelvl/service/EelvlImporterService.ts'
+import { getImportedFromEelvlData } from '@/webtool/eelvl/service/EelvlImporterService.ts'
 import { sendGlobalChatMessage } from '@/core/service/ChatMessageService.ts'
-import { getExportedToEelvlData } from '@/eelvl/service/EelvlExporterService.ts'
+import { getExportedToEelvlData } from '@/webtool/eelvl/service/EelvlExporterService.ts'
 import {
   compareDeserialisedStructureData,
   getDataFromEelvlFile,
