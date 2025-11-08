@@ -596,9 +596,6 @@ async function placeBomBotWorld() {
   sendGlobalChatMessage('Loading BomBot world')
   const bomBotMapWorldId = 'r3796a7103bb687'
   const blocks = await getAnotherWorldBlocks(bomBotMapWorldId, getPwApiClient())
-  if (!blocks) {
-    throw new GameError('Failed to load BomBot world')
-  }
   await placeWorldDataBlocks(blocks)
 }
 
@@ -750,9 +747,6 @@ async function loadBomBotData() {
   sendGlobalChatMessage('Loading BomBot data')
   const bomBotDataWorldId = getWorldIdIfUrl('lbsz7864s3a3yih')
   const bomBotBlocks = await getAnotherWorldBlocks(bomBotDataWorldId, getPwApiClient())
-  if (!bomBotBlocks) {
-    throw new GameError('Failed to load BomBot data')
-  }
 
   useBomBotWorldStore().bombTimerBgBlockTimeLeft = bomBotBlocks.blocks[LayerType.Background][2][378]
   useBomBotWorldStore().bombTimerBgBlockTimeSpent = bomBotBlocks.blocks[LayerType.Background][4][378]

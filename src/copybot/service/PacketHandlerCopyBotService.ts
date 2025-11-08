@@ -7,7 +7,7 @@ import {
   getPwGameWorldHelper,
   usePwClientStore,
 } from '@/core/store/PwClientStore.ts'
-import { Block, ComponentTypeHeader, DeserialisedStructure, IPlayer, LayerType, Point } from 'pw-js-world'
+import { Block, ComponentTypeHeader, IPlayer, LayerType, Point } from 'pw-js-world'
 import { cloneDeep, isEqual } from 'lodash-es'
 import { CopyBotData, createBotData } from '@/copybot/type/CopyBotData.ts'
 import { getPlayerCopyBotData } from '@/copybot/store/CopyBotStore.ts'
@@ -65,7 +65,11 @@ export function registerCopyBotCallbacks() {
   const client = getPwGameClient()
   const helper = getPwGameWorldHelper()
   client.addHook(helper.receiveHook)
-  client.addCallback('debug', console.log)
+
+  // For some bizarre reason, printing lots of console logs, significantly slows down vitest test runs.
+  // See: https://github.com/vitest-dev/vitest/issues/8982
+  // client.addCallback('debug', console.log)
+
   client.addCallback('error', handleException)
   for (const cb of callbacks) {
     client.addCallback(cb.name, cb.fn)
@@ -288,21 +292,7 @@ async function importCommandReceived(args: string[], playerId: number) {
 
   sendGlobalChatMessage(`Importing world from ${worldId}`)
 
-  let blocksFromAnotherWorld: DeserialisedStructure
-  try {
-    const result = await getAnotherWorldBlocks(worldId, getPwApiClient())
-    if (!result) {
-      // noinspection ExceptionCaughtLocallyJS
-      throw new Error('Getting blocks from another world took too long.')
-    }
-    blocksFromAnotherWorld = result
-  } catch (exception: unknown) {
-    if (exception instanceof Error) {
-      throw new GameError(exception.message)
-    } else {
-      throw new GameError('Failed to get blocks from another world.')
-    }
-  }
+  const blocksFromAnotherWorld = await getAnotherWorldBlocks(worldId, getPwApiClient())
 
   const partialImportUsed = args.length === 7
   let allBlocks: WorldBlock[]

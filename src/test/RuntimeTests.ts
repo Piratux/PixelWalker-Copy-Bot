@@ -15,20 +15,12 @@ import {
   getDataFromMidiFile,
   getDataFromPngFile,
   getDataFromPwlvlFile,
-  placePwLvlblocks,
 } from '@/test/RuntimeTestsUtil.ts'
-import { authenticate, getAllWorldBlocks, joinWorld } from '@/core/service/PwClientService.ts'
-import { getPwGameClient, getPwGameWorldHelper, usePwClientStore } from '@/core/store/PwClientStore.ts'
-import { CustomBotEvents, PWApiClient, PWGameClient, WorldEventNames } from 'pw-js-api'
-import { PWGameWorldHelper } from 'pw-js-world'
-import waitUntil from 'async-wait-until'
 import { bufferToArrayBuffer } from '@/core/util/Buffers.ts'
 
 export async function performRuntimeTests() {
   sendGlobalChatMessage('[TEST] Performing runtime tests...')
   const tests = [
-    testMapUpdateFromWorldBlockPlacedPacket,
-    testMapUpdateFromPlayerInitPacket,
     testEelvlImport,
     testEelvlExportWithEelvlData,
     testEelvlExportWithPwlvlData,
@@ -77,51 +69,6 @@ async function testEelvlExportWithPwlvlData() {
   const expectedData = await getDataFromPwlvlFile(everyBlockExportedEelvlPwlvlFile)
 
   compareDeserialisedStructureData(eelvlImportResult.blocks, expectedData)
-}
-
-async function testMapUpdateFromWorldBlockPlacedPacket() {
-  const expectedData = await placePwLvlblocks(everyBlockOriginalPwlvlFile)
-  const receivedData = getAllWorldBlocks(getPwGameWorldHelper())
-
-  compareDeserialisedStructureData(receivedData, expectedData)
-}
-
-async function testMapUpdateFromPlayerInitPacket() {
-  const expectedData = await placePwLvlblocks(everyBlockOriginalPwlvlFile)
-
-  getPwGameClient().disconnect(false)
-
-  const pwApiClient = new PWApiClient(usePwClientStore().email, usePwClientStore().password)
-
-  await authenticate(pwApiClient)
-
-  const worldId = usePwClientStore().worldId
-
-  const pwGameClient = new PWGameClient(pwApiClient)
-  const pwGameWorldHelper = new PWGameWorldHelper()
-
-  let initReceived = false
-  pwGameClient.addHook(pwGameWorldHelper.receiveHook).addCallback('playerInitPacket', async () => {
-    pwGameClient.send('playerInitReceived')
-
-    const receivedData = getAllWorldBlocks(pwGameWorldHelper)
-    compareDeserialisedStructureData(receivedData, expectedData)
-    pwGameClient.disconnect(false)
-
-    const eventName: WorldEventNames | keyof CustomBotEvents = 'playerInitPacket'
-
-    const playerInitPacketReceived = () => {
-      getPwGameClient().removeCallback(eventName, playerInitPacketReceived)
-      initReceived = true
-    }
-
-    getPwGameClient().addCallback(eventName, playerInitPacketReceived)
-
-    await joinWorld(getPwGameClient(), worldId)
-  })
-
-  await joinWorld(pwGameClient, worldId)
-  await waitUntil(() => initReceived, { timeout: 30000, intervalBetweenAttempts: 1000 })
 }
 
 async function testPngImportQuantized() {

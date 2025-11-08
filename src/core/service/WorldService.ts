@@ -26,6 +26,7 @@ import { authenticate, getAllWorldBlocks, joinWorld } from '@/core/service/PwCli
 import { handleException } from '@/core/util/Exception.ts'
 import waitUntil from 'async-wait-until'
 import { clamp } from '@/core/util/Numbers.ts'
+import { GameError } from '@/core/class/GameError.ts'
 
 export function getBlockAt(pos: Point, layer: number): Block {
   try {
@@ -257,10 +258,7 @@ export function numberAndStringArrayTypesMatch(array1: (number | string)[], arra
   return true
 }
 
-export async function getAnotherWorldBlocks(
-  worldId: string,
-  pwApiClient: PWApiClient,
-): Promise<DeserialisedStructure | null> {
+export async function getAnotherWorldBlocks(worldId: string, pwApiClient: PWApiClient): Promise<DeserialisedStructure> {
   await authenticate(pwApiClient)
 
   const pwGameClient = new PWGameClient(pwApiClient)
@@ -285,6 +283,9 @@ export async function getAnotherWorldBlocks(
   await joinWorld(pwGameClient, worldId)
 
   await waitUntil(() => copyFromAnotherWorldFinished, { timeout: 10000, intervalBetweenAttempts: 1000 })
+  if (blocksResult === null) {
+    throw new GameError(`Getting blocks from another world took too long. World ID: ${worldId}`)
+  }
   return blocksResult
 }
 
