@@ -23,9 +23,6 @@ lib-cov
 coverage
 *.lcov
 
-# Vitest UI coverage directory
-html
-
 # nyc test coverage
 .nyc_output
 
