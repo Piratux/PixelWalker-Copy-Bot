@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-11-09 Version 1.12.2
+- Website: Remove "Optimize colors for faster placement" option from PNG Import.
+
 2025-11-08 Version 1.12.1
 - Bot: When bot or player joins the world, "[BOT] Copy Bot is here! Type .help to show usage!" is now only sent to world owner.
 

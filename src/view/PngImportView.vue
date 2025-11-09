@@ -57,17 +57,6 @@ async function onPngFileChange(event: Event) {
           </template>
         </v-tooltip>
       </v-row>
-      <v-row>
-        <v-checkbox
-          v-model="quantizePng"
-          :disabled="!usePwClientStore().isConnected"
-          color="green"
-          label="Optimize colors for faster placement"
-          hide-details
-          style="margin-bottom: -1rem; margin-left: 1rem"
-          @click="quantizePng = !quantizePng"
-        />
-      </v-row>
     </v-col>
   </PiCardContainer>
   <PiCardContainer>
