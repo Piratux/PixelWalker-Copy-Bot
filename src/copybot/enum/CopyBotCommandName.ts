@@ -11,5 +11,6 @@ export enum CopyBotCommandName {
   Mask = 'mask',
   Import = 'import',
   PlaceAll = 'placeall',
+  PlaceElvlImport = 'placeelvlimport',
   PrintBlocks = 'printblocks',
 }
