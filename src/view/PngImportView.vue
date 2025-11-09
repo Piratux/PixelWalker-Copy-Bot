@@ -13,8 +13,6 @@ const loadingOverlay = ref(false)
 
 const importPngFileInput = ref<HTMLInputElement>()
 
-const quantizePng = ref(true)
-
 function onImportPngButtonClick() {
   importPngFileInput.value!.click()
 }
@@ -25,12 +23,9 @@ async function onPngFileChange(event: Event) {
     if (!result) {
       return
     }
-    if (quantizePng.value) {
-      sendGlobalChatMessage(`Importing optimized background from ${result.file.name}`)
-    } else {
-      sendGlobalChatMessage(`Importing background from ${result.file.name}`)
-    }
-    await importFromPng(result.data, quantizePng.value)
+
+    sendGlobalChatMessage(`Importing PNG from ${result.file.name}`)
+    await importFromPng(result.data)
   })
 }
 </script>
