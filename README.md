@@ -112,19 +112,20 @@ You can disable them by adding the following lines as the top of the file:
 
 ### When block names change in `/listblocks`
 
-After PixelWalker update, some blocks may change.
+After PixelWalker update, some blocks may change or new ones need to get added. In that case, the
+following needs to be performed:
 
-If blocks change, the following needs to be performed:
-
-- Block names in `EelvlBlocks.ts` and `EerBlocks.ts` need to be updated
-- The following needs to be run:
+- Run:
 
 ```
 npm run gen-files
 ```
 
-- `*.pwlvl` files need to be updated in `tests/resources`
-- Run `.test` in game
+- Update block names in `EelvlBlocks.ts` and `EerBlocks.ts` based on new names in generated files.
+- Update `Every block` (id: ewki341n7ve153l) world with `.placeall` command.
+- Update `Test EELVL export` (id: ra9285102d4a41a) world with `.placeelvlexport` command.
+- Update `Test EELVL import` (id: r0ed3a956087328) world based on potentially failing tests.
+- Run tests (see section above)
 
 ### When changing pre commit hooks
 

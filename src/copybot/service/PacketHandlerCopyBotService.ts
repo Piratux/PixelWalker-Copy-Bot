@@ -154,8 +154,8 @@ export async function commandReceived(message: string, playerId: number) {
     case CopyBotCommandName.PlaceAll:
       await placeallCommandReceived(commandArgs, playerId)
       break
-    case CopyBotCommandName.PlaceElvlImport:
-      await placeElvlImportCommandReceived(commandArgs, playerId)
+    case CopyBotCommandName.PlaceElvlExport:
+      await placeElvlExportCommandReceived(commandArgs, playerId)
       break
     case CopyBotCommandName.PrintBlocks:
       printblocksCommandReceived(commandArgs, playerId)
@@ -257,7 +257,7 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
   }
 }
 
-async function placeElvlImportCommandReceived(_args: string[], playerId: number) {
+async function placeElvlExportCommandReceived(_args: string[], playerId: number) {
   requireDeveloper(playerId)
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
@@ -479,9 +479,9 @@ function helpCommandReceived(args: string[], playerId: number) {
       )
       sendPrivateChatMessage('This command is used in "Every Block" world (ewki341n7ve153l)', playerId)
       break
-    case CopyBotCommandName.PlaceElvlImport:
+    case CopyBotCommandName.PlaceElvlExport:
       sendPrivateChatMessage(
-        '.placeelvlimport - dev command that exports "Every Block" world (ewki341n7ve153l) as eelvl and imports to this world',
+        '.placeelvlexport - dev command that exports "Every Block" world (ewki341n7ve153l) as eelvl and imports to this world',
         playerId,
       )
       sendPrivateChatMessage('This command is used in "Test EELVL export" world (ra9285102d4a41a)', playerId)
