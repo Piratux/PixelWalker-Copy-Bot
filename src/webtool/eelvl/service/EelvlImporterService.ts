@@ -10,7 +10,11 @@ import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { cloneDeep } from 'lodash-es'
 import { handlePlaceBlocksResult, requireBotEditPermission } from '@/core/service/PwClientService.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
-import { hasEelvlBlockOneIntParameter, isEelvlNpc } from '@/webtool/eelvl/service/EelvlUtilService.ts'
+import {
+  getEelvlToPwDrumTypeMap,
+  hasEelvlBlockOneIntParameter,
+  isEelvlNpc,
+} from '@/webtool/eelvl/service/EelvlUtilService.ts'
 import { EelvlLayer } from '@/webtool/eelvl/enum/EelvlLayer.ts'
 import { getPwBlocksByEelvlParameters } from '@/webtool/eelvl/store/EelvlClientStore.ts'
 import { EelvlImportResult } from '@/webtool/eelvl/type/EelvlImportResult.ts'
@@ -399,10 +403,16 @@ function getEelvlToPwPortalBlock(eelvlBlock: EelvlBlock): Block {
   return createBlock(pwBlockName, [portalId.toString(), portalTarget.toString()])
 }
 
-function getEelvlToPwNoteBlock(eelvlBlock: EelvlBlock, pwBlockName: PwBlockName): Block {
+function getEelvlToPwNoteBlock(eelvlBlock: EelvlBlock, pwBlockName: PwBlockName): Block | string {
   let noteValue = eelvlBlock.intParameter!
   if (pwBlockName === PwBlockName.NOTE_PIANO) {
     noteValue += 27
+  }
+  if (pwBlockName === PwBlockName.NOTE_DRUM) {
+    if (getEelvlToPwDrumTypeMap().get(noteValue) === undefined) {
+      return `Unknown block parameter. Name: ${pwBlockName}, parameter: ${noteValue}`
+    }
+    noteValue = getEelvlToPwDrumTypeMap().get(noteValue)!
   }
   const noteBuffer = Buffer.from([noteValue])
 

@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-11-10 Version 1.12.3
+- Website: Fix bad drum note mapping for EELVL Import/Export.
+
 2025-11-09 Version 1.12.2
 - Website: Remove "Optimize colors for faster placement" option from PNG Import.
 

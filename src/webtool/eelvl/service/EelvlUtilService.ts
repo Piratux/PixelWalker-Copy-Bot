@@ -1,6 +1,7 @@
 import { EelvlBlockId } from '@/webtool/eelvl/gen/EelvlBlockId.ts'
 import { ByteArray } from 'playerioclient'
 import { EelvlFileHeader } from '@/webtool/eelvl/type/EelvlFileHeader.ts'
+import { invertMap } from '@/core/util/InvertMap.ts'
 
 export function hasEelvlBlockOneIntParameter(eelvlBlockId: number): boolean {
   return [
@@ -195,4 +196,34 @@ export function writeEeelvlFileHeader(bytes: ByteArray, world: EelvlFileHeader) 
   bytes.writeInt(world.crewStatus)
   bytes.writeBoolean(world.minimapEnabled)
   bytes.writeUTF(world.ownerId)
+}
+
+// eslint-disable @typescript-eslint/naming-convention
+export function getEelvlToPwDrumTypeMap(): Map<number, number> {
+  const result = new Map<number, number>()
+  result.set(0, 0)
+  result.set(1, 1)
+  result.set(2, 2)
+  result.set(3, 3)
+  result.set(4, 8)
+  result.set(5, 9)
+  result.set(6, 10)
+  result.set(7, 17)
+  result.set(8, 13)
+  result.set(9, 18)
+  result.set(10, 4)
+  result.set(11, 5)
+  result.set(12, 6)
+  result.set(13, 7)
+  result.set(14, 11)
+  result.set(15, 12)
+  result.set(16, 14)
+  result.set(17, 15)
+  result.set(18, 16)
+  result.set(19, 19)
+  return result
+}
+
+export function getPwToEelvlDrumTypeMap(): Map<number, number> {
+  return invertMap(getEelvlToPwDrumTypeMap())
 }

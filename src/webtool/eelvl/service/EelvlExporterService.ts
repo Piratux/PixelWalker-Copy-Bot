@@ -14,6 +14,7 @@ import { EelvlBlockEntry } from '@/webtool/eelvl/type/EelvlBlockEntry.ts'
 import { getAllWorldBlocks } from '@/core/service/PwClientService.ts'
 import { getEelvlBlocksById } from '@/webtool/eelvl/store/EelvlClientStore.ts'
 import {
+  getPwToEelvlDrumTypeMap,
   hasEelvlBlockOneIntParameter,
   isEelvlNpc,
   writeEeelvlFileHeader,
@@ -398,6 +399,12 @@ function getPwToEelvlNoteBlock(
     let intParameter = notes.at(0)!
     if (eelvlBlockId === EelvlBlockId.NOTE_PIANO) {
       intParameter -= 27
+    }
+    if (eelvlBlockId === EelvlBlockId.NOTE_DRUM) {
+      if (getPwToEelvlDrumTypeMap().get(intParameter) === undefined) {
+        return `Unknown block parameter. Name: ${pwBlockName}, parameter: ${intParameter}`
+      }
+      intParameter = getPwToEelvlDrumTypeMap().get(intParameter)!
     }
     return { blockId: eelvlBlockId, intParameter: intParameter }
   } else {
