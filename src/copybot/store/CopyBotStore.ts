@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
 import { PlayerCopyBotData } from '@/copybot/type/CopyBotData.ts'
-import { ref } from 'vue'
+import { Raw, ref } from 'vue'
 
 export const useCopyBotStore = defineStore('CopyBotStore', () => {
   // TODO: periodically remove entries for players who left world (though it takes little data)
-  const playerCopyBotData = ref<PlayerCopyBotData>({})
+  const playerCopyBotData = ref<Raw<PlayerCopyBotData>>(new Map())
 
   return {
     playerCopyBotData,

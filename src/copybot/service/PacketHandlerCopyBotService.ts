@@ -93,9 +93,6 @@ function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
   if (playerId === undefined) {
     return
   }
-  if (!(playerId in getPlayerCopyBotData())) {
-    getPlayerCopyBotData()[playerId] = createBotData()
-  }
 
   // Joey from PW mentioned players complained when they all got pings on private messages when bot joins
   if (isWorldOwner(playerId)) {
@@ -1135,11 +1132,12 @@ function worldBlockPlacedPacketReceived(
   }
 }
 
-export function getBotData(playerId: number) {
-  if (!(playerId in getPlayerCopyBotData())) {
-    getPlayerCopyBotData()[playerId] = createBotData()
+export function getBotData(playerId: number): CopyBotData {
+  const playerBotData = getPlayerCopyBotData()
+  if (!playerBotData.has(playerId)) {
+    playerBotData.set(playerId, createBotData())
   }
-  return getPlayerCopyBotData()[playerId]
+  return playerBotData.get(playerId)!
 }
 
 function createOldWorldBlocks(positions: vec2[], oldBlocks: Block[]) {

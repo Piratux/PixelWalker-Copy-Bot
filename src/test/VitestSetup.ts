@@ -24,5 +24,5 @@ if (getActivePinia() === undefined) {
 
 afterEach(() => {
   const playerId = getPwGameWorldHelper().botPlayerId
-  delete getPlayerCopyBotData()[playerId]
+  getPlayerCopyBotData().delete(playerId)
 })

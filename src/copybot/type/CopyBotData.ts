@@ -26,7 +26,7 @@ export interface CopyBotData {
   redoStack: UndoRedoItem[]
 }
 
-export type PlayerCopyBotData = Record<number, CopyBotData>
+export type PlayerCopyBotData = Map<number, CopyBotData>
 
 export function createBotData(): CopyBotData {
   return {
