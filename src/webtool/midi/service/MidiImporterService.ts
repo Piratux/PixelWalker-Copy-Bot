@@ -119,7 +119,7 @@ function processMidiFile(midi: Midi): Record<number, { type: string; notes: numb
   const multiplier = defaultSpeed * (100 / 16) // This is the conversion rate from pixels/tick to blocks/second. (16 pixels = 1 block, 100 ticks = 1 second)
   let highestTime = 0
 
-  midi.tracks.map((track) => {
+  midi.tracks.forEach((track) => {
     const notes = track.notes
     const family = track.instrument.family
 
