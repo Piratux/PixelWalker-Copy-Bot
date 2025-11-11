@@ -5,7 +5,7 @@ export interface BomBotRoundData {
   specialBombsLeft: number
 }
 
-export type PlayerBomBotRoundData = Record<number, BomBotRoundData>
+export type PlayerBomBotRoundData = Map<number, BomBotRoundData>
 
 export function createBomBotRoundData(): BomBotRoundData {
   return {

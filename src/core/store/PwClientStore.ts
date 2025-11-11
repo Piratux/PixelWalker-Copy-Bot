@@ -15,8 +15,8 @@ export const usePwClientStore = defineStore('PwClientStore', () => {
   const botType = ref<BotType>(BotType.COPY_BOT)
   const totalBlocksLeftToReceiveFromWorldBlockPlacedPacket = ref<number>(0)
   const blocks = ref<ListBlockResult[]>([]) // sorted and uppercased blocks
-  const blocksByPwId = ref<Record<number, ListBlockResult>>({})
-  const blocksByPwName = ref<Record<string, ListBlockResult>>({})
+  const blocksByPwId = ref<Raw<Map<number, ListBlockResult>>>(new Map())
+  const blocksByPwName = ref<Raw<Map<string, ListBlockResult>>>(new Map())
   const isConnected = ref<boolean>(false)
   const roomType = ref<string>('')
 
@@ -55,12 +55,12 @@ export function getPwBlocks(): ListBlockResult[] {
 }
 
 // TODO: Think what to do about blockid = 0 as there is more than 1 entry
-export function getPwBlocksByPwId(): Record<number, ListBlockResult> {
+export function getPwBlocksByPwId(): Map<number, ListBlockResult> {
   return usePwClientStore().blocksByPwId
 }
 
 // TODO: Think what to do about blockname = EMPTY as there is more than 1 entry
-export function getPwBlocksByPwName(): Record<string, ListBlockResult> {
+export function getPwBlocksByPwName(): Map<string, ListBlockResult> {
   return usePwClientStore().blocksByPwName
 }
 

@@ -127,7 +127,7 @@ export function exportToEelvl(): MissingBlockInfo[] {
 }
 
 function getEelvlLayer(eelvlBlockId: number): EelvlLayer {
-  return getEelvlBlocksById()[eelvlBlockId].layer
+  return getEelvlBlocksById().get(eelvlBlockId)!.layer
 }
 
 function getBlockEntryKey(eelvlBlockId: number, eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): EelvlBlockEntry {
@@ -275,7 +275,7 @@ function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock | s
     case PwBlockName.CHRISTMAS_GIFT_HALF_YELLOW:
       return { blockId: EelvlBlockId.CHRISTMAS_GIFT_HALF_YELLOW, intParameter: 1 }
     default: {
-      const mappedPwBlock = getPwBlocksByPwId()[pwBlock.bId]
+      const mappedPwBlock = getPwBlocksByPwId().get(pwBlock.bId)
 
       if (pwBlockName === undefined || mappedPwBlock === undefined) {
         if (pwLayer === LayerType.Foreground) {

@@ -41,13 +41,13 @@ export async function joinWorld(pwGameClient: PWGameClient, worldId: string): Pr
 
 function initPwBlocks(blocks: ListBlockResult[]) {
   usePwClientStore().blocks = []
-  usePwClientStore().blocksByPwId = {}
-  usePwClientStore().blocksByPwName = {}
+  usePwClientStore().blocksByPwId = new Map()
+  usePwClientStore().blocksByPwName = new Map()
 
   blocks.forEach((block) => {
     usePwClientStore().blocks.push(block)
-    usePwClientStore().blocksByPwId[block.Id] = block
-    usePwClientStore().blocksByPwName[block.PaletteId] = block
+    usePwClientStore().blocksByPwId.set(block.Id, block)
+    usePwClientStore().blocksByPwName.set(block.PaletteId, block)
   })
 }
 

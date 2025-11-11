@@ -666,17 +666,20 @@ function editIdCommand(args: string[], playerId: number): WorldBlock[] {
     throw new GameError(`Correct usage is .edit id find_id replace_id`, playerId)
   }
 
-  const blocksById = getPwBlocksByPwId()
-  if (!(searchForId in blocksById) || !(replaceWithId in blocksById)) {
-    throw new GameError(`Invalid id specified`, playerId)
-  }
-
   if (searchForId === 0) {
     throw new GameError(`find_id=0 is not allowed`, playerId)
   }
 
-  const searchForBlock = blocksById[searchForId]
-  const replaceWithBlock = blocksById[replaceWithId]
+  const blocksById = getPwBlocksByPwId()
+
+  const searchForBlock = blocksById.get(searchForId)
+  const replaceWithBlock = blocksById.get(replaceWithId)
+  if (searchForBlock === undefined) {
+    throw new GameError(`Invalid id specified: find_id=${searchForId}`, playerId)
+  }
+  if (replaceWithBlock === undefined) {
+    throw new GameError(`Invalid id specified: replace_id=${replaceWithId}`, playerId)
+  }
 
   if (replaceWithId === 0) {
     replaceWithBlock.Layer = searchForBlock.Layer

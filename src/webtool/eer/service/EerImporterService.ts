@@ -286,7 +286,7 @@ function getImportedFromEerAsEelvlAndPwData(eerWorld: EerWorld): [Buffer, WorldB
           worldBlocks.push({
             block: pwBlock,
             pos: pos,
-            layer: getPwBlocksByPwName()[pwBlock.name].Layer,
+            layer: getPwBlocksByPwName().get(pwBlock.name)!.Layer,
           })
         }
       }

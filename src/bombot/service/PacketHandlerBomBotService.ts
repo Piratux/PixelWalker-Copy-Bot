@@ -439,10 +439,10 @@ function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
 function mergePlayerStats(playerId: number) {
   // If player leaves and rejoins, keep their stats
   const playerName = getPwGameWorldHelper().getPlayer(playerId)!.username
-  for (const [existingPlayerId, data] of Object.entries(useBomBotWorldStore().playerBomBotWorldData)) {
-    if (data.username === playerName && Number(existingPlayerId) !== playerId) {
-      useBomBotWorldStore().playerBomBotWorldData[playerId] = { ...data }
-      delete useBomBotWorldStore().playerBomBotWorldData[Number(existingPlayerId)]
+  for (const [existingPlayerId, data] of useBomBotWorldStore().playerBomBotWorldData) {
+    if (data.username === playerName && existingPlayerId !== playerId) {
+      useBomBotWorldStore().playerBomBotWorldData.set(playerId, { ...data })
+      useBomBotWorldStore().playerBomBotWorldData.delete(existingPlayerId)
       break
     }
   }
@@ -1384,17 +1384,17 @@ function isBomBotMapValid(
 }
 
 function getPlayerBomBotWorldData(playerId: number): BomBotWorldData {
-  if (!(playerId in useBomBotWorldStore().playerBomBotWorldData)) {
-    useBomBotWorldStore().playerBomBotWorldData[playerId] = createBomBotWorldData(playerId)
+  if (!useBomBotWorldStore().playerBomBotWorldData.has(playerId)) {
+    useBomBotWorldStore().playerBomBotWorldData.set(playerId, createBomBotWorldData(playerId))
   }
-  return useBomBotWorldStore().playerBomBotWorldData[playerId]
+  return useBomBotWorldStore().playerBomBotWorldData.get(playerId)!
 }
 
 function getPlayerBomBotRoundData(playerId: number): BomBotRoundData {
-  if (!(playerId in useBomBotRoundStore().playerBomBotRoundData)) {
-    useBomBotRoundStore().playerBomBotRoundData[playerId] = createBomBotRoundData()
+  if (!useBomBotRoundStore().playerBomBotRoundData.has(playerId)) {
+    useBomBotRoundStore().playerBomBotRoundData.set(playerId, createBomBotRoundData())
   }
-  return useBomBotRoundStore().playerBomBotRoundData[playerId]
+  return useBomBotRoundStore().playerBomBotRoundData.get(playerId)!
 }
 
 function setBombState(newState: BomBotState) {

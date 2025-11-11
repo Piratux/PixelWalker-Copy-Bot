@@ -21,7 +21,7 @@ import { sleep } from '@/core/util/Sleep.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { cloneDeep } from 'lodash-es'
-import { ListBlockResult, PWApiClient, PWGameClient } from 'pw-js-api'
+import { PWApiClient, PWGameClient } from 'pw-js-api'
 import { authenticate, getAllWorldBlocks, joinWorld } from '@/core/service/PwClientService.ts'
 import { handleException } from '@/core/util/Exception.ts'
 import waitUntil from 'async-wait-until'
@@ -161,11 +161,11 @@ export function placeBlockPacket(blockPacket: SendableBlockPacket) {
 }
 
 export function getBlockName(pwBlockId: number): PwBlockName {
-  return getPwBlocksByPwId()[pwBlockId].PaletteId.toUpperCase() as PwBlockName
+  return getPwBlocksByPwId().get(pwBlockId)!.PaletteId.toUpperCase() as PwBlockName
 }
 
 export function getBlockIdFromString(name: string): number | undefined {
-  const block: ListBlockResult | undefined = getPwBlocksByPwName()[name]
+  const block = getPwBlocksByPwName().get(name)
   if (block === undefined) {
     return undefined
   }
@@ -173,7 +173,7 @@ export function getBlockIdFromString(name: string): number | undefined {
 }
 
 export function getBlockLayer(pwBlockId: number): LayerType {
-  return getPwBlocksByPwId()[pwBlockId].Layer as LayerType
+  return getPwBlocksByPwId().get(pwBlockId)!.Layer as LayerType
 }
 
 export function convertDeserializedStructureToWorldBlocks(

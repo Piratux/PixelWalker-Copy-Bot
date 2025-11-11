@@ -14,7 +14,7 @@ export interface BomBotWorldData {
   bombTypeChosen: BomBotBombType
 }
 
-export type PlayerBomBotWorldData = Record<number, BomBotWorldData>
+export type PlayerBomBotWorldData = Map<number, BomBotWorldData>
 
 export function createBomBotWorldData(playerId: number): BomBotWorldData {
   return {

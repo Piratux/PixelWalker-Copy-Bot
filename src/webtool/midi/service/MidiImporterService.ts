@@ -11,6 +11,8 @@ import { Midi } from '@tonejs/midi'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { uniq } from 'lodash-es'
 
+type NoteMap = Map<number, { type: string; notes: number[] }>
+
 export async function importFromMidi(fileData: ArrayBuffer, showColors: boolean) {
   requireBotEditPermission(getPwGameWorldHelper())
 
@@ -63,7 +65,7 @@ export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boole
 }
 
 function writeNotes(
-  notes: Record<number, { type: string; notes: number[] }>,
+  notes: NoteMap,
   blocks: DeserialisedStructure,
   pwMapWidth: number,
   pwMapHeight: number,
@@ -72,10 +74,8 @@ function writeNotes(
   const columnHeight = pwMapHeight - 3 // Leave 1 block at top and bottom
   let lastX = 0
   // its worth noting that this doesn't account for time taken to travel between portals, but otherwise it's pretty seamless.
-  const entries = Object.entries(notes)
-  for (const item of entries) {
-    const [key, value] = item
-    const spot = Number(key) + 100 // This is the distance along the music track
+  for (const [key, value] of notes) {
+    const spot = key + 100 // This is the distance along the music track
 
     // Determine which column (x) and row (y) the block should go in
     const x = Math.floor(spot / columnHeight) // column index
@@ -113,8 +113,8 @@ function writeNotes(
   return lastX
 }
 
-function processMidiFile(midi: Midi): Record<number, { type: string; notes: number[] }> {
-  const writeNotes: Record<number, { type: string; notes: number[] }> = {}
+function processMidiFile(midi: Midi): NoteMap {
+  const writeNotes: NoteMap = new Map()
   const defaultSpeed = 13.55 // This is the default falling speed at 100% gravity in the form of pixels/tick.
   const multiplier = defaultSpeed * (100 / 16) // This is the conversion rate from pixels/tick to blocks/second. (16 pixels = 1 block, 100 ticks = 1 second)
   let highestTime = 0
@@ -134,13 +134,13 @@ function processMidiFile(midi: Midi): Record<number, { type: string; notes: numb
 
         const distance = Math.round(note.time * multiplier)
 
-        if (!(distance in writeNotes)) {
-          writeNotes[distance] = {
+        const entry = writeNotes.get(distance)
+        if (entry === undefined) {
+          writeNotes.set(distance, {
             type: family,
             notes: [note.midi - 21],
-          }
+          })
         } else {
-          const entry = writeNotes[distance]
           if (entry.type !== family) {
             console.warn(`Block type conflict at distance ${distance}`)
             return

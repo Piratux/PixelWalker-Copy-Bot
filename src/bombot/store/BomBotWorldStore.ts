@@ -22,7 +22,7 @@ export const useBomBotWorldStore = defineStore('BomBotWorldStore', () => {
   const blockTypes = ref<BomBotBlockType[]>([]) // index is block id
   const currentState = ref<BomBotState>(BomBotState.STOPPED)
   const playedOnce = ref<boolean>(false)
-  const playerBomBotWorldData = ref<PlayerBomBotWorldData>({})
+  const playerBomBotWorldData = ref<Raw<PlayerBomBotWorldData>>(new Map())
   const everySecondUpdateIsRunning = ref<boolean>(false)
   const randomEffectBlocks = ref<Raw<Block[]>>([])
   const totalRoundsPassed = ref<number>(0)

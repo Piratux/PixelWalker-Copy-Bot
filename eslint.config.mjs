@@ -27,6 +27,14 @@ export default defineConfigWithVueTs(
           allowString: false,
         },
       ],
+      '@typescript-eslint/no-restricted-types': [
+        'error',
+        {
+          types: {
+            Record: 'Prefer Map over Record. Record only supports strings as keys.',
+          },
+        },
+      ],
     },
   },
   eslintConfigPrettier,
