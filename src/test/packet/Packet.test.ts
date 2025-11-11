@@ -5,7 +5,7 @@ import { authenticate, clearWorld, getAllWorldBlocks, joinWorld } from '@/core/s
 import { getAnotherWorldBlocks, placeWorldDataBlocks } from '@/core/service/WorldService.ts'
 import { CustomBotEvents, PWApiClient, PWGameClient, WorldEventNames } from 'pw-js-api'
 import { PWGameWorldHelper } from 'pw-js-world'
-import waitUntil from 'async-wait-until'
+import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 
 const everyBlockWorldId = 'ewki341n7ve153l'
 
@@ -59,6 +59,6 @@ describe.sequential('Packets', () => {
     })
 
     await joinWorld(pwGameClient, worldId)
-    await waitUntil(() => initReceived, { timeout: 30000, intervalBetweenAttempts: 1000 })
+    await workerWaitUntil(() => initReceived, { timeout: 30000, intervalBetweenAttempts: 1000 })
   })
 })

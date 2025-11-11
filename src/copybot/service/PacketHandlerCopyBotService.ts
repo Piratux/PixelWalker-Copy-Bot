@@ -118,7 +118,7 @@ export async function commandReceived(message: string, playerId: number) {
       helpCommandReceived(commandArgs, playerId)
       break
     case CopyBotCommandName.Ping:
-      sendPrivateChatMessage('ponga123', playerId)
+      sendPrivateChatMessage('pong', playerId)
       break
     case CopyBotCommandName.Edit:
       editCommandReceived(commandArgs, playerId)

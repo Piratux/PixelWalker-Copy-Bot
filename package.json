@@ -21,7 +21,6 @@
     "@basementuniverse/vec": "^2.4.0",
     "@mdi/font": "^7.4.47",
     "@tonejs/midi": "^2.0.28",
-    "async-wait-until": "^2.0.30",
     "eslint-plugin-vue": "^10.5.0",
     "iconv-lite": "^0.7.0",
     "lodash-es": "^4.17.21",

@@ -44,7 +44,6 @@ import { getRandomArrayElement, getRandomInt } from '@/core/util/Random.ts'
 import { clamp } from '@/core/util/Numbers.ts'
 import { userBomBotAutomaticRestartCounterStore } from '@/bombot/store/BomBotAutomaticRestartCounterStore.ts'
 import { BomBotWorldData, createBomBotWorldData } from '@/bombot/type/BomBotPlayerWorldData.ts'
-import waitUntil from 'async-wait-until'
 import { BomBotPowerUp } from '@/bombot/enum/BomBotPowerUp.ts'
 import { BomBotRoundData, createBomBotRoundData } from '@/bombot/type/BomBotPlayerRoundData.ts'
 import { GameError } from '@/core/class/GameError.ts'
@@ -54,6 +53,7 @@ import { BomBotSpecialBomb } from '@/bombot/enum/BomBotSpecialBomb.ts'
 import { BomBotBombType } from '@/bombot/enum/BomBotBombType.ts'
 import { SPECIAL_BOMB_COUNT } from '@/bombot/constant/General.ts'
 import { BomBotCommandName } from '@/bombot/enum/BomBotCommandName.ts'
+import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 
 const blockTypeDataStartPos = vec2(20, 361) // inclusive x
 const blockTypeDataEndPos = vec2(389, 361) // exclusive x
@@ -786,7 +786,7 @@ async function stopCommandReceived(_args: string[], playerId: number) {
 async function stopBomBot() {
   sendGlobalChatMessage('Stopping BomBot...')
   useBomBotWorldStore().currentState = BomBotState.STOPPED
-  await waitUntil(() => !useBomBotWorldStore().everySecondUpdateIsRunning, {
+  await workerWaitUntil(() => !useBomBotWorldStore().everySecondUpdateIsRunning, {
     timeout: 15000,
     intervalBetweenAttempts: 1000,
   })

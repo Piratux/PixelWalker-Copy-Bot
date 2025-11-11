@@ -4,7 +4,6 @@ import { Block, DeserialisedStructure, PWGameWorldHelper } from 'pw-js-world'
 import { placeWorldDataBlocks } from '@/core/service/WorldService.ts'
 import { getPwApiClient, getPwGameClient, getPwGameWorldHelper, usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { sendGlobalChatMessage } from '@/core/service/ChatMessageService.ts'
-import waitUntil, { TimeoutError } from 'async-wait-until'
 import { registerCopyBotCallbacks } from '@/copybot/service/PacketHandlerCopyBotService.ts'
 import ManyKeysMap from 'many-keys-map'
 import { EER_MAPPINGS } from '@/webtool/eer/block/EerMappings.ts'
@@ -16,6 +15,7 @@ import { GameError } from '@/core/class/GameError.ts'
 import { useEelvlClientStore } from '@/webtool/eelvl/store/EelvlClientStore.ts'
 import { useEerClientStore } from '@/webtool/eer/store/EerClientStore.ts'
 import { vec2 } from '@basementuniverse/vec'
+import { TimeoutError, workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 
 export async function authenticate(pwApiClient: PWApiClient): Promise<void> {
   const authenticationResult = await pwApiClient.authenticate()
@@ -126,7 +126,7 @@ export async function initPwClasses(
 
   usePwClientStore().roomType = (await getPwApiClient().getRoomTypes())[0] ?? ''
 
-  await waitUntil(() => usePwClientStore().isConnected, {
+  await workerWaitUntil(() => usePwClientStore().isConnected, {
     timeout: 5000,
     intervalBetweenAttempts: 1000,
   })
@@ -183,7 +183,7 @@ export async function enterEditKey(pwGameClient: PWGameClient, secretEditKey: st
   })
 
   try {
-    await waitUntil(() => hasPlayerEditPermission(getPwGameWorldHelper(), getPwGameWorldHelper().botPlayerId), {
+    await workerWaitUntil(() => hasPlayerEditPermission(getPwGameWorldHelper(), getPwGameWorldHelper().botPlayerId), {
       timeout: 5000,
       intervalBetweenAttempts: 1000,
     })

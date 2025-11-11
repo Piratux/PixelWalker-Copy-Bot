@@ -24,9 +24,9 @@ import { cloneDeep } from 'lodash-es'
 import { PWApiClient, PWGameClient } from 'pw-js-api'
 import { authenticate, getAllWorldBlocks, joinWorld } from '@/core/service/PwClientService.ts'
 import { handleException } from '@/core/util/Exception.ts'
-import waitUntil from 'async-wait-until'
 import { clamp } from '@/core/util/Numbers.ts'
 import { GameError } from '@/core/class/GameError.ts'
+import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 
 export function getBlockAt(pos: Point, layer: number): Block {
   try {
@@ -282,7 +282,7 @@ export async function getAnotherWorldBlocks(worldId: string, pwApiClient: PWApiC
 
   await joinWorld(pwGameClient, worldId)
 
-  await waitUntil(() => copyFromAnotherWorldFinished, { timeout: 10000, intervalBetweenAttempts: 1000 })
+  await workerWaitUntil(() => copyFromAnotherWorldFinished, { timeout: 10000, intervalBetweenAttempts: 1000 })
   if (blocksResult === null) {
     throw new GameError(`Getting blocks from another world took too long. World ID: ${worldId}`)
   }
