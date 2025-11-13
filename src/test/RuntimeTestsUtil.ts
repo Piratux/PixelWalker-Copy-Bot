@@ -1,10 +1,9 @@
 import { DeserialisedStructure } from 'pw-js-world'
-import { getImportedFromPwlvlData } from '@/webtool/pwlvl/service/PwlvlImporterService.ts'
 import { deepStrictEqual } from 'node:assert'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { getImportedFromEelvlData } from '@/webtool/eelvl/service/EelvlImporterService.ts'
 import { placeMultipleBlocks, placeWorldDataBlocks } from '@/core/service/WorldService.ts'
-import { clearWorld, createEmptyBlocks } from '@/core/service/PwClientService.ts'
+import { createEmptyBlocks } from '@/core/service/PwClientService.ts'
 import { getImportedFromPngData } from '@/webtool/png/service/PngImporterService.ts'
 import { getImportedFromMidiData } from '@/webtool/midi/service/MidiImporterService.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
@@ -37,12 +36,6 @@ export function compareDeserialisedStructureData(
   }
 }
 
-export async function getDataFromPwlvlFile(fileUrl: string): Promise<DeserialisedStructure> {
-  const fileRaw = await fetch(fileUrl)
-  const fileArrayBuffer = await fileRaw.arrayBuffer()
-  return getImportedFromPwlvlData(fileArrayBuffer)
-}
-
 export async function getDataFromEelvlFile(fileUrl: string): Promise<DeserialisedStructure> {
   const fileRaw = await fetch(fileUrl)
   const fileArrayBuffer = await fileRaw.arrayBuffer()
@@ -59,19 +52,6 @@ export async function getDataFromMidiFile(fileUrl: string): Promise<Deserialised
   const fileRaw = await fetch(fileUrl)
   const fileArrayBuffer = await fileRaw.arrayBuffer()
   return getImportedFromMidiData(fileArrayBuffer, false)
-}
-
-// Returns blocks loaded from fileUrl
-export async function placePwLvlblocks(fileUrl: string): Promise<DeserialisedStructure> {
-  await clearWorld()
-
-  const expectedData = await getDataFromPwlvlFile(fileUrl)
-  const success = await placeWorldDataBlocks(expectedData)
-  if (!success) {
-    throw new Error('Failed to place all blocks')
-  }
-
-  return expectedData
 }
 
 export function verifyExpectedBlocks(expectedOutputBlocks: WorldBlock[], areaSize = vec2(10, 10)) {
