@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-11-13 Version 1.13.0
+- Website: MIDI Import now supports drum notes.
+
 2025-11-10 Version 1.12.3
 - Website: Fix bad drum note mapping for EELVL Import/Export.
 

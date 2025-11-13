@@ -55,7 +55,7 @@ export async function getDataFromPngFile(fileUrl: string, quantized: boolean): P
   return getImportedFromPngData(fileArrayBuffer, quantized)
 }
 
-export async function getDataFromMidiFile(fileUrl: string): Promise<DeserialisedStructure | null> {
+export async function getDataFromMidiFile(fileUrl: string): Promise<DeserialisedStructure> {
   const fileRaw = await fetch(fileUrl)
   const fileArrayBuffer = await fileRaw.arrayBuffer()
   return getImportedFromMidiData(fileArrayBuffer, false)

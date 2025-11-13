@@ -9,42 +9,24 @@ import {
 } from '@/core/service/PwClientService.ts'
 import { Midi } from '@tonejs/midi'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
-import { uniq } from 'lodash-es'
+import { MidiDrum } from '@/webtool/midi/enum/MidiDrum.ts'
+import { PwDrumNoteType } from '@/core/enum/PwDrumNoteType.ts'
+import { PwInstrument } from '@/webtool/midi/enum/PwInstrument.ts'
 
-type NoteMap = Map<number, { type: string; notes: number[] }>
+type Distance = number
+type PwMappedNote = number
+type NoteMap = Map<Distance, Map<PwInstrument, Set<PwMappedNote>>>
 
 export async function importFromMidi(fileData: ArrayBuffer, showColors: boolean) {
   requireBotEditPermission(getPwGameWorldHelper())
 
   const worldData = getImportedFromMidiData(fileData, showColors)
 
-  if (worldData === null) {
-    throw new Error('This midi has no piano notes')
-  }
-
   const success = await placeWorldDataBlocks(worldData)
   handlePlaceBlocksResult(success)
 }
 
-export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boolean): DeserialisedStructure | null {
-  const pwMapWidth = getPwGameWorldHelper().width
-  const pwMapHeight = getPwGameWorldHelper().height
-
-  const blocks = createEmptyBlocksFullWorldSize(getPwGameWorldHelper())
-
-  // These blocks create a spawner, and a set of boosts that get you to the max falling speed pretty fast
-  blocks.blocks[LayerType.Foreground][0][0] = new Block(PwBlockName.TOOL_SPAWN_LOBBY)
-  blocks.blocks[LayerType.Foreground][0][1] = new Block(PwBlockName.BOOST_DOWN)
-  blocks.blocks[LayerType.Overlay][0][1] = new Block(PwBlockName.LIQUID_MUD)
-  blocks.blocks[LayerType.Overlay][0][2] = new Block(PwBlockName.LIQUID_WATER)
-  blocks.blocks[LayerType.Foreground][0][2] = new Block(PwBlockName.TOOL_GOD_MODE_ACTIVATOR)
-
-  const midi = new Midi(fileData)
-  const notes = processMidiFile(midi)
-  if (Object.keys(notes).length === 0) {
-    return null
-  }
-  const lastX = writeNotes(notes, blocks, pwMapWidth, pwMapHeight, showColors)
+function placePortals(lastX: number, pwMapWidth: number, pwMapHeight: number, blocks: DeserialisedStructure) {
   for (let x = 0; x <= lastX; x++) {
     if (x < pwMapWidth - 1) {
       if (x !== 0) {
@@ -61,7 +43,41 @@ export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boole
       }
     }
   }
+}
+
+export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boolean): DeserialisedStructure {
+  const pwMapWidth = getPwGameWorldHelper().width
+  const pwMapHeight = getPwGameWorldHelper().height
+
+  const blocks = createEmptyBlocksFullWorldSize(getPwGameWorldHelper())
+
+  // These blocks create a spawner, and a set of boosts that get you to the max falling speed pretty fast
+  blocks.blocks[LayerType.Foreground][0][0] = new Block(PwBlockName.TOOL_SPAWN_LOBBY)
+  blocks.blocks[LayerType.Foreground][0][1] = new Block(PwBlockName.BOOST_DOWN)
+  blocks.blocks[LayerType.Overlay][0][1] = new Block(PwBlockName.LIQUID_MUD)
+  blocks.blocks[LayerType.Overlay][0][2] = new Block(PwBlockName.LIQUID_WATER)
+  blocks.blocks[LayerType.Foreground][0][2] = new Block(PwBlockName.TOOL_GOD_MODE_ACTIVATOR)
+
+  const midi = new Midi(fileData)
+  const notes = processMidiFile(midi)
+  if (notes.size === 0) {
+    throw new Error('This midi has no piano or drum notes')
+  }
+
+  const lastX = writeNotes(notes, blocks, pwMapWidth, pwMapHeight, showColors)
+  placePortals(lastX, pwMapWidth, pwMapHeight, blocks)
   return new DeserialisedStructure(blocks.blocks, { width: pwMapWidth, height: pwMapHeight })
+}
+
+function getNotePos(spot: number, columnHeight: number) {
+  const x = Math.floor(spot / columnHeight) // column index
+  const y = (spot % columnHeight) + 1 // vertical position, +1 to avoid top portal
+  return { x, y }
+}
+
+function showNoteInColor(x: number, y: number, noteGroup: number[], blocks: DeserialisedStructure) {
+  const [r, g, b] = getRGBFromNotes(noteGroup)
+  blocks.blocks[LayerType.Background][x][y] = new Block(PwBlockName.CUSTOM_SOLID_BG, [b + (g << 8) + (r << 16)])
 }
 
 function writeNotes(
@@ -74,43 +90,81 @@ function writeNotes(
   const columnHeight = pwMapHeight - 3 // Leave 1 block at top and bottom
   let lastX = 0
   // its worth noting that this doesn't account for time taken to travel between portals, but otherwise it's pretty seamless.
-  for (const [key, value] of notes) {
-    const spot = key + 100 // This is the distance along the music track
+  for (const [distance, instrumentMapNotes] of notes) {
+    const spot = distance + 100 // This is the distance along the music track
 
-    // Determine which column (x) and row (y) the block should go in
-    const x = Math.floor(spot / columnHeight) // column index
-    const y = (spot % columnHeight) + 1 // vertical position, +1 to avoid top portal
+    for (const [instrument, notes] of instrumentMapNotes) {
+      let maxNotesInSingleBlock
+      let blockName
+      switch (instrument) {
+        case PwInstrument.PIANO:
+          maxNotesInSingleBlock = 5
+          blockName = PwBlockName.NOTE_PIANO
+          break
+        case PwInstrument.DRUMS:
+          maxNotesInSingleBlock = 3
+          blockName = PwBlockName.NOTE_DRUM
+          break
+        default:
+          throw new Error('Unhandled instrument family: ' + instrument)
+      }
 
-    if (x >= 0 && x < pwMapWidth && y >= 0 && y < pwMapHeight) {
-      // Split notes into groups of 5
-      for (let i = 0; i < value.notes.length; i += 5) {
-        const noteGroup = uniq(value.notes.slice(i, i + 5).sort((a, b) => a - b))
-        const targetY = y + Math.floor(i / 5)
+      for (let i = 0; i < notes.size; i += maxNotesInSingleBlock) {
+        const noteGroup = Array.from(notes)
+          .sort((a, b) => a - b)
+          .slice(i, i + maxNotesInSingleBlock)
 
-        // Only place if the spot is empty
-        if (targetY < pwMapHeight && blocks.blocks[LayerType.Foreground][x][targetY].bId === 0) {
-          blocks.blocks[LayerType.Foreground][x][targetY] = new Block(PwBlockName.NOTE_PIANO, [Buffer.from(noteGroup)])
-          // Place background color blocks for each note in the group
+        const MAX_OFFSET_ATTEMPTS = 3
+        for (let offset = 0; offset < MAX_OFFSET_ATTEMPTS; offset++) {
+          const { x, y } = getNotePos(spot + offset, columnHeight)
+          if (blocks.blocks[LayerType.Foreground][x][y].bId !== 0) {
+            continue
+          }
+
+          if (x < 0 && x >= pwMapWidth && y < 0 && y >= pwMapHeight) {
+            sendGlobalChatMessage(`ERROR! Note at x=${x}, y=${y} is out of bounds. Stopping.`)
+            return lastX
+          }
+          lastX = Math.max(lastX, x)
+
+          blocks.blocks[LayerType.Foreground][x][y] = new Block(blockName, [Buffer.from(noteGroup)])
+
+          // Shows each note's colors, can only be turned on in dev mode
+          if (showColors) {
+            showNoteInColor(x, y, noteGroup, blocks)
+          }
+          break
         }
       }
-      // Shows each note's colors, can only be turned on in dev mode
-      if (showColors) {
-        value.notes.forEach((note, idx) => {
-          const [r, g, b] = getRGBFromNote(note)
-          if (y + idx < pwMapHeight) {
-            blocks.blocks[LayerType.Background][x][y + idx] = new Block(PwBlockName.CUSTOM_SOLID_BG, [
-              b + (g << 8) + (r << 16),
-            ])
-          }
-        })
-      }
-      lastX = Math.max(lastX, x)
-    } else {
-      sendGlobalChatMessage(`ERROR! Note at x=${x}, y=${y} is out of bounds. Stopping.`)
-      break
     }
   }
+
   return lastX
+}
+
+function getMidiDrumToPwDrumNoteMap(): Map<number, number> {
+  const result = new Map<number, number>()
+  result.set(MidiDrum.LOW_FLOOR_TOM_F2, PwDrumNoteType.KICK)
+  result.set(MidiDrum.PEDAL_HI_HAT_G_2, PwDrumNoteType.HIHAT_1)
+  result.set(MidiDrum.OPEN_HI_HAT_A_2, PwDrumNoteType.HIHAT_OPEN_CLOSE)
+  result.set(MidiDrum.HIGH_TOM_D3, PwDrumNoteType.TOM_1)
+  result.set(MidiDrum.HI_MID_TOM_C3, PwDrumNoteType.TOM_2)
+  result.set(MidiDrum.LOW_MID_TOM_B2, PwDrumNoteType.TOM_3)
+  result.set(MidiDrum.LOW_TOM_A2, PwDrumNoteType.TOM_4)
+  result.set(MidiDrum.CHINA_CYMBAL_E3, PwDrumNoteType.HIHAT_4)
+  result.set(MidiDrum.SPLASH_CYMBAL_G3, PwDrumNoteType.HIHAT_4)
+  result.set(MidiDrum.HAND_CLAP, PwDrumNoteType.CLAP)
+  result.set(MidiDrum.COWBELL_G_3, PwDrumNoteType.COWBELL)
+  return result
+}
+
+function getMidiPianoToPwPianoNoteMap(): Map<number, number> {
+  // Notes beyond these points don't exist on normal 88-note keyboards, such as in Pixelwalker.
+  const result = new Map<number, number>()
+  for (let i = 21; i <= 108; i++) {
+    result.set(i, i - 21)
+  }
+  return result
 }
 
 function processMidiFile(midi: Midi): NoteMap {
@@ -123,37 +177,53 @@ function processMidiFile(midi: Midi): NoteMap {
     const notes = track.notes
     const family = track.instrument.family
 
+    const INSTRUMENT_FAMILY_PIANO = 'piano'
+    const INSTRUMENT_FAMILY_DRUMS = 'drums'
+
     // guitars are not supported (yet) because it requires strange note mappings.
-    if (family === 'piano') {
-      notes.forEach((note) => {
-        if (highestTime <= note.time) {
-          highestTime = note.time
-        }
-        // Notes beyond these points don't exist on normal 88-note keyboards, such as in pixelwalker.
-        if (note.midi < 21 || note.midi > 108) return
-
-        const distance = Math.round(note.time * multiplier)
-
-        const entry = writeNotes.get(distance)
-        if (entry === undefined) {
-          writeNotes.set(distance, {
-            type: family,
-            notes: [note.midi - 21],
-          })
-        } else {
-          if (entry.type !== family) {
-            console.warn(`Block type conflict at distance ${distance}`)
-            return
-          }
-          // Only push if it doesn't already exist at that point. Prevents 2 of the same note at the same block.
-          if (!entry.notes.includes(note.midi - 21)) {
-            entry.notes.push(note.midi - 21)
-          }
-        }
-      })
-    } else {
-      console.warn('Missing instrument family: ', family)
+    if (![INSTRUMENT_FAMILY_PIANO, INSTRUMENT_FAMILY_DRUMS].includes(family)) {
+      console.warn('Skipping unsupported instrument family: ', family)
+      return
     }
+
+    notes.forEach((note) => {
+      if (highestTime <= note.time) {
+        highestTime = note.time
+      }
+
+      let mappedNote
+      let pwInstrument
+      switch (family) {
+        case INSTRUMENT_FAMILY_PIANO:
+          mappedNote = getMidiPianoToPwPianoNoteMap().get(note.midi)
+          pwInstrument = PwInstrument.PIANO
+          break
+        case INSTRUMENT_FAMILY_DRUMS:
+          mappedNote = getMidiDrumToPwDrumNoteMap().get(note.midi)
+          pwInstrument = PwInstrument.DRUMS
+          break
+        default:
+          throw new Error('Unhandled instrument family: ' + family)
+      }
+
+      if (mappedNote === undefined) {
+        return
+      }
+
+      const distance = Math.round(note.time * multiplier)
+
+      const distanceEntry = writeNotes.get(distance)
+      if (distanceEntry === undefined) {
+        writeNotes.set(distance, new Map())
+      }
+
+      const pwInstrumentEntry = writeNotes.get(distance)!.get(pwInstrument)
+      if (pwInstrumentEntry === undefined) {
+        writeNotes.get(distance)!.set(pwInstrument, new Set())
+      }
+
+      writeNotes.get(distance)!.get(pwInstrument)!.add(mappedNote)
+    })
   })
 
   return writeNotes
@@ -165,6 +235,21 @@ function getRGBFromNote(note: number): [number, number, number] {
   const lightness = Math.floor(note / 12) * (65 / 8) + 15
 
   return hslToRgb(hue / 360, saturation / 100, lightness / 100)
+}
+
+function getRGBFromNotes(notes: number[]): [number, number, number] {
+  let rTotal = 0
+  let gTotal = 0
+  let bTotal = 0
+
+  notes.forEach((note) => {
+    const [r, g, b] = getRGBFromNote(note)
+    rTotal += r
+    gTotal += g
+    bTotal += b
+  })
+
+  return [Math.floor(rTotal % 256), Math.floor(gTotal % 256), Math.floor(bTotal % 256)]
 }
 
 function hslToRgb(h: number, s: number, l: number): [number, number, number] {

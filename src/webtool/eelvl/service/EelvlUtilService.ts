@@ -2,6 +2,8 @@ import { EelvlBlockId } from '@/webtool/eelvl/gen/EelvlBlockId.ts'
 import { ByteArray } from 'playerioclient'
 import { EelvlFileHeader } from '@/webtool/eelvl/type/EelvlFileHeader.ts'
 import { invertMap } from '@/core/util/InvertMap.ts'
+import { EelvlDrumNoteType } from '@/webtool/eelvl/enum/EelvlDrumNoteType.ts'
+import { PwDrumNoteType } from '@/core/enum/PwDrumNoteType.ts'
 
 export function hasEelvlBlockOneIntParameter(eelvlBlockId: number): boolean {
   return [
@@ -201,26 +203,26 @@ export function writeEeelvlFileHeader(bytes: ByteArray, world: EelvlFileHeader) 
 // eslint-disable @typescript-eslint/naming-convention
 export function getEelvlToPwDrumTypeMap(): Map<number, number> {
   const result = new Map<number, number>()
-  result.set(0, 0)
-  result.set(1, 1)
-  result.set(2, 2)
-  result.set(3, 3)
-  result.set(4, 8)
-  result.set(5, 9)
-  result.set(6, 10)
-  result.set(7, 17)
-  result.set(8, 13)
-  result.set(9, 18)
-  result.set(10, 4)
-  result.set(11, 5)
-  result.set(12, 6)
-  result.set(13, 7)
-  result.set(14, 11)
-  result.set(15, 12)
-  result.set(16, 14)
-  result.set(17, 15)
-  result.set(18, 16)
-  result.set(19, 19)
+  result.set(EelvlDrumNoteType.KICK, PwDrumNoteType.KICK)
+  result.set(EelvlDrumNoteType.KICK_HIHAT, PwDrumNoteType.KICK_HIHAT)
+  result.set(EelvlDrumNoteType.SNARE, PwDrumNoteType.SNARE)
+  result.set(EelvlDrumNoteType.SNARE_2, PwDrumNoteType.SNARE_2)
+  result.set(EelvlDrumNoteType.HIHAT_1, PwDrumNoteType.HIHAT_1)
+  result.set(EelvlDrumNoteType.HIHAT_2, PwDrumNoteType.HIHAT_2)
+  result.set(EelvlDrumNoteType.HIHAT_3, PwDrumNoteType.HIHAT_3)
+  result.set(EelvlDrumNoteType.CLAP, PwDrumNoteType.CLAP)
+  result.set(EelvlDrumNoteType.CRASH_1, PwDrumNoteType.CRASH_1)
+  result.set(EelvlDrumNoteType.SHACKER, PwDrumNoteType.SHACKER)
+  result.set(EelvlDrumNoteType.TOM_1, PwDrumNoteType.TOM_1)
+  result.set(EelvlDrumNoteType.TOM_2, PwDrumNoteType.TOM_2)
+  result.set(EelvlDrumNoteType.TOM_3, PwDrumNoteType.TOM_3)
+  result.set(EelvlDrumNoteType.TOM_4, PwDrumNoteType.TOM_4)
+  result.set(EelvlDrumNoteType.HIHAT_4, PwDrumNoteType.HIHAT_4)
+  result.set(EelvlDrumNoteType.HIHAT_OPEN_CLOSE, PwDrumNoteType.HIHAT_OPEN_CLOSE)
+  result.set(EelvlDrumNoteType.CRASH_2, PwDrumNoteType.CRASH_2)
+  result.set(EelvlDrumNoteType.RIDE, PwDrumNoteType.RIDE)
+  result.set(EelvlDrumNoteType.RIDE_BELL, PwDrumNoteType.RIDE_BELL)
+  result.set(EelvlDrumNoteType.COWBELL, PwDrumNoteType.COWBELL)
   return result
 }
 

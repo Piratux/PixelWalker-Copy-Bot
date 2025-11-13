@@ -89,5 +89,5 @@ async function testMidiImport() {
   const expectedData = await getDataFromPwlvlFile(thomasBergersenAuraPianoPwlvlFile)
   const receivedData = await getDataFromMidiFile(thomasBergersenAuraPianoMidFile)
 
-  compareDeserialisedStructureData(receivedData!, expectedData)
+  compareDeserialisedStructureData(receivedData, expectedData)
 }
