@@ -144,16 +144,35 @@ function writeNotes(
 
 function getMidiDrumToPwDrumNoteMap(): Map<number, number> {
   const result = new Map<number, number>()
+  result.set(MidiDrum.BASS_DRUM_1_C2, PwDrumNoteType.KICK)
+  result.set(MidiDrum.BASS_DRUM_2_B1, PwDrumNoteType.KICK)
   result.set(MidiDrum.LOW_FLOOR_TOM_F2, PwDrumNoteType.KICK)
-  result.set(MidiDrum.PEDAL_HI_HAT_G_2, PwDrumNoteType.HIHAT_1)
-  result.set(MidiDrum.OPEN_HI_HAT_A_2, PwDrumNoteType.HIHAT_OPEN_CLOSE)
+
   result.set(MidiDrum.HIGH_TOM_D3, PwDrumNoteType.TOM_1)
   result.set(MidiDrum.HI_MID_TOM_C3, PwDrumNoteType.TOM_2)
   result.set(MidiDrum.LOW_MID_TOM_B2, PwDrumNoteType.TOM_3)
+  result.set(MidiDrum.HIGH_FLOOR_TOM_G2, PwDrumNoteType.TOM_3)
   result.set(MidiDrum.LOW_TOM_A2, PwDrumNoteType.TOM_4)
-  result.set(MidiDrum.CHINA_CYMBAL_E3, PwDrumNoteType.HIHAT_4)
-  result.set(MidiDrum.SPLASH_CYMBAL_G3, PwDrumNoteType.HIHAT_4)
+
+  result.set(MidiDrum.CLOSED_HI_HAT_F_2, PwDrumNoteType.HIHAT_1)
+  result.set(MidiDrum.PEDAL_HI_HAT_G_2, PwDrumNoteType.HIHAT_2)
+  result.set(MidiDrum.OPEN_HI_HAT_A_2, PwDrumNoteType.HIHAT_4)
+
+  result.set(MidiDrum.SIDE_STICK_C_2, PwDrumNoteType.SNARE_2)
+  result.set(MidiDrum.ACOUSTIC_SNARE_D2, PwDrumNoteType.SNARE_2)
+  result.set(MidiDrum.ELECTRIC_SNARE_E2, PwDrumNoteType.SNARE_2)
+
+  result.set(MidiDrum.CRASH_CYMBAL_1_C_3, PwDrumNoteType.CRASH_1)
+  result.set(MidiDrum.CRASH_CYMBAL_2_A3, PwDrumNoteType.CRASH_2)
+
+  result.set(MidiDrum.CHINA_CYMBAL_E3, PwDrumNoteType.RIDE)
+  result.set(MidiDrum.SPLASH_CYMBAL_G3, PwDrumNoteType.RIDE)
+  result.set(MidiDrum.RIDE_CYMBAL_1_D_3, PwDrumNoteType.RIDE)
+  result.set(MidiDrum.RIDE_CYMBAL_2_B3, PwDrumNoteType.RIDE)
+  result.set(MidiDrum.RIDE_BELL_F3, PwDrumNoteType.RIDE_BELL)
+
   result.set(MidiDrum.HAND_CLAP, PwDrumNoteType.CLAP)
+  result.set(MidiDrum.SHAKER_A_5, PwDrumNoteType.SHACKER)
   result.set(MidiDrum.COWBELL_G_3, PwDrumNoteType.COWBELL)
   return result
 }
