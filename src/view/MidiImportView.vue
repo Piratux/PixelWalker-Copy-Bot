@@ -29,6 +29,7 @@ async function onMidiFileChange(event: Event) {
       return
     }
     sendGlobalChatMessage(`Importing midi from ${result.file.name}`)
+    console.log(`Importing midi from ${result.file.name}`)
     await importFromMidi(result.data, showColors.value)
   })
 }
@@ -72,9 +73,33 @@ async function onMidiFileChange(event: Event) {
   </PiCardContainer>
   <PiCardContainer>
     <v-col>
-      <v-row><h3>Import info</h3></v-row>
+      <v-row><h3>MIDI info</h3></v-row>
       <v-row> MIDI is a file format that stores music note data. </v-row>
       <v-row> Here you can import a MIDI file's piano tracks to PixelWalker.</v-row>
+    </v-col>
+  </PiCardContainer>
+  <PiCardContainer>
+    <v-col>
+      <v-row><h3>Supported MIDI families</h3></v-row>
+      <v-row>An attempt has been made to map similar sounding instruments to closest PW representation.</v-row>
+      <v-row>Only the following MIDI families are mapped to PW notes, the rest are ignored.</v-row>
+      <v-row>
+        <ul>
+          <li>PW Piano - MIDI family: [piano, chromatic percussion, ensemble]</li>
+          <li>PW Guitar - MIDI family: [guitar, bass]</li>
+          <li>PW Drums - MIDI family: [drums]</li>
+        </ul>
+      </v-row>
+    </v-col>
+  </PiCardContainer>
+  <PiCardContainer>
+    <v-col>
+      <v-row><h3>PixelWalker limitations</h3></v-row>
+      <v-row> PW does not support varying note length and volume for each note. </v-row>
+      <v-row>
+        For best results, try songs that have short notes and all instruments have similar volume throughout the
+        song.</v-row
+      >
     </v-col>
   </PiCardContainer>
 </template>

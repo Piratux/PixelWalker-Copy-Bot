@@ -62,7 +62,7 @@ export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boole
   const midi = new Midi(fileData)
   const notes = processMidiFile(midi)
   if (notes.size === 0) {
-    throw new Error('This midi has no piano or drum notes')
+    throw new Error('This midi has no notes that can be mapped to Pixelwalker instruments.')
   }
 
   const lastX = writeNotes(notes, blocks, pwMapWidth, pwMapHeight, showColors)
@@ -330,7 +330,7 @@ function processMidiFile(midi: Midi): NoteMap {
     }
 
     console.log(
-      `Track "${family} - ${track.name}", encountered notes: `,
+      `Track "${family} - ${track.instrument.name}", encountered unique notes: `,
       Array.from(getEncounteredNoteSet(notes))
         .sort((a, b) => a - b)
         .toString(),
