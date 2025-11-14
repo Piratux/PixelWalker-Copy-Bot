@@ -119,7 +119,7 @@ function writeNotes(
           .sort((a, b) => a - b)
           .slice(i, i + maxNotesInSingleBlock)
 
-        const MAX_OFFSET_ATTEMPTS = 3
+        const MAX_OFFSET_ATTEMPTS = 4
         for (let offset = 0; offset < MAX_OFFSET_ATTEMPTS; offset++) {
           const { x, y } = getNotePos(spot + offset, columnHeight)
           if (blocks.blocks[LayerType.Foreground][x][y].bId !== 0) {
@@ -306,28 +306,10 @@ function processMidiFile(midi: Midi): NoteMap {
       return
     }
 
-    const INSTRUMENT_FAMILY_PIANO = 'piano'
-    const INSTRUMENT_FAMILY_CHROMATIC_PERCUSSION = 'chromatic percussion' // XYLOPHONE
-    const INSTRUMENT_FAMILY_ENSEMBLE = 'ensemble' // VIOLIN
-
     const INSTRUMENT_FAMILY_GUITAR = 'guitar'
     const INSTRUMENT_FAMILY_BASS = 'bass'
 
     const INSTRUMENT_FAMILY_DRUMS = 'drums'
-
-    if (
-      ![
-        INSTRUMENT_FAMILY_PIANO,
-        INSTRUMENT_FAMILY_GUITAR,
-        INSTRUMENT_FAMILY_BASS,
-        INSTRUMENT_FAMILY_DRUMS,
-        INSTRUMENT_FAMILY_CHROMATIC_PERCUSSION,
-        INSTRUMENT_FAMILY_ENSEMBLE,
-      ].includes(family)
-    ) {
-      console.warn('Skipping unsupported instrument family: ', family)
-      return
-    }
 
     console.log(
       `Track "${family} - ${track.instrument.name}", encountered unique notes: `,
@@ -338,11 +320,6 @@ function processMidiFile(midi: Midi): NoteMap {
 
     let pwInstrument
     switch (family) {
-      case INSTRUMENT_FAMILY_PIANO:
-      case INSTRUMENT_FAMILY_CHROMATIC_PERCUSSION:
-      case INSTRUMENT_FAMILY_ENSEMBLE:
-        pwInstrument = PwInstrument.PIANO
-        break
       case INSTRUMENT_FAMILY_GUITAR:
       case INSTRUMENT_FAMILY_BASS:
         pwInstrument = PwInstrument.GUITAR
@@ -352,8 +329,9 @@ function processMidiFile(midi: Midi): NoteMap {
         pwInstrument = PwInstrument.DRUMS
         break
       default:
-        console.warn('Skipping unsupported instrument family: ', family)
-        return
+        // Most instruments map quite well to piano and work well as fallback
+        pwInstrument = PwInstrument.PIANO
+        break
     }
 
     notes.forEach((note) => {

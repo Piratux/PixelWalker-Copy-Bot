@@ -75,19 +75,19 @@ async function onMidiFileChange(event: Event) {
     <v-col>
       <v-row><h3>MIDI info</h3></v-row>
       <v-row> MIDI is a file format that stores music note data. </v-row>
-      <v-row> Here you can import a MIDI file's piano tracks to PixelWalker.</v-row>
+      <v-row> Here you can import a MIDI file's tracks to PixelWalker.</v-row>
     </v-col>
   </PiCardContainer>
   <PiCardContainer>
     <v-col>
       <v-row><h3>Supported MIDI families</h3></v-row>
       <v-row>An attempt has been made to map similar sounding instruments to closest PW representation.</v-row>
-      <v-row>Only the following MIDI families are mapped to PW notes, the rest are ignored.</v-row>
+      <v-row>Some MIDI families are explicitly checked. Unknown MIDI families are mapped to piano.</v-row>
       <v-row>
         <ul>
-          <li>PW Piano - MIDI family: [piano, chromatic percussion, ensemble]</li>
           <li>PW Guitar - MIDI family: [guitar, bass]</li>
           <li>PW Drums - MIDI family: [drums]</li>
+          <li>PW Piano - MIDI family: the rest off families</li>
         </ul>
       </v-row>
     </v-col>
