@@ -12,6 +12,7 @@ import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { MidiDrum } from '@/webtool/midi/enum/MidiDrum.ts'
 import { PwDrumNoteType } from '@/core/enum/PwDrumNoteType.ts'
 import { PwInstrument } from '@/webtool/midi/enum/PwInstrument.ts'
+import { Note } from '@tonejs/midi/dist/Note'
 
 type Distance = number
 type PwMappedNote = number
@@ -101,12 +102,16 @@ function writeNotes(
           maxNotesInSingleBlock = 5
           blockName = PwBlockName.NOTE_PIANO
           break
+        case PwInstrument.GUITAR:
+          maxNotesInSingleBlock = 6
+          blockName = PwBlockName.NOTE_GUITAR
+          break
         case PwInstrument.DRUMS:
           maxNotesInSingleBlock = 3
           blockName = PwBlockName.NOTE_DRUM
           break
         default:
-          throw new Error('Unhandled instrument family: ' + instrument)
+          throw new Error('Unhandled instrument family')
       }
 
       for (let i = 0; i < notes.size; i += maxNotesInSingleBlock) {
@@ -186,6 +191,105 @@ function getMidiPianoToPwPianoNoteMap(): Map<number, number> {
   return result
 }
 
+function getMidiGuitarToPwGuitarNoteMap(): Map<number, number> {
+  const result = new Map<number, number>()
+  result.set(40, 43)
+  result.set(41, 44)
+  result.set(42, 45)
+  result.set(43, 46)
+  result.set(44, 47)
+  result.set(45, 48)
+
+  result.set(46, 38)
+  result.set(47, 39)
+  result.set(48, 40)
+  result.set(49, 41)
+  result.set(50, 42)
+
+  result.set(51, 32)
+  result.set(52, 33)
+  result.set(53, 34)
+  result.set(54, 35)
+  result.set(55, 36)
+
+  result.set(56, 27)
+  result.set(57, 28)
+  result.set(58, 29)
+  result.set(59, 30)
+
+  result.set(60, 21)
+  result.set(61, 22)
+  result.set(62, 23)
+  result.set(63, 24)
+  result.set(64, 25)
+
+  result.set(65, 1)
+  result.set(66, 2)
+  result.set(67, 3)
+  result.set(68, 4)
+  result.set(69, 5)
+  result.set(70, 6)
+  result.set(71, 7)
+  result.set(72, 8)
+  result.set(73, 9)
+  result.set(74, 10)
+  result.set(75, 11)
+  result.set(76, 12)
+  result.set(77, 13)
+  result.set(78, 14)
+  result.set(79, 15)
+  result.set(80, 16)
+  result.set(81, 17)
+  result.set(82, 18)
+  result.set(83, 19)
+  return result
+}
+
+function getEncounteredNoteSet(notes: Note[]) {
+  const encounteredNoteSet = new Set<number>()
+  notes.forEach((note) => {
+    encounteredNoteSet.add(note.midi)
+  })
+  return encounteredNoteSet
+}
+
+function adjustOctaveGuitar(notes: Note[]) {
+  const encounteredNotes = Array.from(getEncounteredNoteSet(notes)).sort((a, b) => a - b)
+
+  const minNote = encounteredNotes[0]
+  const maxNote = encounteredNotes[encounteredNotes.length - 1]
+  const encounteredRange = maxNote - minNote
+
+  const pwGuitarMinNote = 40
+  const pwGuitarMaxNote = 83
+  const guitarIntervalRange = pwGuitarMaxNote - pwGuitarMinNote
+
+  if (encounteredRange > guitarIntervalRange) {
+    console.warn('Guitar notes exceed supported range of [40; 83].')
+    return
+  }
+
+  let octaveShift = 0
+  if (minNote < pwGuitarMinNote) {
+    // Avoids infinite loop
+    for (let i = 0; i < 5; i++) {
+      if (minNote + octaveShift * 12 < pwGuitarMinNote) {
+        octaveShift += 1
+      }
+      if (maxNote + octaveShift * 12 > pwGuitarMaxNote) {
+        octaveShift -= 1
+      }
+    }
+  }
+
+  if (octaveShift !== 0) {
+    notes.forEach((note) => {
+      note.midi += octaveShift * 12
+    })
+    console.log(`Adjusted guitar notes ${octaveShift > 0 ? 'up' : 'down'} by ${Math.abs(octaveShift)} octaves.`)
+  }
+}
+
 function processMidiFile(midi: Midi): NoteMap {
   const writeNotes: NoteMap = new Map()
   const defaultSpeed = 13.55 // This is the default falling speed at 100% gravity in the form of pixels/tick.
@@ -196,13 +300,60 @@ function processMidiFile(midi: Midi): NoteMap {
     const notes = track.notes
     const family = track.instrument.family
 
+    // Midi files may contain empty tracks
+    // Some people use them as comments or to store metadata
+    if (notes.length === 0) {
+      return
+    }
+
     const INSTRUMENT_FAMILY_PIANO = 'piano'
+    const INSTRUMENT_FAMILY_CHROMATIC_PERCUSSION = 'chromatic percussion' // XYLOPHONE
+    const INSTRUMENT_FAMILY_ENSEMBLE = 'ensemble' // VIOLIN
+
+    const INSTRUMENT_FAMILY_GUITAR = 'guitar'
+    const INSTRUMENT_FAMILY_BASS = 'bass'
+
     const INSTRUMENT_FAMILY_DRUMS = 'drums'
 
-    // guitars are not supported (yet) because it requires strange note mappings.
-    if (![INSTRUMENT_FAMILY_PIANO, INSTRUMENT_FAMILY_DRUMS].includes(family)) {
+    if (
+      ![
+        INSTRUMENT_FAMILY_PIANO,
+        INSTRUMENT_FAMILY_GUITAR,
+        INSTRUMENT_FAMILY_BASS,
+        INSTRUMENT_FAMILY_DRUMS,
+        INSTRUMENT_FAMILY_CHROMATIC_PERCUSSION,
+        INSTRUMENT_FAMILY_ENSEMBLE,
+      ].includes(family)
+    ) {
       console.warn('Skipping unsupported instrument family: ', family)
       return
+    }
+
+    console.log(
+      `Track "${family} - ${track.name}", encountered notes: `,
+      Array.from(getEncounteredNoteSet(notes))
+        .sort((a, b) => a - b)
+        .toString(),
+    )
+
+    let pwInstrument
+    switch (family) {
+      case INSTRUMENT_FAMILY_PIANO:
+      case INSTRUMENT_FAMILY_CHROMATIC_PERCUSSION:
+      case INSTRUMENT_FAMILY_ENSEMBLE:
+        pwInstrument = PwInstrument.PIANO
+        break
+      case INSTRUMENT_FAMILY_GUITAR:
+      case INSTRUMENT_FAMILY_BASS:
+        pwInstrument = PwInstrument.GUITAR
+        adjustOctaveGuitar(notes)
+        break
+      case INSTRUMENT_FAMILY_DRUMS:
+        pwInstrument = PwInstrument.DRUMS
+        break
+      default:
+        console.warn('Skipping unsupported instrument family: ', family)
+        return
     }
 
     notes.forEach((note) => {
@@ -211,18 +362,18 @@ function processMidiFile(midi: Midi): NoteMap {
       }
 
       let mappedNote
-      let pwInstrument
-      switch (family) {
-        case INSTRUMENT_FAMILY_PIANO:
+      switch (pwInstrument) {
+        case PwInstrument.PIANO:
           mappedNote = getMidiPianoToPwPianoNoteMap().get(note.midi)
-          pwInstrument = PwInstrument.PIANO
           break
-        case INSTRUMENT_FAMILY_DRUMS:
+        case PwInstrument.GUITAR:
+          mappedNote = getMidiGuitarToPwGuitarNoteMap().get(note.midi)
+          break
+        case PwInstrument.DRUMS:
           mappedNote = getMidiDrumToPwDrumNoteMap().get(note.midi)
-          pwInstrument = PwInstrument.DRUMS
           break
         default:
-          throw new Error('Unhandled instrument family: ' + family)
+          throw new Error('Unhandled instrument family')
       }
 
       if (mappedNote === undefined) {

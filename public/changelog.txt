@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-11-14 Version 1.14.0
+- Website: MIDI Import now supports guitar notes.
+
 2025-11-13 Version 1.13.0
 - Website: MIDI Import now supports drum notes.
 
