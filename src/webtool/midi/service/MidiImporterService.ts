@@ -164,8 +164,8 @@ function getMidiDrumToPwDrumNoteMap(): Map<number, number> {
   result.set(MidiDrum.OPEN_HI_HAT_A_2, PwDrumNoteType.HIHAT_4)
 
   result.set(MidiDrum.SIDE_STICK_C_2, PwDrumNoteType.SNARE_2)
-  result.set(MidiDrum.ACOUSTIC_SNARE_D2, PwDrumNoteType.SNARE_2)
-  result.set(MidiDrum.ELECTRIC_SNARE_E2, PwDrumNoteType.SNARE_2)
+  result.set(MidiDrum.ACOUSTIC_SNARE_D2, PwDrumNoteType.SNARE)
+  result.set(MidiDrum.ELECTRIC_SNARE_E2, PwDrumNoteType.SNARE)
 
   result.set(MidiDrum.CRASH_CYMBAL_1_C_3, PwDrumNoteType.CRASH_1)
   result.set(MidiDrum.CRASH_CYMBAL_2_A3, PwDrumNoteType.CRASH_2)
