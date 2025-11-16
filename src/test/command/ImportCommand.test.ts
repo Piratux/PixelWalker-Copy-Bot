@@ -28,7 +28,7 @@ describe.sequential('.import', () => {
     )
   })
 
-  test('.import 8nqftm1t0j43121 4 5 1 2 4 5 (mask + import)', async () => {
+  test('.import 8nqftm1t0j43121 4 5 1 2 4 5 (mask + skipair + import)', async () => {
     const playerId = getPwGameWorldHelper().botPlayerId
     const inputBlocks: WorldBlock[] = [
       { pos: vec2(1, 2), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GREEN) },
@@ -55,7 +55,8 @@ describe.sequential('.import', () => {
       { pos: vec2(4, 5), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
     ]
     await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(0, 0), async () => {
-      await commandReceived('.mask foreground background nonair', playerId)
+      await commandReceived('.mask foreground background', playerId)
+      await commandReceived('.skipair', playerId)
       await commandReceived('.import 8nqftm1t0j43121 4 5 1 2 4 5', playerId)
     })
   })

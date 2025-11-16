@@ -1,5 +1,9 @@
 PixelWalker copy bot changelog
 
+2025-11-16 Version 1.14.1
+- Bot: Removed .mask command 'nonair' parameter.
+- Bot: Added .skipair command as replacement for .mask 'nonair' mode.
+
 2025-11-14 Version 1.14.0
 - Website: MIDI Import now supports guitar notes.
 - Website: MIDI Import now maps unknown MIDI family instruments to piano notes.

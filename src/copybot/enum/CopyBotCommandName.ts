@@ -9,6 +9,7 @@ export enum CopyBotCommandName {
   Redo = 'redo',
   Move = 'move',
   Mask = 'mask',
+  SkipAir = 'skipair',
   Import = 'import',
   PlaceAll = 'placeall',
   PlaceElvlExport = 'placeelvlexport',

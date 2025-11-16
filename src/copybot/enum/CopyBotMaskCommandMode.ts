@@ -3,5 +3,4 @@ export enum CopyBotMaskCommandMode {
   Background = 'background',
   Foreground = 'foreground',
   Overlay = 'overlay',
-  NonAir = 'nonair',
 }

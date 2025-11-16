@@ -144,6 +144,9 @@ export async function commandReceived(message: string, playerId: number) {
     case CopyBotCommandName.Mask:
       maskCommandReceived(commandArgs, playerId)
       break
+    case CopyBotCommandName.SkipAir:
+      skipairCommandReceived(commandArgs, playerId)
+      break
     case CopyBotCommandName.Import:
       await importCommandReceived(commandArgs, playerId)
       break
@@ -164,13 +167,18 @@ export async function commandReceived(message: string, playerId: number) {
 
 function maskCommandReceived(args: string[], playerId: number) {
   for (const arg of args) {
+    // TODO: remove later
+    if (arg === 'nonair') {
+      throw new GameError('The "nonair" mask mode has been removed. Use ".skipair" command instead', playerId)
+    }
+
     if (!Object.values(CopyBotMaskCommandMode).includes(arg as CopyBotMaskCommandMode)) {
       throw createUnrecognisedMaskModeError(arg, playerId)
     }
   }
 
   if (args.length === 0) {
-    throw new GameError(`Correct usage is .mask [default | background | foreground | overlay | nonair]`, playerId)
+    throw new GameError(`Correct usage is .mask [default | background | foreground | overlay]`, playerId)
   }
 
   const botData = getBotData(playerId)
@@ -178,7 +186,6 @@ function maskCommandReceived(args: string[], playerId: number) {
   botData.maskBackgroundEnabled = false
   botData.maskForegroundEnabled = false
   botData.maskOverlayEnabled = false
-  botData.maskNonAirEnabled = false
 
   if (args.includes(CopyBotMaskCommandMode.Default)) {
     botData.maskBackgroundEnabled = true
@@ -201,11 +208,13 @@ function maskCommandReceived(args: string[], playerId: number) {
     botData.maskOverlayEnabled = true
     sendPrivateChatMessage(`Mask overlay enabled`, playerId)
   }
+}
 
-  if (args.includes(CopyBotMaskCommandMode.NonAir)) {
-    botData.maskNonAirEnabled = true
-    sendPrivateChatMessage(`Mask non air enabled`, playerId)
-  }
+function skipairCommandReceived(_args: string[], playerId: number) {
+  const botData = getBotData(playerId)
+  botData.skipAirEnabled = !botData.skipAirEnabled
+
+  sendPrivateChatMessage(`Skip air ${botData.skipAirEnabled ? 'enabled' : 'disabled'}`, playerId)
 }
 
 function moveCommandReceived(_args: string[], playerId: number) {
@@ -353,7 +362,7 @@ async function importCommandReceived(args: string[], playerId: number) {
 
   const botData = getBotData(playerId)
   allBlocks = filterByLayerMasks(allBlocks, botData)
-  allBlocks = filterByNonAirMask(allBlocks, botData)
+  allBlocks = filterBySkipAir(allBlocks, botData)
   addUndoItemWorldBlock(botData, allBlocks)
 
   const success = await placeMultipleBlocks(allBlocks)
@@ -443,21 +452,30 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage(`Example usage 2: .redo 3`, playerId)
       break
     case CopyBotCommandName.Move:
-      sendPrivateChatMessage('.move - enabled move mode, which deletes blocks in last selected area', playerId)
-      sendPrivateChatMessage('Move mode lasts until next area selection', playerId)
+      sendPrivateChatMessage('.move - enables move mode, which deletes blocks in last selected area', playerId)
+      sendPrivateChatMessage('Use this command again to disable this mode', playerId)
       break
     case CopyBotCommandName.Mask:
       sendPrivateChatMessage(
-        '.mask [default | background | foreground | overlay | nonair] - masks layers or non empty blocks when pasting',
+        '.mask [default | background | foreground | overlay] - masks layers or non empty blocks when pasting',
         playerId,
       )
-      sendPrivateChatMessage('".mask default" is shorthand for ".mask background foreground overlay"', playerId)
       sendPrivateChatMessage(
         `Example usage 1: .mask foreground background (only pastes foreground and background blocks)`,
         playerId,
       )
-      sendPrivateChatMessage(`Example usage 2: .mask default nonair (only pastes non empty blocks)`, playerId)
-      sendPrivateChatMessage(`Example usage 3: .mask default (resets to default mask)`, playerId)
+      sendPrivateChatMessage(
+        `Example usage 2: .mask default (shorthand for .mask background foreground overlay)`,
+        playerId,
+      )
+      break
+    case CopyBotCommandName.SkipAir:
+      sendPrivateChatMessage(
+        '.skipair - enables skip air mode, which ignores empty blocks from selection when pasting',
+        playerId,
+      )
+      sendPrivateChatMessage('Useful for copy pasting non square areas', playerId)
+      sendPrivateChatMessage('Use this command again to disable this mode', playerId)
       break
     case CopyBotCommandName.Import:
       sendPrivateChatMessage('.import world_id [src_from_x src_from_y src_to_x src_to_y dest_to_x dest_to_y]', playerId)
@@ -951,6 +969,10 @@ function applyMoveMode(botData: CopyBotData, allBlocks: WorldBlock[]) {
 }
 
 function filterByLayerMasks(allBlocks: WorldBlock[], botData: CopyBotData) {
+  if (botData.maskBackgroundEnabled && botData.maskForegroundEnabled && botData.maskOverlayEnabled) {
+    return allBlocks
+  }
+
   return allBlocks.filter((block) => {
     if (block.layer === LayerType.Background) {
       return botData.maskBackgroundEnabled
@@ -968,14 +990,14 @@ function filterByLayerMasks(allBlocks: WorldBlock[], botData: CopyBotData) {
   })
 }
 
-function filterByNonAirMask(allBlocks: WorldBlock[], botData: CopyBotData) {
-  if (!botData.maskNonAirEnabled) {
+function filterBySkipAir(allBlocks: WorldBlock[], botData: CopyBotData) {
+  if (!botData.skipAirEnabled) {
     return allBlocks
   }
 
   return allBlocks.filter((block) => {
     if (block.block.bId === 0) {
-      return !botData.maskNonAirEnabled
+      return !botData.skipAirEnabled
     }
     return true
   })
@@ -1033,7 +1055,7 @@ export async function pasteBlocks(botData: CopyBotData, blockPos: Point) {
     }
 
     allBlocks = filterByLayerMasks(allBlocks, botData)
-    allBlocks = filterByNonAirMask(allBlocks, botData)
+    allBlocks = filterBySkipAir(allBlocks, botData)
     allBlocks = applyMoveMode(botData, allBlocks)
 
     addUndoItemWorldBlock(botData, allBlocks)
