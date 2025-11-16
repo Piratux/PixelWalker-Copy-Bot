@@ -1,6 +1,6 @@
 export enum CopyBotMaskCommandMode {
-  Default = 'default',
-  Background = 'background',
-  Foreground = 'foreground',
-  Overlay = 'overlay',
+  DEFAULT = 'default',
+  BACKGROUND = 'background',
+  FOREGROUND = 'foreground',
+  OVERLAY = 'overlay',
 }

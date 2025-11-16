@@ -15,8 +15,8 @@ function buildRouter() {
   router.beforeEach((to: RouteLocationNormalizedGeneric) => {
     handleAlert(to)
 
-    if (to.name === RouteName.NotFound) {
-      return { name: RouteName.Home }
+    if (to.name === RouteName.NOT_FOUND) {
+      return { name: RouteName.HOME }
     }
   })
 
@@ -30,11 +30,11 @@ function handleAlert(to: RouteLocationNormalizedGeneric) {
 
   if (
     [
-      RouteName.ImportEelvl,
-      RouteName.ExportEelvl,
-      RouteName.ImportMidi,
-      RouteName.ImportPng,
-      RouteName.ImportEer,
+      RouteName.IMPORT_EELVL,
+      RouteName.EXPORT_EELVL,
+      RouteName.IMPORT_MIDI,
+      RouteName.IMPORT_PNG,
+      RouteName.IMPORT_EER,
     ].includes(to.name as RouteName) &&
     usePwClientStore().roomType !== '' &&
     LAST_TESTED_ROOM_TYPE_VERSION !== usePwClientStore().roomType

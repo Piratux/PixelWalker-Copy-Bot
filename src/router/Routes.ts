@@ -15,47 +15,47 @@ const basePath = '/PixelWalker-Copy-Bot'
 export const Routes: RouteRecordRaw[] = [
   {
     path: `${basePath}/login`,
-    name: RouteName.Login,
+    name: RouteName.LOGIN,
     component: LoginView,
   },
   {
     path: `${basePath}/home`,
-    name: RouteName.Home,
+    name: RouteName.HOME,
     component: HomeView,
   },
   {
     path: `${basePath}/import-eelvl`,
-    name: RouteName.ImportEelvl,
+    name: RouteName.IMPORT_EELVL,
     component: EelvlImportView,
   },
   {
     path: `${basePath}/export-eelvl`,
-    name: RouteName.ExportEelvl,
+    name: RouteName.EXPORT_EELVL,
     component: EelvlExportView,
   },
   {
     path: `${basePath}/import-png`,
-    name: RouteName.ImportPng,
+    name: RouteName.IMPORT_PNG,
     component: PngImportView,
   },
   {
     path: `${basePath}/import-midi`,
-    name: RouteName.ImportMidi,
+    name: RouteName.IMPORT_MIDI,
     component: MidiImportView,
   },
   {
     path: `${basePath}/dev`,
-    name: RouteName.Dev,
+    name: RouteName.DEV,
     component: DevView,
   },
   {
     path: `${basePath}/import-eer`,
-    name: RouteName.ImportEer,
+    name: RouteName.IMPORT_EER,
     component: EerImportView,
   },
   {
     path: '/:pathMatch(.*)*',
-    name: RouteName.NotFound,
+    name: RouteName.NOT_FOUND,
     component: NotFoundView,
   },
 ]

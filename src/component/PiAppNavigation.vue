@@ -3,7 +3,7 @@
   <v-app-bar color="primary">
     <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
     <v-toolbar-title>PixelWalker copy bot</v-toolbar-title>
-    <v-btn v-if="!usePwClientStore().isConnected" icon @click="handleRouting(RouteName.Login)">
+    <v-btn v-if="!usePwClientStore().isConnected" icon @click="handleRouting(RouteName.LOGIN)">
       <v-icon icon="mdi-login"></v-icon>
       <v-tooltip activator="parent">Connect</v-tooltip>
     </v-btn>
@@ -19,7 +19,7 @@
           <v-list-item-title>{{ item.text }}</v-list-item-title>
         </v-list-item>
       </div>
-      <v-list-item v-if="devViewEnabled" link @click="handleRouting(RouteName.Dev)">
+      <v-list-item v-if="devViewEnabled" link @click="handleRouting(RouteName.DEV)">
         <v-list-item-title>Developer tools</v-list-item-title>
       </v-list-item>
       <v-list-item link @click="openChangelog">
@@ -86,6 +86,6 @@ async function onDisconnectButtonClick() {
 
   resetAllStores()
 
-  await router.push({ name: RouteName.Login })
+  await router.push({ name: RouteName.LOGIN })
 }
 </script>

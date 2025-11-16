@@ -114,50 +114,50 @@ export async function commandReceived(message: string, playerId: number) {
   const commandArgs = command.slice(1)
 
   switch (commandName as CopyBotCommandName) {
-    case CopyBotCommandName.Help:
+    case CopyBotCommandName.HELP:
       helpCommandReceived(commandArgs, playerId)
       break
-    case CopyBotCommandName.Ping:
+    case CopyBotCommandName.PING:
       sendPrivateChatMessage('pong', playerId)
       break
-    case CopyBotCommandName.Edit:
+    case CopyBotCommandName.EDIT:
       editCommandReceived(commandArgs, playerId)
       break
-    case CopyBotCommandName.Flip:
+    case CopyBotCommandName.FLIP:
       flipCommandReceived(commandArgs, playerId)
       break
-    case CopyBotCommandName.Paste:
+    case CopyBotCommandName.PASTE:
       await pasteCommandReceived(commandArgs, playerId, false)
       break
-    case CopyBotCommandName.SmartPaste:
+    case CopyBotCommandName.SMART_PASTE:
       await pasteCommandReceived(commandArgs, playerId, true)
       break
-    case CopyBotCommandName.Undo:
+    case CopyBotCommandName.UNDO:
       undoCommandReceived(commandArgs, playerId)
       break
-    case CopyBotCommandName.Redo:
+    case CopyBotCommandName.REDO:
       redoCommandReceived(commandArgs, playerId)
       break
-    case CopyBotCommandName.Move:
+    case CopyBotCommandName.MOVE:
       moveCommandReceived(commandArgs, playerId)
       break
-    case CopyBotCommandName.Mask:
+    case CopyBotCommandName.MASK:
       maskCommandReceived(commandArgs, playerId)
       break
-    case CopyBotCommandName.SkipAir:
+    case CopyBotCommandName.SKIP_AIR:
       skipairCommandReceived(commandArgs, playerId)
       break
-    case CopyBotCommandName.Import:
+    case CopyBotCommandName.IMPORT:
       await importCommandReceived(commandArgs, playerId)
       break
     // DEV commands
-    case CopyBotCommandName.PlaceAll:
+    case CopyBotCommandName.PLACE_ALL:
       await placeallCommandReceived(commandArgs, playerId)
       break
-    case CopyBotCommandName.PlaceElvlExport:
-      await placeElvlExportCommandReceived(commandArgs, playerId)
+    case CopyBotCommandName.PLACE_EELVL_EXPORT:
+      await placeEelvlExportCommandReceived(commandArgs, playerId)
       break
-    case CopyBotCommandName.PrintBlocks:
+    case CopyBotCommandName.PRINT_BLOCKS:
       printblocksCommandReceived(commandArgs, playerId)
       break
     default:
@@ -187,24 +187,24 @@ function maskCommandReceived(args: string[], playerId: number) {
   botData.maskForegroundEnabled = false
   botData.maskOverlayEnabled = false
 
-  if (args.includes(CopyBotMaskCommandMode.Default)) {
+  if (args.includes(CopyBotMaskCommandMode.DEFAULT)) {
     botData.maskBackgroundEnabled = true
     botData.maskForegroundEnabled = true
     botData.maskOverlayEnabled = true
     sendPrivateChatMessage(`Mask default enabled`, playerId)
   }
 
-  if (args.includes(CopyBotMaskCommandMode.Background)) {
+  if (args.includes(CopyBotMaskCommandMode.BACKGROUND)) {
     botData.maskBackgroundEnabled = true
     sendPrivateChatMessage(`Mask background enabled`, playerId)
   }
 
-  if (args.includes(CopyBotMaskCommandMode.Foreground)) {
+  if (args.includes(CopyBotMaskCommandMode.FOREGROUND)) {
     botData.maskForegroundEnabled = true
     sendPrivateChatMessage(`Mask foreground enabled`, playerId)
   }
 
-  if (args.includes(CopyBotMaskCommandMode.Overlay)) {
+  if (args.includes(CopyBotMaskCommandMode.OVERLAY)) {
     botData.maskOverlayEnabled = true
     sendPrivateChatMessage(`Mask overlay enabled`, playerId)
   }
@@ -263,7 +263,7 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
   }
 }
 
-async function placeElvlExportCommandReceived(_args: string[], playerId: number) {
+async function placeEelvlExportCommandReceived(_args: string[], playerId: number) {
   requireDeveloper(playerId)
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
@@ -389,18 +389,18 @@ function helpCommandReceived(args: string[], playerId: number) {
   }
 
   switch (commandName as CopyBotCommandName) {
-    case CopyBotCommandName.Ping:
+    case CopyBotCommandName.PING:
       sendPrivateChatMessage('.ping - check if bot is alive by pinging it.', playerId)
       sendPrivateChatMessage(`Example usage: .ping`, playerId)
       break
-    case CopyBotCommandName.Help:
+    case CopyBotCommandName.HELP:
       sendPrivateChatMessage(
         '.help [command] - get general help, or if command is specified, get help about command.',
         playerId,
       )
       sendPrivateChatMessage(`Example usage: .help paste`, playerId)
       break
-    case CopyBotCommandName.Edit:
+    case CopyBotCommandName.EDIT:
       sendPrivateChatMessage(
         '.edit name find replace - edits selected block name substrings from "find" to "replace".',
         playerId,
@@ -413,17 +413,17 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage('math_op - add, sub, mul or div.', playerId)
       sendPrivateChatMessage('name_find - restricts to blocks with this substring in their name', playerId)
       break
-    case CopyBotCommandName.Flip:
+    case CopyBotCommandName.FLIP:
       sendPrivateChatMessage('.flip [h | v] - flips selected blocks horizontally or vertically.', playerId)
       sendPrivateChatMessage(`Example usage: .flip v`, playerId)
       break
-    case CopyBotCommandName.Paste:
+    case CopyBotCommandName.PASTE:
       sendPrivateChatMessage('.paste x_times y_times [x_spacing y_spacing] - repeat next paste (x/y)_times.', playerId)
       sendPrivateChatMessage('(x/y)_spacing - gap size to leave between pastes.', playerId)
       sendPrivateChatMessage(`Example usage 1: .paste 2 3`, playerId)
       sendPrivateChatMessage(`Example usage 2: .paste 2 3 4 1`, playerId)
       break
-    case CopyBotCommandName.SmartPaste:
+    case CopyBotCommandName.SMART_PASTE:
       sendPrivateChatMessage(
         '.smartpaste - same as .paste, but increments special block arguments, when using repeated paste.',
         playerId,
@@ -441,21 +441,21 @@ function helpCommandReceived(args: string[], playerId: number) {
         playerId,
       )
       break
-    case CopyBotCommandName.Undo:
+    case CopyBotCommandName.UNDO:
       sendPrivateChatMessage('.undo [count] - undoes last paste performed by bot "count" times', playerId)
       sendPrivateChatMessage(`Example usage 1: .undo`, playerId)
       sendPrivateChatMessage(`Example usage 2: .undo 3`, playerId)
       break
-    case CopyBotCommandName.Redo:
+    case CopyBotCommandName.REDO:
       sendPrivateChatMessage('.redo [count] - redoes last paste performed by bot "count" times', playerId)
       sendPrivateChatMessage(`Example usage 1: .redo`, playerId)
       sendPrivateChatMessage(`Example usage 2: .redo 3`, playerId)
       break
-    case CopyBotCommandName.Move:
+    case CopyBotCommandName.MOVE:
       sendPrivateChatMessage('.move - enables move mode, which deletes blocks in last selected area', playerId)
       sendPrivateChatMessage('Use this command again to disable this mode', playerId)
       break
-    case CopyBotCommandName.Mask:
+    case CopyBotCommandName.MASK:
       sendPrivateChatMessage(
         '.mask [default | background | foreground | overlay] - masks layers or non empty blocks when pasting',
         playerId,
@@ -469,7 +469,7 @@ function helpCommandReceived(args: string[], playerId: number) {
         playerId,
       )
       break
-    case CopyBotCommandName.SkipAir:
+    case CopyBotCommandName.SKIP_AIR:
       sendPrivateChatMessage(
         '.skipair - enables skip air mode, which ignores empty blocks from selection when pasting',
         playerId,
@@ -477,7 +477,7 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage('Useful for copy pasting non square areas', playerId)
       sendPrivateChatMessage('Use this command again to disable this mode', playerId)
       break
-    case CopyBotCommandName.Import:
+    case CopyBotCommandName.IMPORT:
       sendPrivateChatMessage('.import world_id [src_from_x src_from_y src_to_x src_to_y dest_to_x dest_to_y]', playerId)
       sendPrivateChatMessage('Copies blocks from world with "world_id" and places them into current world', playerId)
       sendPrivateChatMessage('src_from_(x/y) - top left corner position to copy from', playerId)
@@ -487,21 +487,21 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage(`Example usage 2: .import legacy:PW4gnKMssUb0I 2 4 25 16 2 4`, playerId)
       break
     // DEV commands
-    case CopyBotCommandName.PlaceAll:
+    case CopyBotCommandName.PLACE_ALL:
       sendPrivateChatMessage(
         '.placeall - dev command that places all PixelWalker blocks returned from /listblocks endpoint',
         playerId,
       )
       sendPrivateChatMessage('This command is used in "Every Block" world (ewki341n7ve153l)', playerId)
       break
-    case CopyBotCommandName.PlaceElvlExport:
+    case CopyBotCommandName.PLACE_EELVL_EXPORT:
       sendPrivateChatMessage(
-        '.placeelvlexport - dev command that exports "Every Block" world (ewki341n7ve153l) as eelvl and imports to this world',
+        '.placeeelvlexport - dev command that exports "Every Block" world (ewki341n7ve153l) as eelvl and imports to this world',
         playerId,
       )
       sendPrivateChatMessage('This command is used in "Test EELVL export" world (ra9285102d4a41a)', playerId)
       break
-    case CopyBotCommandName.PrintBlocks:
+    case CopyBotCommandName.PRINT_BLOCKS:
       sendPrivateChatMessage('.printblocks - dev command that prints selected blocks to console', playerId)
       sendPrivateChatMessage('This is useful when writing tests', playerId)
       break

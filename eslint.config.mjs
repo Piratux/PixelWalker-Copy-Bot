@@ -17,7 +17,10 @@ export default defineConfigWithVueTs(
           selector: 'default',
           format: ['camelCase', 'PascalCase', 'UPPER_CASE'],
           leadingUnderscore: 'allow',
-          trailingUnderscore: 'allow',
+        },
+        {
+          selector: 'enumMember',
+          format: ['UPPER_CASE'],
         },
       ],
       '@typescript-eslint/strict-boolean-expressions': [

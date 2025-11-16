@@ -13,7 +13,7 @@ const currentRouteName = computed(() => {
 
 <template>
   <v-app>
-    <PiAppNavigation v-if="currentRouteName !== RouteName.Login" />
+    <PiAppNavigation v-if="currentRouteName !== RouteName.LOGIN" />
     <v-main>
       <v-container fluid>
         <v-alert

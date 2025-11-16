@@ -459,25 +459,25 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
   const playerId = data.playerId!
 
   switch (commandName as BomBotCommandName) {
-    case BomBotCommandName.Help:
+    case BomBotCommandName.HELP:
       helpCommandReceived(commandArgs, playerId)
       break
-    case BomBotCommandName.Ping:
+    case BomBotCommandName.PING:
       sendPrivateChatMessage('pong', playerId)
       break
-    case BomBotCommandName.Start:
+    case BomBotCommandName.START:
       await startCommandReceived(commandArgs, playerId, true)
       break
-    case BomBotCommandName.QuickStart:
+    case BomBotCommandName.QUICK_START:
       await startCommandReceived(commandArgs, playerId, false)
       break
-    case BomBotCommandName.Stop:
+    case BomBotCommandName.STOP:
       await stopCommandReceived(commandArgs, playerId)
       break
-    case BomBotCommandName.Afk:
+    case BomBotCommandName.AFK:
       afkCommandReceived(commandArgs, playerId)
       break
-    case BomBotCommandName.PlaceAllBomBot:
+    case BomBotCommandName.PLACE_ALL_BOMBOT:
       await placeallbombotCommandReceived(commandArgs, playerId)
       break
     default:
@@ -520,28 +520,28 @@ function helpCommandReceived(args: string[], playerId: number) {
   }
 
   switch (commandName as BomBotCommandName) {
-    case BomBotCommandName.Ping:
+    case BomBotCommandName.PING:
       sendPrivateChatMessage('.ping - check if bot is alive by pinging it.', playerId)
       sendPrivateChatMessage(`Example usage: .ping`, playerId)
       break
-    case BomBotCommandName.Help:
+    case BomBotCommandName.HELP:
       sendPrivateChatMessage(
         '.help [command] - get general help, or if command is specified, get help about command.',
         playerId,
       )
       sendPrivateChatMessage(`Example usage: .help afk`, playerId)
       break
-    case BomBotCommandName.Start:
+    case BomBotCommandName.START:
       sendPrivateChatMessage('.start - starts BomBot game.', playerId)
       break
-    case BomBotCommandName.QuickStart:
+    case BomBotCommandName.QUICK_START:
       sendPrivateChatMessage('.start - starts BomBot game faster by not placing BomBot world', playerId)
       sendPrivateChatMessage('This can be used to customise BomBot world', playerId)
       break
-    case BomBotCommandName.Stop:
+    case BomBotCommandName.STOP:
       sendPrivateChatMessage('.stop - stops BomBot game.', playerId)
       break
-    case BomBotCommandName.Afk:
+    case BomBotCommandName.AFK:
       sendPrivateChatMessage(".afk - tells bot that you're afk or not.", playerId)
       break
     default:

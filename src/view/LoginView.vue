@@ -41,7 +41,7 @@ async function onConnectButtonClick() {
 
     await initPwClasses(worldId.value, email.value, password.value, secretEditKey.value, botType.value)
 
-    await router.push({ name: RouteName.Home })
+    await router.push({ name: RouteName.HOME })
   })
 }
 

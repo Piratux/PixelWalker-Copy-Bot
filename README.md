@@ -123,7 +123,7 @@ npm run gen-files
 
 - Update block names in `EelvlBlocks.ts` and `EerBlocks.ts` based on new names in generated files.
 - Update `Every block` (id: ewki341n7ve153l) world with `.placeall` command.
-- Update `Test EELVL export` (id: ra9285102d4a41a) world with `.placeelvlexport` command.
+- Update `Test EELVL export` (id: ra9285102d4a41a) world with `.placeeelvlexport` command.
 - Update `Test EELVL import` (id: r0ed3a956087328) world based on potentially failing tests.
 - Run tests (see section above)
 

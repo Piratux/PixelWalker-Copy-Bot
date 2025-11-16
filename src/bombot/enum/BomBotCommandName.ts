@@ -1,9 +1,9 @@
 export enum BomBotCommandName {
-  Help = 'help',
-  Ping = 'ping',
-  Start = 'start',
-  QuickStart = 'quickstart',
-  Stop = 'stop',
-  Afk = 'afk',
-  PlaceAllBomBot = 'placeallbombot',
+  HELP = 'help',
+  PING = 'ping',
+  START = 'start',
+  QUICK_START = 'quickstart',
+  STOP = 'stop',
+  AFK = 'afk',
+  PLACE_ALL_BOMBOT = 'placeallbombot',
 }
