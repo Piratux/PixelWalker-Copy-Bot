@@ -1,4 +1,4 @@
-import { describe, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { Block, LayerType } from 'pw-js-world'
@@ -6,6 +6,8 @@ import { vec2 } from '@basementuniverse/vec'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { runSelectCommandTest } from '@/test/RuntimeTestsUtil.ts'
 import { commandReceived } from '@/copybot/service/PacketHandlerCopyBotService.ts'
+import { createFailedToJoinWorldErrorString } from '@/copybot/service/CopyBotErrorService.ts'
+import { GameError } from '@/core/class/GameError.ts'
 
 describe.sequential('.import', () => {
   test('.import 8nqftm1t0j43121 2 5 4 3 2 5 (corner select)', async () => {
@@ -59,5 +61,15 @@ describe.sequential('.import', () => {
       await commandReceived('.skipair', playerId)
       await commandReceived('.import 8nqftm1t0j43121 4 5 1 2 4 5', playerId)
     })
+  })
+
+  test('.import a (non existing world id)', async () => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    await expect(async () => {
+      await commandReceived('.import a', playerId)
+    }).rejects.toThrowError(createFailedToJoinWorldErrorString('a'))
+    await expect(async () => {
+      await commandReceived('.import a', playerId)
+    }).rejects.toThrowError(GameError)
   })
 })

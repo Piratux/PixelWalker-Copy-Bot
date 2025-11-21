@@ -16,6 +16,7 @@ import { useEelvlClientStore } from '@/webtool/eelvl/store/EelvlClientStore.ts'
 import { useEerClientStore } from '@/webtool/eer/store/EerClientStore.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { TimeoutError, workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
+import { createFailedToJoinWorldErrorString } from '@/copybot/service/CopyBotErrorService.ts'
 
 export async function authenticate(pwApiClient: PWApiClient): Promise<void> {
   const authenticationResult = await pwApiClient.authenticate()
@@ -35,7 +36,7 @@ export async function joinWorld(pwGameClient: PWGameClient, worldId: string): Pr
   try {
     await pwGameClient.joinWorld(worldId)
   } catch (e) {
-    throw new Error(`Failed to join world with ID '${worldId}'. ` + (e as Error).message)
+    throw new GameError(createFailedToJoinWorldErrorString(worldId) + ' ' + (e as Error).message)
   }
 }
 

@@ -10,3 +10,7 @@ export function createUnrecognisedMaskModeError(arg: string, playerId: number): 
 export function createPortalIdTooLongErrorString(portalId: string): string {
   return `Computed portal ID is longer than 5 characters, which cannot be placed: '${portalId}'`
 }
+
+export function createFailedToJoinWorldErrorString(worldId: string): string {
+  return `Failed to join world with ID '${worldId}'.`
+}
