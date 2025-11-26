@@ -7,5 +7,6 @@ export enum RouteName {
   IMPORT_MIDI = 'import-midi',
   DEV = 'dev',
   IMPORT_EER = 'import-eer',
+  LIST_PORTALS = 'list-portals',
   NOT_FOUND = 'notFound',
 }

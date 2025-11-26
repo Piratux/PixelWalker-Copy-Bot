@@ -7,6 +7,7 @@ import EelvlExportView from '@/view/EelvlExportView.vue'
 import PngImportView from '@/view/PngImportView.vue'
 import DevView from '@/view/DevView.vue'
 import EerImportView from '@/view/EerImportView.vue'
+import PortalListView from '@/view/PortalListView.vue'
 import NotFoundView from '@/view/NotFoundView.vue'
 import { RouteName } from './RouteName.ts'
 
@@ -52,6 +53,11 @@ export const Routes: RouteRecordRaw[] = [
     path: `${basePath}/import-eer`,
     name: RouteName.IMPORT_EER,
     component: EerImportView,
+  },
+  {
+    path: `${basePath}/list-portals`,
+    name: RouteName.LIST_PORTALS,
+    component: PortalListView,
   },
   {
     path: '/:pathMatch(.*)*',

@@ -1,5 +1,5 @@
 <template>
-  <v-btn :loading="props.loading" :disabled="props.loading" class="mt-2" block c>
+  <v-btn :loading="props.loading" :disabled="props.loading" class="mt-1 mb-1" block c>
     <slot></slot>
   </v-btn>
 </template>

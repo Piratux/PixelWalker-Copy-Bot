@@ -12,8 +12,8 @@ import { cloneDeep, isEqual } from 'lodash-es'
 import { CopyBotData, createBotData } from '@/copybot/type/CopyBotData.ts'
 import { getPlayerCopyBotData } from '@/copybot/store/CopyBotStore.ts'
 import { CopyBotState } from '@/copybot/enum/CopyBotState.ts'
-import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { sendGlobalChatMessage, sendPrivateChatMessage } from '@/core/service/ChatMessageService.ts'
+import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import {
   applyPosOffsetForBlocks,

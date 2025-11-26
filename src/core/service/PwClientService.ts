@@ -219,6 +219,16 @@ export function requirePlayerAndBotEditPermission(pwGameWorldHelper: PWGameWorld
   requireBotEditPermission(pwGameWorldHelper)
 }
 
+export function requireBotAsWorldOwner(): void {
+  for (const [playerId, player] of getPwGameWorldHelper().players) {
+    if (player.isWorldOwner && playerId === getPwGameWorldHelper().botPlayerId) {
+      return
+    }
+  }
+
+  throw new GameError("Bot must be world owner, because otherwise /tp command doesn't work.")
+}
+
 export function getAllWorldBlocks(pwGameWorldHelper: PWGameWorldHelper): DeserialisedStructure {
   return pwGameWorldHelper.sectionBlocks(0, 0, pwGameWorldHelper.width - 1, pwGameWorldHelper.height - 1)
 }

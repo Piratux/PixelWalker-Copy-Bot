@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-11-26 Version 1.15.0
+- Website: Add portal list page.
+
 2025-11-16 Version 1.14.1
 - Bot: Removed .mask command 'nonair' parameter.
 - Bot: Added .skipair command as replacement for .mask 'nonair' mode.

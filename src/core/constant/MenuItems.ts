@@ -25,4 +25,8 @@ export const MENU_ITEMS = [
     text: 'Import EER',
     routeName: RouteName.IMPORT_EER,
   },
+  {
+    text: 'Portal list',
+    routeName: RouteName.LIST_PORTALS,
+  },
 ]
