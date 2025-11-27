@@ -280,7 +280,11 @@ export async function getAnotherWorldBlocks(worldId: string, pwApiClient: PWApiC
     }
   })
 
-  await joinWorld(pwGameClient, worldId)
+  try {
+    await joinWorld(pwGameClient, worldId)
+  } catch (e) {
+    throw new GameError((e as Error).message)
+  }
 
   await workerWaitUntil(() => copyFromAnotherWorldFinished, { timeout: 10000, intervalBetweenAttempts: 1000 })
   if (blocksResult === null) {

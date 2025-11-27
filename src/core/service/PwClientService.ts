@@ -36,7 +36,7 @@ export async function joinWorld(pwGameClient: PWGameClient, worldId: string): Pr
   try {
     await pwGameClient.joinWorld(worldId)
   } catch (e) {
-    throw new GameError(createFailedToJoinWorldErrorString(worldId) + ' ' + (e as Error).message)
+    throw new Error(createFailedToJoinWorldErrorString(worldId) + ' ' + (e as Error).message)
   }
 }
 
