@@ -95,7 +95,7 @@ function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
   }
 
   // Joey from PW mentioned players complained when they all got pings on private messages when bot joins
-  if (isWorldOwner(playerId)) {
+  if (getPwGameWorldHelper().meta?.owner !== 'JOEY') {
     sendPrivateChatMessage('Copy Bot is here! Type .help to show usage!', playerId)
   }
 }
