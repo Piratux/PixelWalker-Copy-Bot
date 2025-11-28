@@ -9,6 +9,7 @@ import { vec2 } from '@basementuniverse/vec'
 import { GameError } from '@/core/class/GameError.ts'
 import { requireBotAsWorldOwner, requirePlayerAndBotEditPermission } from '@/core/service/PwClientService.ts'
 import { sendRawMessage } from '@/core/service/ChatMessageService.ts'
+import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
 
 onMounted(() => {
   if (usePwClientStore().isConnected) {
@@ -29,10 +30,7 @@ function updatePortalDataItems() {
       const block = blocks[LayerType.Foreground][x][y]
       if (blockIsPortal(block.name)) {
         const fromIdToTargetId = `${block.args[0] as string} -> ${block.args[1] as string}`
-        if (!portalMap.has(fromIdToTargetId)) {
-          portalMap.set(fromIdToTargetId, [])
-        }
-        portalMap.get(fromIdToTargetId)!.push(vec2(x, y))
+        mapGetOrInsert(portalMap, fromIdToTargetId, []).push(vec2(x, y))
       }
     }
   }

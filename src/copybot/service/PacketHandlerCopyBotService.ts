@@ -60,6 +60,7 @@ import { getExportedToEelvlData } from '@/webtool/eelvl/service/EelvlExporterSer
 import { getImportedFromEelvlData } from '@/webtool/eelvl/service/EelvlImporterService.ts'
 import { bufferToArrayBuffer } from '@/core/util/Buffers.ts'
 import { colourToUint32, uint32ToColour } from '@/core/util/Colours.ts'
+import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
 
 const callbacks: CallbackEntry[] = [
   { name: 'playerInitPacket', fn: commonPlayerInitPacketReceived },
@@ -1203,11 +1204,7 @@ function worldBlockPlacedPacketReceived(
 }
 
 export function getBotData(playerId: number): CopyBotData {
-  const playerBotData = getPlayerCopyBotData()
-  if (!playerBotData.has(playerId)) {
-    playerBotData.set(playerId, createBotData())
-  }
-  return playerBotData.get(playerId)!
+  return mapGetOrInsert(getPlayerCopyBotData(), playerId, createBotData())
 }
 
 function createOldWorldBlocks(positions: vec2[], oldBlocks: Block[]) {

@@ -54,6 +54,7 @@ import { BomBotBombType } from '@/bombot/enum/BomBotBombType.ts'
 import { SPECIAL_BOMB_COUNT } from '@/bombot/constant/General.ts'
 import { BomBotCommandName } from '@/bombot/enum/BomBotCommandName.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
+import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
 
 const blockTypeDataStartPos = vec2(20, 361) // inclusive x
 const blockTypeDataEndPos = vec2(389, 361) // exclusive x
@@ -1384,17 +1385,11 @@ function isBomBotMapValid(
 }
 
 function getPlayerBomBotWorldData(playerId: number): BomBotWorldData {
-  if (!useBomBotWorldStore().playerBomBotWorldData.has(playerId)) {
-    useBomBotWorldStore().playerBomBotWorldData.set(playerId, createBomBotWorldData(playerId))
-  }
-  return useBomBotWorldStore().playerBomBotWorldData.get(playerId)!
+  return mapGetOrInsert(useBomBotWorldStore().playerBomBotWorldData, playerId, createBomBotWorldData(playerId))
 }
 
 function getPlayerBomBotRoundData(playerId: number): BomBotRoundData {
-  if (!useBomBotRoundStore().playerBomBotRoundData.has(playerId)) {
-    useBomBotRoundStore().playerBomBotRoundData.set(playerId, createBomBotRoundData())
-  }
-  return useBomBotRoundStore().playerBomBotRoundData.get(playerId)!
+  return mapGetOrInsert(useBomBotRoundStore().playerBomBotRoundData, playerId, createBomBotRoundData())
 }
 
 function setBombState(newState: BomBotState) {

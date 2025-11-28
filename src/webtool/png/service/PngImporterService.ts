@@ -10,6 +10,7 @@ import {
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { PNG } from 'pngjs'
 import { colourToUint32 } from '@/core/util/Colours.ts'
+import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
 
 export async function importFromPng(fileData: ArrayBuffer, quantize = true) {
   requireBotEditPermission(getPwGameWorldHelper())
@@ -66,11 +67,7 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
         const g = quantizeAndClamp(png.data[idx + 1], quantizeAmt, alpha)
         const b = quantizeAndClamp(png.data[idx + 2], quantizeAmt, alpha)
         const colourNumber = colourToUint32({ r, g, b })
-
-        if (!colorMap.has(colourNumber)) {
-          colorMap.set(colourNumber, [])
-        }
-        colorMap.get(colourNumber)!.push([x, y])
+        mapGetOrInsert(colorMap, colourNumber, []).push([x, y])
       }
     }
   }

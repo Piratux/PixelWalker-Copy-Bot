@@ -22,13 +22,10 @@ import {
 import { ByteArray } from 'playerioclient'
 import { EelvlExportResult } from '@/webtool/eelvl/type/EelvlExportResult.ts'
 import { MissingBlockInfo } from '@/webtool/eelvl/type/MissingBlockInfo.ts'
+import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
 
 function addBlocksEntry(blocks: ManyKeysMap<EelvlBlockEntry, vec2[]>, key: EelvlBlockEntry, x: number, y: number) {
-  if (!blocks.has(key)) {
-    blocks.set(key, [vec2(x, y)])
-  } else {
-    blocks.get(key)!.push(vec2(x, y))
-  }
+  mapGetOrInsert(blocks, key, []).push(vec2(x, y))
 }
 
 export function getExportedToEelvlData(worldBlocks: DeserialisedStructure): EelvlExportResult {
