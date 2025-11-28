@@ -1,4 +1,5 @@
 import { GameError } from '@/core/class/GameError.ts'
+import { Colour } from '@/core/type/Colour.ts'
 
 export function createUnrecognisedMaskModeError(arg: string, playerId: number): GameError {
   return new GameError(
@@ -9,6 +10,10 @@ export function createUnrecognisedMaskModeError(arg: string, playerId: number): 
 
 export function createPortalIdTooLongErrorString(portalId: string): string {
   return `Computed portal ID is longer than 5 characters, which cannot be placed: '${portalId}'`
+}
+
+export function createColourOutOfBoundsErrorString(colour: Colour): string {
+  return `Computed colour components are not all in [0, 255] range, which cannot be placed: r:${colour.r}, g:${colour.g}, b:${colour.b}`
 }
 
 export function createFailedToJoinWorldErrorString(worldId: string): string {

@@ -13,6 +13,7 @@ import { MidiDrum } from '@/webtool/midi/enum/MidiDrum.ts'
 import { PwDrumNoteType } from '@/core/enum/PwDrumNoteType.ts'
 import { PwInstrument } from '@/webtool/midi/enum/PwInstrument.ts'
 import { Note } from '@tonejs/midi/dist/Note'
+import { colourToUint32 } from '@/core/util/Colours.ts'
 
 type Distance = number
 type PwMappedNote = number
@@ -78,7 +79,8 @@ function getNotePos(spot: number, columnHeight: number) {
 
 function showNoteInColor(x: number, y: number, noteGroup: number[], blocks: DeserialisedStructure) {
   const [r, g, b] = getRGBFromNotes(noteGroup)
-  blocks.blocks[LayerType.Background][x][y] = new Block(PwBlockName.CUSTOM_SOLID_BG, [b + (g << 8) + (r << 16)])
+  const colourNumber = colourToUint32({ r, g, b })
+  blocks.blocks[LayerType.Background][x][y] = new Block(PwBlockName.CUSTOM_SOLID_BG, [colourNumber])
 }
 
 function writeNotes(

@@ -17,6 +17,7 @@ import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import {
   applyPosOffsetForBlocks,
+  blockHasColorArgument,
   blockIsPortal,
   convertDeserializedStructureToWorldBlocks,
   getAnotherWorldBlocks,
@@ -51,12 +52,14 @@ import { BotType } from '@/core/enum/BotType.ts'
 import { CopyBotCommandName } from '@/copybot/enum/CopyBotCommandName.ts'
 import { CopyBotMaskCommandMode } from '@/copybot/enum/CopyBotMaskCommandMode.ts'
 import {
+  createColourOutOfBoundsErrorString,
   createPortalIdTooLongErrorString,
   createUnrecognisedMaskModeError,
 } from '@/copybot/service/CopyBotErrorService.ts'
 import { getExportedToEelvlData } from '@/webtool/eelvl/service/EelvlExporterService.ts'
 import { getImportedFromEelvlData } from '@/webtool/eelvl/service/EelvlImporterService.ts'
 import { bufferToArrayBuffer } from '@/core/util/Buffers.ts'
+import { colourToUint32, uint32ToColour } from '@/core/util/Colours.ts'
 
 const callbacks: CallbackEntry[] = [
   { name: 'playerInitPacket', fn: commonPlayerInitPacketReceived },
@@ -841,6 +844,42 @@ function applySmartTransformForBlockWithIntArgument(
   blockCopy.block.args[argIdx] = (blockCopy.block.args[argIdx] as number) + diff * repetition
 }
 
+// Colour wise smart increment.
+// Example:
+// - Input: #020FB5, #041FB4
+// - Output: #062FB3
+function applySmartTransformForBlockWithColorArgument(
+  pastePosBlock: WorldBlock,
+  nextBlock: WorldBlock,
+  argIdx: number,
+  blockCopy: WorldBlock,
+  repetition: number,
+) {
+  if (pastePosBlock.block.bId !== nextBlock.block.bId) {
+    return
+  }
+
+  const nextBlockColour = uint32ToColour(nextBlock.block.args[argIdx] as number)
+  const pastePosBlockColour = uint32ToColour(pastePosBlock.block.args[argIdx] as number)
+  const blockCopyColour = uint32ToColour(blockCopy.block.args[argIdx] as number)
+
+  const diffR = nextBlockColour.r - pastePosBlockColour.r
+  const diffG = nextBlockColour.g - pastePosBlockColour.g
+  const diffB = nextBlockColour.b - pastePosBlockColour.b
+
+  const newR = blockCopyColour.r + diffR * repetition
+  const newG = blockCopyColour.g + diffG * repetition
+  const newB = blockCopyColour.b + diffB * repetition
+
+  const newColour = { r: newR, g: newG, b: newB }
+
+  try {
+    blockCopy.block.args[argIdx] = colourToUint32(newColour)
+  } catch {
+    throw new GameError(createColourOutOfBoundsErrorString(newColour))
+  }
+}
+
 // Smart increment for portals.
 // Example:
 // - Input: "5", "6"
@@ -907,12 +946,18 @@ function applySmartTransformForBlocks(
       const blockArgTypes: ComponentTypeHeader[] = Block.getArgTypesByBlockId(pastePosBlock.block.bId)
       for (let i = 0; i < blockArgTypes.length; i++) {
         const blockArgType = blockArgTypes[i]
-        if (blockArgType === ComponentTypeHeader.Int32) {
-          applySmartTransformForBlockWithIntArgument(pastePosBlock, nextBlockX, i, blockCopy, repetitionX)
-          applySmartTransformForBlockWithIntArgument(pastePosBlock, nextBlockY, i, blockCopy, repetitionY)
-        } else if (blockIsPortal(pastePosBlock.block.name)) {
+        if (blockIsPortal(pastePosBlock.block.name)) {
           applySmartTransformForPortalBlock(pastePosBlock, nextBlockX, i, blockCopy, repetitionX)
           applySmartTransformForPortalBlock(pastePosBlock, nextBlockY, i, blockCopy, repetitionY)
+        } else if (
+          blockHasColorArgument(pastePosBlock.block.name as PwBlockName) &&
+          blockArgType === ComponentTypeHeader.UInt32
+        ) {
+          applySmartTransformForBlockWithColorArgument(pastePosBlock, nextBlockX, i, blockCopy, repetitionX)
+          applySmartTransformForBlockWithColorArgument(pastePosBlock, nextBlockY, i, blockCopy, repetitionY)
+        } else if (blockArgType === ComponentTypeHeader.Int32) {
+          applySmartTransformForBlockWithIntArgument(pastePosBlock, nextBlockX, i, blockCopy, repetitionX)
+          applySmartTransformForBlockWithIntArgument(pastePosBlock, nextBlockY, i, blockCopy, repetitionY)
         }
       }
     }

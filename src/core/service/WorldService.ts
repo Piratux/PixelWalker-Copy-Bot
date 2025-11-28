@@ -209,6 +209,10 @@ export function blockIsPortal(pwBlockName: PwBlockName | string): boolean {
   ].includes(pwBlockName as PwBlockName)
 }
 
+export function blockHasColorArgument(pwBlockName: PwBlockName): boolean {
+  return [PwBlockName.CUSTOM_SOLID_BG, PwBlockName.CUSTOM_CHECKER_BG].includes(pwBlockName)
+}
+
 export function portalIdToNumber(portalId: string): number | undefined {
   const portalIdIsInteger = /^\d{1,5}$/.test(portalId)
   const portalIdHasNoLeadingZeros = portalId === parseInt(portalId).toString()

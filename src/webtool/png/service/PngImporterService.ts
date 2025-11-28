@@ -9,6 +9,7 @@ import {
 } from '@/core/service/PwClientService.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { PNG } from 'pngjs'
+import { colourToUint32 } from '@/core/util/Colours.ts'
 
 export async function importFromPng(fileData: ArrayBuffer, quantize = true) {
   requireBotEditPermission(getPwGameWorldHelper())
@@ -44,8 +45,8 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
           const r = quantizeAndClamp(png.data[idx], quantizeAmt, alpha)
           const g = quantizeAndClamp(png.data[idx + 1], quantizeAmt, alpha)
           const b = quantizeAndClamp(png.data[idx + 2], quantizeAmt, alpha)
-          const hex = b + (g << 8) + (r << 16)
-          uniqueColors.add(hex)
+          const colourNumber = colourToUint32({ r, g, b })
+          uniqueColors.add(colourNumber)
         }
       }
       if (uniqueColors.size <= MAX_COLORS) break
@@ -64,12 +65,12 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
         const r = quantizeAndClamp(png.data[idx], quantizeAmt, alpha)
         const g = quantizeAndClamp(png.data[idx + 1], quantizeAmt, alpha)
         const b = quantizeAndClamp(png.data[idx + 2], quantizeAmt, alpha)
-        const hex = b + (g << 8) + (r << 16)
+        const colourNumber = colourToUint32({ r, g, b })
 
-        if (!colorMap.has(hex)) {
-          colorMap.set(hex, [])
+        if (!colorMap.has(colourNumber)) {
+          colorMap.set(colourNumber, [])
         }
-        colorMap.get(hex)!.push([x, y])
+        colorMap.get(colourNumber)!.push([x, y])
       }
     }
   }

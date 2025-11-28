@@ -7,7 +7,11 @@ import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { runSelectCommandTest } from '@/test/RuntimeTestsUtil.ts'
 import { commandReceived } from '@/copybot/service/PacketHandlerCopyBotService.ts'
 import { GameError } from '@/core/class/GameError.ts'
-import { createPortalIdTooLongErrorString } from '@/copybot/service/CopyBotErrorService.ts'
+import {
+  createColourOutOfBoundsErrorString,
+  createPortalIdTooLongErrorString,
+} from '@/copybot/service/CopyBotErrorService.ts'
+import { colourToUint32 } from '@/core/util/Colours.ts'
 
 describe.sequential('.smartpaste', () => {
   test('.smartpaste 3 1', async (ctx) => {
@@ -537,5 +541,83 @@ describe.sequential('.smartpaste', () => {
         await commandReceived('.smartpaste 2 2', playerId)
       })
     }).rejects.toThrowError(new GameError(createPortalIdTooLongErrorString('aaaa10'), playerId))
+  })
+
+  test('.smartpaste 2 2 (colour r: 0x2, g: 0x0f, b: 0xb5)', async () => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    const inputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Background,
+        block: new Block(PwBlockName.CUSTOM_SOLID_BG, [colourToUint32({ r: 0x2, g: 0x0f, b: 0xb5 })]),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Background,
+        block: new Block(PwBlockName.CUSTOM_SOLID_BG, [colourToUint32({ r: 0x4, g: 0x1f, b: 0xb4 })]),
+      },
+      {
+        pos: vec2(0, 1),
+        layer: LayerType.Background,
+        block: new Block(PwBlockName.CUSTOM_SOLID_BG, [colourToUint32({ r: 0x6, g: 0x2f, b: 0xb3 })]),
+      },
+    ]
+    const expectedOutputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Background,
+        block: new Block(PwBlockName.CUSTOM_SOLID_BG, [colourToUint32({ r: 0x2, g: 0x0f, b: 0xb5 })]),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Background,
+        block: new Block(PwBlockName.CUSTOM_SOLID_BG, [colourToUint32({ r: 0x4, g: 0x1f, b: 0xb4 })]),
+      },
+      {
+        pos: vec2(0, 1),
+        layer: LayerType.Background,
+        block: new Block(PwBlockName.CUSTOM_SOLID_BG, [colourToUint32({ r: 0x6, g: 0x2f, b: 0xb3 })]),
+      },
+      {
+        pos: vec2(1, 1),
+        layer: LayerType.Background,
+        block: new Block(PwBlockName.CUSTOM_SOLID_BG, [colourToUint32({ r: 0x8, g: 0x3f, b: 0xb2 })]),
+      },
+    ]
+    await runSelectCommandTest(
+      inputBlocks,
+      expectedOutputBlocks,
+      vec2(0, 0),
+      vec2(0, 0),
+      async () => await commandReceived('.smartpaste 2 2', playerId),
+    )
+  })
+
+  test('.smartpaste 2 2 (colour out of bounds throws)', async () => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    const inputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Background,
+        block: new Block(PwBlockName.CUSTOM_SOLID_BG, [colourToUint32({ r: 0x2, g: 0xdf, b: 0xb5 })]),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Background,
+        block: new Block(PwBlockName.CUSTOM_SOLID_BG, [colourToUint32({ r: 0x4, g: 0xef, b: 0xb4 })]),
+      },
+      {
+        pos: vec2(0, 1),
+        layer: LayerType.Background,
+        block: new Block(PwBlockName.CUSTOM_SOLID_BG, [colourToUint32({ r: 0x6, g: 0xff, b: 0xb3 })]),
+      },
+    ]
+    const expectedOutputBlocks: WorldBlock[] = []
+
+    await expect(async () => {
+      await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(0, 0), async () => {
+        await commandReceived('.smartpaste 2 2', playerId)
+      })
+    }).rejects.toThrowError(new GameError(createColourOutOfBoundsErrorString({ r: 0x8, g: 0x10f, b: 0xb2 }), playerId))
   })
 })

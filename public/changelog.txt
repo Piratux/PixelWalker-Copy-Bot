@@ -1,5 +1,9 @@
 PixelWalker copy bot changelog
 
+2025-11-28 Version 1.16.0
+- Bot: .smartpaste now applies colour wise smart pasting logic for hex colour background blocks.
+  - For ex.: { r: 0x2, g: 0x0f, b: 0xb5 }, { r: 0x4, g: 0x1f, b: 0xb4 } -> { r: 0x6, g: 0x2f, b: 0xb3 }.
+
 2025-11-26 Version 1.15.0
 - Website: Add portal list page.
 
