@@ -1,4 +1,5 @@
 export enum BotType {
-  COPY_BOT = 0,
-  BOM_BOT = 1,
+  COPY_BOT,
+  BOM_BOT,
+  CURSE_BOT,
 }

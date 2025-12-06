@@ -432,7 +432,12 @@ function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
   if (playerId === undefined) {
     return
   }
-  sendPrivateChatMessage('BomBot is here! Type .start to start the round. Type .help to see commands', playerId)
+
+  if (isWorldOwner(playerId)) {
+    sendPrivateChatMessage('BomBot is here! Type .start to start the round. Type .help to see commands', playerId)
+  } else {
+    sendPrivateChatMessage('BomBot is here! Type .help to see commands', playerId)
+  }
 
   mergePlayerStats(playerId)
 }
@@ -502,7 +507,7 @@ function afkCommandReceived(_: string[], playerId: number) {
 }
 
 function helpCommandReceived(args: string[], playerId: number) {
-  if (args.length == 1) {
+  if (args.length === 0) {
     if (isDeveloper(playerId) || isWorldOwner(playerId)) {
       sendPrivateChatMessage('Commands: .help .ping .afk .start .quickstart .stop', playerId)
     } else {
@@ -850,7 +855,7 @@ async function everySecondUpdate(): Promise<void> {
 }
 
 function getActivePlayers() {
-  return Array.from(getPwGameWorldHelper().players.values()).filter((player) => player.states.teamId !== 1)
+  return Array.from(getPwGameWorldHelper().players.values()).filter((player) => player.states.teamId !== TEAM_RED)
 }
 
 function getActivePlayerCount() {
@@ -872,7 +877,7 @@ function playerWinRound(playerId: number) {
   getPlayerBomBotWorldData(playerId).wins++
   sendRawMessage(`/counter #${playerId} white =${getPlayerBomBotWorldData(playerId).wins}`)
 
-  setBombState(BomBotState.RESET_STORE)
+  setBomBotState(BomBotState.RESET_STORE)
 
   updateLeaderboard()
 
@@ -880,10 +885,12 @@ function playerWinRound(playerId: number) {
 }
 
 function updateLeaderboard() {
-  const playerDataList = Object.entries(useBomBotWorldStore().playerBomBotWorldData).map(([playerId, playerData]) => ({
-    playerId: Number(playerId),
-    ...playerData,
-  }))
+  const playerDataList = Array.from(useBomBotWorldStore().playerBomBotWorldData.entries()).map(
+    ([playerId, playerData]) => ({
+      playerId: Number(playerId),
+      ...playerData,
+    }),
+  )
 
   const leaderboardTopText = 'Daily wins leaderboard\n================'
   const leaderboardPlayerText = playerDataList
@@ -909,7 +916,7 @@ function updateLeaderboard() {
 
 function abandonRoundDueToNoPlayersLeft() {
   sendGlobalChatMessage('No players left, ending round')
-  setBombState(BomBotState.RESET_STORE)
+  setBomBotState(BomBotState.RESET_STORE)
 }
 
 function selectRandomBomber(): number {
@@ -971,14 +978,14 @@ async function everySecondBomBotUpdate() {
       return
     case BomBotState.RESET_STORE:
       useBomBotRoundStore().$reset()
-      setBombState(BomBotState.AWAITING_PLAYERS)
+      setBomBotState(BomBotState.AWAITING_PLAYERS)
       return
     case BomBotState.AWAITING_PLAYERS: {
       const minimumPlayerCountRequiredToStartGame = 2
       const activePlayerCount = getActivePlayerCount()
       if (activePlayerCount >= minimumPlayerCountRequiredToStartGame) {
         sendGlobalChatMessage(`A total of ${activePlayerCount} active players were found. Starting round...`)
-        setBombState(BomBotState.PREPARING_FOR_NEXT_ROUND)
+        setBomBotState(BomBotState.PREPARING_FOR_NEXT_ROUND)
         return
       }
 
@@ -1010,7 +1017,7 @@ async function everySecondBomBotUpdate() {
         const playerId = activePlayer.playerId
         sendRawMessage(`/tp #${playerId} ${roundStartTopLeftPos.x} ${roundStartTopLeftPos.y}`)
       }
-      setBombState(BomBotState.WAITING_FOR_ALL_PLAYERS_TO_BE_TELEPORTED_TO_MAP)
+      setBomBotState(BomBotState.WAITING_FOR_ALL_PLAYERS_TO_BE_TELEPORTED_TO_MAP)
       useBomBotRoundStore().playersThatWereSelectedForRoundStart = activePlayers
 
       break
@@ -1045,7 +1052,7 @@ async function everySecondBomBotUpdate() {
           }
         }
 
-        setBombState(BomBotState.PLAYING)
+        setBomBotState(BomBotState.PLAYING)
       }
 
       break
@@ -1327,7 +1334,8 @@ async function autoRestartBomBot() {
 
   const MAX_AUTOMATIC_RESTARTS = 3
   if (userBomBotAutomaticRestartCounterStore().totalAutomaticRestarts >= MAX_AUTOMATIC_RESTARTS) {
-    throw new GameError(`BomBot has automatically restarted ${MAX_AUTOMATIC_RESTARTS} times, not restarting again`)
+    sendGlobalChatMessage(`BomBot has automatically restarted ${MAX_AUTOMATIC_RESTARTS} times, not restarting again`)
+    return
   }
   userBomBotAutomaticRestartCounterStore().totalAutomaticRestarts++
 
@@ -1392,7 +1400,7 @@ function getPlayerBomBotRoundData(playerId: number): BomBotRoundData {
   return mapGetOrInsert(useBomBotRoundStore().playerBomBotRoundData, playerId, createBomBotRoundData())
 }
 
-function setBombState(newState: BomBotState) {
+function setBomBotState(newState: BomBotState) {
   // Prevent state from being changed if we're trying to stop the bot
   if (useBomBotWorldStore().currentState === BomBotState.STOPPED) {
     return

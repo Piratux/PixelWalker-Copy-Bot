@@ -19,9 +19,11 @@ const password = ref('')
 const worldId = ref('')
 const secretEditKey = ref('')
 const botType = ref(BotType.COPY_BOT)
+// const botType = ref(BotType.CURSE_BOT)
 const botTypeItems = [
   { title: 'Copy Bot', value: BotType.COPY_BOT },
   { title: 'BomBot', value: BotType.BOM_BOT },
+  { title: 'CurseBot', value: BotType.CURSE_BOT },
 ]
 const form = ref<VForm>()
 

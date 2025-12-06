@@ -17,6 +17,7 @@ import { useEerClientStore } from '@/webtool/eer/store/EerClientStore.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { TimeoutError, workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { createFailedToJoinWorldErrorString } from '@/copybot/service/CopyBotErrorService.ts'
+import { registerCurseBotCallbacks } from '@/cursebot/service/PacketHandlerCurseBotService.ts'
 
 export async function authenticate(pwApiClient: PWApiClient): Promise<void> {
   const authenticationResult = await pwApiClient.authenticate()
@@ -116,6 +117,8 @@ export async function initPwClasses(
     registerCopyBotCallbacks()
   } else if (botType === BotType.BOM_BOT) {
     registerBomBotCallbacks()
+  } else if (botType === BotType.CURSE_BOT) {
+    registerCurseBotCallbacks()
   }
 
   await joinWorld(getPwGameClient(), usePwClientStore().worldId)
