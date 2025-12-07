@@ -110,7 +110,7 @@ function disqualifyPlayerFromRound(playerId: number) {
       playerId === useCurseBotRoundStore().lastPlayerIdWithCurseEffect
     ) {
       const curseLength = CURSE_LENGTH_MS - (performance.now() - useCurseBotRoundStore().timestampInMsWhenCursePickedUp)
-      giveRandomPlayerCurse(curseLength)
+      givePlayerCurse(getRandomPlayerInGame().playerId, curseLength)
     }
   }
 }
@@ -514,18 +514,12 @@ function getRandomPlayerInGame() {
   return getRandomArrayElement(useCurseBotRoundStore().playersInGame)
 }
 
-function giveRandomPlayerCurse(curseLengthMs: number) {
+function givePlayerCurse(playerId: number, curseLengthMs: number) {
   curseLengthMs = Math.floor(curseLengthMs)
   curseLengthMs = Math.max(1000, curseLengthMs)
 
-  const randomPlayerId = getRandomPlayerInGame().playerId
-  const curseStartPos = vec2(6, 176)
-  sendRawMessage(`/tp #${randomPlayerId} ${curseStartPos.x} ${curseStartPos.y}`)
-  sendRawMessage(`/giveeffect #${randomPlayerId} curse ${curseLengthMs}`)
-  sendGlobalChatMessage(
-    `${getPwGameWorldHelper().getPlayer(randomPlayerId)?.username} has been cursed! Steal their curse!`,
-  )
-  useCurseBotRoundStore().lastPlayerIdWithCurseEffect = randomPlayerId
+  sendRawMessage(`/giveeffect #${playerId} curse ${curseLengthMs}`)
+  sendGlobalChatMessage(`${getPwGameWorldHelper().getPlayer(playerId)?.username} has been cursed! Steal their curse!`)
 }
 
 function resetBotState() {
@@ -594,7 +588,15 @@ async function everySecondCurseBotUpdate() {
       }
 
       if (useCurseBotRoundStore().secondsPassedInCountingDownToRemoveNoSpeedState === 2) {
-        giveRandomPlayerCurse(CURSE_LENGTH_MS)
+        const randomPlayerId = getRandomPlayerInGame().playerId
+        const curseStartPos = vec2(6, 176)
+        sendRawMessage(`/tp #${randomPlayerId} ${curseStartPos.x} ${curseStartPos.y}`)
+        useCurseBotRoundStore().lastPlayerIdWithCurseEffect = randomPlayerId
+      }
+
+      // We need to give player curse after a short delay after teleporting, otherwise they may transfer it to other starting players
+      if (useCurseBotRoundStore().secondsPassedInCountingDownToRemoveNoSpeedState === 3) {
+        givePlayerCurse(useCurseBotRoundStore().lastPlayerIdWithCurseEffect, CURSE_LENGTH_MS)
         useCurseBotRoundStore().timestampInMsWhenCursePickedUp = performance.now()
       }
       break
