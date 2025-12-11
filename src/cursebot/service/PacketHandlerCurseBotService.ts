@@ -399,6 +399,10 @@ async function startCommandReceived(_args: string[], playerId: number, loadWorld
 }
 
 async function startCurseBot(loadWorld: boolean) {
+  if (getPwGameWorldHelper().width < 100 || getPwGameWorldHelper().height < 100) {
+    throw new GameError('World must be of at least 100x100 size.')
+  }
+
   sendGlobalChatMessage('Starting CurseBot...')
 
   useCurseBotWorldStore().$reset()
