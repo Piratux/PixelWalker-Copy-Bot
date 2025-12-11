@@ -38,3 +38,9 @@ export function requireDeveloper(playerId: number): void {
 export function isWorldOwner(playerId: number): boolean {
   return getPwGameWorldHelper().getPlayer(playerId)?.isWorldOwner === true
 }
+
+export function requireWorldOwner(playerId: number): void {
+  if (!isDeveloper(playerId) && !isWorldOwner(playerId)) {
+    throw new GameError('Command is exclusive to world owners', playerId)
+  }
+}

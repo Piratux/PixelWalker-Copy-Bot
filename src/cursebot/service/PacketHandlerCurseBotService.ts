@@ -7,7 +7,7 @@ import {
   hotReloadCallbacks,
   requirePlayerAndBotEditPermission,
 } from '@/core/service/PwClientService.ts'
-import { isDeveloper, isWorldOwner, requireDeveloper } from '@/core/util/Environment.ts'
+import { isDeveloper, isWorldOwner, requireWorldOwner } from '@/core/util/Environment.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
@@ -361,7 +361,7 @@ async function loadCurseBotData() {
 }
 
 async function stopCommandReceived(_args: string[], playerId: number) {
-  requireDeveloper(playerId)
+  requireWorldOwner(playerId)
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   if (useCurseBotWorldStore().currentState === CurseBotState.STOPPED) {
@@ -382,7 +382,7 @@ async function stopCurseBot() {
 }
 
 async function startCommandReceived(_args: string[], playerId: number, loadWorld: boolean) {
-  requireDeveloper(playerId)
+  requireWorldOwner(playerId)
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   if (useCurseBotWorldStore().currentState !== CurseBotState.STOPPED) {

@@ -1,6 +1,11 @@
 import { RouteName } from '@/router/RouteName'
 
-export const MENU_ITEMS = [
+interface MenuItem {
+  text: string
+  routeName: RouteName
+}
+
+export const MENU_ITEMS: MenuItem[] = [
   {
     text: 'Home',
     routeName: RouteName.HOME,

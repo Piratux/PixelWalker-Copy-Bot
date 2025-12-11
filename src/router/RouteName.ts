@@ -1,5 +1,6 @@
 export enum RouteName {
   LOGIN = 'login',
+  ADMIN_LOGIN = 'admin-login',
   HOME = 'home',
   IMPORT_EELVL = 'import-eelvl',
   EXPORT_EELVL = 'export-eelvl',

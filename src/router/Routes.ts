@@ -10,55 +10,53 @@ import EerImportView from '@/view/EerImportView.vue'
 import PortalListView from '@/view/PortalListView.vue'
 import NotFoundView from '@/view/NotFoundView.vue'
 import { RouteName } from './RouteName.ts'
+import AdminLoginView from '@/view/AdminLoginView.vue'
 
 const basePath = '/PixelWalker-Copy-Bot'
 
 export const Routes: RouteRecordRaw[] = [
-  {
-    path: `${basePath}/login`,
-    name: RouteName.LOGIN,
-    component: LoginView,
-  },
-  {
-    path: `${basePath}/home`,
-    name: RouteName.HOME,
-    component: HomeView,
-  },
-  {
-    path: `${basePath}/import-eelvl`,
-    name: RouteName.IMPORT_EELVL,
-    component: EelvlImportView,
-  },
-  {
-    path: `${basePath}/export-eelvl`,
-    name: RouteName.EXPORT_EELVL,
-    component: EelvlExportView,
-  },
-  {
-    path: `${basePath}/import-png`,
-    name: RouteName.IMPORT_PNG,
-    component: PngImportView,
-  },
-  {
-    path: `${basePath}/import-midi`,
-    name: RouteName.IMPORT_MIDI,
-    component: MidiImportView,
-  },
-  {
-    path: `${basePath}/dev`,
-    name: RouteName.DEV,
-    component: DevView,
-  },
-  {
-    path: `${basePath}/import-eer`,
-    name: RouteName.IMPORT_EER,
-    component: EerImportView,
-  },
-  {
-    path: `${basePath}/list-portals`,
-    name: RouteName.LIST_PORTALS,
-    component: PortalListView,
-  },
+  ...[
+    {
+      name: RouteName.LOGIN,
+      component: LoginView,
+    },
+    {
+      name: RouteName.ADMIN_LOGIN,
+      component: AdminLoginView,
+    },
+    {
+      name: RouteName.HOME,
+      component: HomeView,
+    },
+    {
+      name: RouteName.IMPORT_EELVL,
+      component: EelvlImportView,
+    },
+    {
+      name: RouteName.EXPORT_EELVL,
+      component: EelvlExportView,
+    },
+    {
+      name: RouteName.IMPORT_PNG,
+      component: PngImportView,
+    },
+    {
+      name: RouteName.IMPORT_MIDI,
+      component: MidiImportView,
+    },
+    {
+      name: RouteName.DEV,
+      component: DevView,
+    },
+    {
+      name: RouteName.IMPORT_EER,
+      component: EerImportView,
+    },
+    {
+      name: RouteName.LIST_PORTALS,
+      component: PortalListView,
+    },
+  ].map((route) => ({ ...route, path: `${basePath}/${route.name}` })),
   {
     path: '/:pathMatch(.*)*',
     name: RouteName.NOT_FOUND,

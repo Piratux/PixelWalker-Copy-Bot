@@ -12,6 +12,7 @@ import PiOverlay from '@/component/PiOverlay.vue'
 import { getEnvDefaultWorldId } from '@/core/util/Environment.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { RouteName } from '@/router/RouteName.ts'
+import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 
 const loadingOverlay = ref(false)
 const email = ref('')
@@ -30,6 +31,7 @@ const form = ref<VForm>()
 const router = useRouter()
 
 const devViewEnabled = computed(() => import.meta.env.VITE_DEV_VIEW === 'TRUE')
+const adminViewEnabled = computed(() => devViewEnabled.value || usePwClientStore().isAdminModeOn)
 
 watch(worldId, () => {
   worldId.value = getWorldIdIfUrl(worldId.value)
@@ -69,7 +71,7 @@ function setDefaultWorldIdButtonClicked() {
         <v-row>
           <PiTextField v-model="secretEditKey" label="Secret Edit Key (Optional)"></PiTextField>
         </v-row>
-        <v-row v-if="devViewEnabled">
+        <v-row v-if="adminViewEnabled">
           <v-select v-model="botType" :items="botTypeItems" label="Bot type"></v-select>
         </v-row>
         <v-row> To use this bot, you need to use PixelWalker login credentials.</v-row>

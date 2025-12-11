@@ -3,7 +3,7 @@
   <v-app-bar color="primary">
     <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
     <v-toolbar-title>PixelWalker copy bot</v-toolbar-title>
-    <v-btn v-if="!usePwClientStore().isConnected" icon @click="handleRouting(RouteName.LOGIN)">
+    <v-btn v-if="!usePwClientStore().isConnected" icon @click="onConnectButtonClick">
       <v-icon icon="mdi-login"></v-icon>
       <v-tooltip activator="parent">Connect</v-tooltip>
     </v-btn>
@@ -65,8 +65,8 @@ onMounted(async () => {
   changelogLatestVersionLine.value = text.split('\n')[2]
 })
 
-async function handleRouting(routeName: string | undefined) {
-  if (routeName !== undefined && route.name !== routeName) {
+async function handleRouting(routeName: string) {
+  if (route.name !== routeName) {
     await router.push({ name: routeName })
   }
 }
@@ -81,11 +81,21 @@ function openChangelog() {
   window.open(changelogLocation)
 }
 
+async function onConnectButtonClick() {
+  await handleRouting(adminModeEnabled() ? RouteName.ADMIN_LOGIN : RouteName.LOGIN)
+}
+
 async function onDisconnectButtonClick() {
   getPwGameClient().disconnect(false)
 
+  const adminModeOn = adminModeEnabled()
+
   resetAllStores()
 
-  await router.push({ name: RouteName.LOGIN })
+  await handleRouting(adminModeOn ? RouteName.ADMIN_LOGIN : RouteName.LOGIN)
+}
+
+function adminModeEnabled() {
+  return usePwClientStore().isAdminModeOn
 }
 </script>

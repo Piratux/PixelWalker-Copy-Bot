@@ -14,7 +14,7 @@ import {
   hotReloadCallbacks,
   requirePlayerAndBotEditPermission,
 } from '@/core/service/PwClientService.ts'
-import { isDeveloper, isWorldOwner, requireDeveloper } from '@/core/util/Environment.ts'
+import { isDeveloper, isWorldOwner, requireDeveloper, requireWorldOwner } from '@/core/util/Environment.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { cloneDeep, shuffle } from 'lodash-es'
 import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
@@ -779,7 +779,7 @@ async function loadBomBotData() {
 }
 
 async function stopCommandReceived(_args: string[], playerId: number) {
-  requireDeveloper(playerId)
+  requireWorldOwner(playerId)
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   if (useBomBotWorldStore().currentState === BomBotState.STOPPED) {
@@ -800,7 +800,7 @@ async function stopBomBot() {
 }
 
 async function startCommandReceived(_args: string[], playerId: number, loadWorld: boolean) {
-  requireDeveloper(playerId)
+  requireWorldOwner(playerId)
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   if (useBomBotWorldStore().currentState !== BomBotState.STOPPED) {

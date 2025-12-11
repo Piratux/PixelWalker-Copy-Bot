@@ -19,6 +19,7 @@ export const usePwClientStore = defineStore('PwClientStore', () => {
   const blocksByPwName = ref<Raw<Map<string, ListBlockResult>>>(new Map())
   const isConnected = ref<boolean>(false)
   const roomType = ref<string>('')
+  const isAdminModeOn = ref<boolean>(false)
 
   return {
     pwGameClient,
@@ -35,6 +36,7 @@ export const usePwClientStore = defineStore('PwClientStore', () => {
     blocksByPwName,
     isConnected,
     roomType,
+    isAdminModeOn,
   }
 })
 
