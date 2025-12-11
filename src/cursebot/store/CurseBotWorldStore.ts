@@ -9,11 +9,13 @@ export const useCurseBotWorldStore = defineStore('CurseBotWorldStore', () => {
   const currentState = ref<CurseBotState>(CurseBotState.STOPPED)
   const playerCurseBotWorldData = ref<Raw<PlayerCurseBotWorldData>>(new Map())
   const everySecondUpdateIsRunning = ref<boolean>(false)
+  const lastActivePlayerCount = ref<number>(0)
 
   return {
     curseBotMaps,
     currentState,
     playerCurseBotWorldData,
     everySecondUpdateIsRunning,
+    lastActivePlayerCount,
   }
 })

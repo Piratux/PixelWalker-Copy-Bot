@@ -32,7 +32,6 @@ import { CurseBotCommandName } from '@/cursebot/enum/CurseBotCommandName.ts'
 import { CurseBotMapEntry } from '@/cursebot/type/CurseBotMapEntry.ts'
 import { userCurseBotAutomaticRestartCounterStore } from '@/cursebot/store/CurseBotAutomaticRestartCounterStore.ts'
 import { createCurseBotWorldData, CurseBotWorldData } from '@/cursebot/type/CurseBotPlayerWorldData.ts'
-import { useBomBotRoundStore } from '@/bombot/store/BomBotRoundStore.ts'
 
 const mapSize = vec2(50, 50)
 const mapTopLeftPos = vec2(0, 0)
@@ -165,13 +164,6 @@ function checkIfPlayerTeleportedToMap(data: ProtoGen.PlayerTeamUpdatePacket) {
     data.teamId === TEAM_GREEN
   ) {
     setCurseBotState(CurseBotState.COUNTING_DOWN_TO_REMOVE_NO_SPEED)
-
-    const playerIdsInGame = getPlayerIdsInGame()
-    for (const playerThatWasSelectedForRoundStart of useBomBotRoundStore().playersThatWereSelectedForRoundStart) {
-      if (!playerIdsInGame.includes(playerThatWasSelectedForRoundStart.playerId)) {
-        disqualifyPlayerFromRoundBecauseAfk(playerThatWasSelectedForRoundStart.playerId)
-      }
-    }
   }
 }
 
@@ -538,18 +530,30 @@ async function everySecondCurseBotUpdate() {
       setCurseBotState(CurseBotState.AWAITING_PLAYERS)
       return
     case CurseBotState.AWAITING_PLAYERS: {
-      const minimumPlayerCountRequiredToStartGame = 2
+      const MINIMUM_PLAYER_COUNT_REQUIRED_TO_START_GAME = 2
       const activePlayerCount = getActivePlayerCount()
-      if (activePlayerCount >= minimumPlayerCountRequiredToStartGame) {
+      if (activePlayerCount >= MINIMUM_PLAYER_COUNT_REQUIRED_TO_START_GAME) {
         sendGlobalChatMessage(`A total of ${activePlayerCount} active players were found. Starting round...`)
         setCurseBotState(CurseBotState.PREPARING_FOR_NEXT_ROUND)
+        useCurseBotRoundStore().waitingForMorePlayersMessagePrintedOnce = false
         return
       }
+
+      if (
+        useCurseBotWorldStore().lastActivePlayerCount < MINIMUM_PLAYER_COUNT_REQUIRED_TO_START_GAME - 1 &&
+        useCurseBotWorldStore().lastActivePlayerCount < activePlayerCount
+      ) {
+        sendGlobalChatMessage(
+          `${activePlayerCount} active player(s) found. Minimum of ${MINIMUM_PLAYER_COUNT_REQUIRED_TO_START_GAME} active players are required to start the game`,
+        )
+      }
+
+      useCurseBotWorldStore().lastActivePlayerCount = activePlayerCount
 
       if (!useCurseBotRoundStore().waitingForMorePlayersMessagePrintedOnce) {
         useCurseBotRoundStore().waitingForMorePlayersMessagePrintedOnce = true
         sendGlobalChatMessage(
-          `Waiting for more players. Minimum of ${minimumPlayerCountRequiredToStartGame} active players are required to start the game`,
+          `Waiting for more players. Minimum of ${MINIMUM_PLAYER_COUNT_REQUIRED_TO_START_GAME} active players are required to start the game`,
         )
       }
       break
