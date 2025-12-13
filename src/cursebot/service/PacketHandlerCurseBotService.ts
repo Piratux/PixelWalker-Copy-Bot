@@ -32,8 +32,9 @@ import { CurseBotCommandName } from '@/cursebot/enum/CurseBotCommandName.ts'
 import { CurseBotMapEntry } from '@/cursebot/type/CurseBotMapEntry.ts'
 import { userCurseBotAutomaticRestartCounterStore } from '@/cursebot/store/CurseBotAutomaticRestartCounterStore.ts'
 import { createCurseBotWorldData, CurseBotWorldData } from '@/cursebot/type/CurseBotPlayerWorldData.ts'
+import { WorldBlock } from '@/core/type/WorldBlock.ts'
+import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 
-const mapSize = vec2(50, 50)
 const mapTopLeftPos = vec2(0, 0)
 
 // NOTE: it's not a good idea to rely on these being constant, but it will do for now
@@ -328,10 +329,13 @@ async function placeCurseBotMap(mapEntry: CurseBotMapEntry) {
   await placeWorldDataBlocks(mapEntry.blocks, mapTopLeftPos)
 }
 
-function loadMaps(curseBotBlocks: DeserialisedStructure) {
-  const totalMapCount = vec2(3, 6)
-  const mapSpacing = vec2.add(mapSize, vec2(22, 3))
-  const topLeftMapOffset = vec2(3, 3)
+function loadMaps(
+  curseBotBlocks: DeserialisedStructure,
+  totalMapCount: vec2,
+  mapSize: vec2,
+  mapSpacing: vec2,
+  topLeftMapOffset: vec2,
+) {
   for (let x = 0; x < totalMapCount.x; x++) {
     for (let y = 0; y < totalMapCount.y; y++) {
       const sectionTopLeft = vec2.add(topLeftMapOffset, vec2.mul(vec2(x, y), mapSpacing))
@@ -355,7 +359,29 @@ async function loadCurseBotData() {
   const curseBotDataWorldId = getWorldIdIfUrl('r0499638a6d91ec')
   const curseBotBlocks = await getAnotherWorldBlocks(curseBotDataWorldId, getPwApiClient())
 
-  loadMaps(curseBotBlocks)
+  useCurseBotWorldStore().mapClearAfterEachRoundFgBlock = curseBotBlocks.blocks[LayerType.Foreground][12][498]
+
+  {
+    const totalMapCount = vec2(3, 6)
+    const mapSize = vec2(50, 50)
+    const mapSpacing = vec2.add(mapSize, vec2(22, 3))
+    const topLeftMapOffset = vec2(3, 3)
+    loadMaps(curseBotBlocks, totalMapCount, mapSize, mapSpacing, topLeftMapOffset)
+  }
+  {
+    const totalMapCount = vec2(3, 5)
+    const mapSize = vec2(59, 31)
+    const mapSpacing = vec2.add(mapSize, vec2(9, 3))
+    const topLeftMapOffset = vec2(203, 3)
+    loadMaps(curseBotBlocks, totalMapCount, mapSize, mapSpacing, topLeftMapOffset)
+  }
+  {
+    const totalMapCount = vec2(1, 10)
+    const mapSize = vec2(100, 50)
+    const mapSpacing = vec2.add(mapSize, vec2(0, 0))
+    const topLeftMapOffset = vec2(400, 0)
+    loadMaps(curseBotBlocks, totalMapCount, mapSize, mapSpacing, topLeftMapOffset)
+  }
 
   sendGlobalChatMessage(`Total of ${useCurseBotWorldStore().curseBotMaps.length} maps loaded`)
 }
@@ -524,6 +550,26 @@ function resetBotState() {
   setCurseBotState(CurseBotState.RESET_STORE)
 }
 
+async function clearMapAreaAfterRound() {
+  const clearMapBlocks: WorldBlock[] = []
+  for (let x = 0; x < 99; x++) {
+    for (let y = 0; y < 99; y++) {
+      for (let layer = 0; layer < TOTAL_PW_LAYERS; layer++) {
+        const block =
+          (layer as LayerType) === LayerType.Foreground
+            ? useCurseBotWorldStore().mapClearAfterEachRoundFgBlock
+            : new Block(0)
+        clearMapBlocks.push({
+          block: block,
+          layer: layer,
+          pos: vec2(x, y),
+        })
+      }
+    }
+  }
+  await placeMultipleBlocks(clearMapBlocks)
+}
+
 async function everySecondCurseBotUpdate() {
   // sendGlobalChatMessage(`[DEBUG] Current state: ${CurseBotState[useCurseBotWorldStore().currentState]}`)
   switch (useCurseBotWorldStore().currentState) {
@@ -563,6 +609,8 @@ async function everySecondCurseBotUpdate() {
       break
     }
     case CurseBotState.PREPARING_FOR_NEXT_ROUND: {
+      await clearMapAreaAfterRound()
+
       const map = getRandomMap()
       await placeCurseBotMap(map)
 
@@ -624,7 +672,7 @@ async function everySecondCurseBotUpdate() {
 
       // When curse is transmitted often, it lasts longer.
       // However, we also want to protect from scenarios when due to unknown bug round lasts forever.
-      const EXTRA_CURSE_LENGTH_AFTER_WHICH_ROUND_IS_EXPECTED_TO_END_MS = 40_000
+      const EXTRA_CURSE_LENGTH_AFTER_WHICH_ROUND_IS_EXPECTED_TO_END_MS = 140_000
       const maxRoundLengthMs = CURSE_LENGTH_MS + EXTRA_CURSE_LENGTH_AFTER_WHICH_ROUND_IS_EXPECTED_TO_END_MS
       if (performance.now() - useCurseBotRoundStore().timestampInMsWhenCursePickedUp > maxRoundLengthMs) {
         sendGlobalChatMessage(

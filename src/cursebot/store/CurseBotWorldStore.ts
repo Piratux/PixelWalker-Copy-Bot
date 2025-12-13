@@ -3,6 +3,7 @@ import { Raw, ref } from 'vue'
 import { CurseBotMapEntry } from '@/cursebot/type/CurseBotMapEntry.ts'
 import { CurseBotState } from '@/cursebot/enum/CurseBotState.ts'
 import { PlayerCurseBotWorldData } from '@/cursebot/type/CurseBotPlayerWorldData.ts'
+import { Block } from 'pw-js-world'
 
 export const useCurseBotWorldStore = defineStore('CurseBotWorldStore', () => {
   const curseBotMaps = ref<Raw<CurseBotMapEntry[]>>([])
@@ -10,6 +11,7 @@ export const useCurseBotWorldStore = defineStore('CurseBotWorldStore', () => {
   const playerCurseBotWorldData = ref<Raw<PlayerCurseBotWorldData>>(new Map())
   const everySecondUpdateIsRunning = ref<boolean>(false)
   const lastActivePlayerCount = ref<number>(0)
+  const mapClearAfterEachRoundFgBlock = ref<Raw<Block>>(new Block(0))
 
   return {
     curseBotMaps,
@@ -17,5 +19,6 @@ export const useCurseBotWorldStore = defineStore('CurseBotWorldStore', () => {
     playerCurseBotWorldData,
     everySecondUpdateIsRunning,
     lastActivePlayerCount,
+    mapClearAfterEachRoundFgBlock,
   }
 })
