@@ -545,6 +545,7 @@ function givePlayerCurse(playerId: number, curseLengthMs: number) {
 }
 
 function resetBotState() {
+  sendRawMessage(`/cleareffects @a[team=green]`) // remove curse from all players
   sendRawMessage(`/kill @a[team=green]`)
   sendRawMessage(`/team @a[team=green] ${TEAM_NONE}`)
   setCurseBotState(CurseBotState.RESET_STORE)
@@ -672,12 +673,10 @@ async function everySecondCurseBotUpdate() {
 
       // When curse is transmitted often, it lasts longer.
       // However, we also want to protect from scenarios when due to unknown bug round lasts forever.
-      const EXTRA_CURSE_LENGTH_AFTER_WHICH_ROUND_IS_EXPECTED_TO_END_MS = 140_000
+      const EXTRA_CURSE_LENGTH_AFTER_WHICH_ROUND_IS_EXPECTED_TO_END_MS = 180_000
       const maxRoundLengthMs = CURSE_LENGTH_MS + EXTRA_CURSE_LENGTH_AFTER_WHICH_ROUND_IS_EXPECTED_TO_END_MS
       if (performance.now() - useCurseBotRoundStore().timestampInMsWhenCursePickedUp > maxRoundLengthMs) {
-        sendGlobalChatMessage(
-          `For some reason player with curse did not die within ${maxRoundLengthMs / 1000} seconds, restarting round...`,
-        )
+        sendGlobalChatMessage(`Maximum round length of ${maxRoundLengthMs / 1000} seconds reached, restarting round...`)
         resetBotState()
       }
 
