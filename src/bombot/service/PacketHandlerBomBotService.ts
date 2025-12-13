@@ -959,7 +959,7 @@ function getRandomMap() {
   return getRandomArrayElement(useBomBotWorldStore().bomBotMaps)
 }
 
-function placeEffectBlock() {
+async function placeEffectBlock() {
   const effectBlockPos = vec2(35, 41)
   const EFFECT_BLOCK_EVERY_X_ROUNDS = 5
   const effectBlock =
@@ -967,7 +967,7 @@ function placeEffectBlock() {
     useBomBotWorldStore().totalRoundsPassed !== 0
       ? getRandomArrayElement(useBomBotWorldStore().randomEffectBlocks)
       : new Block(0)
-  void placeMultipleBlocks([
+  await placeMultipleBlocks([
     {
       pos: effectBlockPos,
       layer: LayerType.Foreground,
@@ -1014,8 +1014,6 @@ async function everySecondBomBotUpdate() {
       break
     }
     case BomBotState.PREPARING_FOR_NEXT_ROUND: {
-      placeEffectBlock()
-
       if (!useBomBotWorldStore().playedOnce) {
         await placeBomBotMap(useBomBotWorldStore().bomBotMaps[0])
         useBomBotWorldStore().playedOnce = true
@@ -1023,6 +1021,8 @@ async function everySecondBomBotUpdate() {
         const map = getRandomMap()
         await placeBomBotMap(map)
       }
+
+      await placeEffectBlock()
 
       updateAvailablePlayerSpawnPositions()
 
