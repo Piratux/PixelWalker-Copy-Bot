@@ -616,7 +616,7 @@ async function everySecondCurseBotUpdate() {
 
       const activePlayers = getActivePlayers()
 
-      const startPos = vec2(10, 167)
+      const startPos = vec2(29, 181)
       for (const activePlayer of activePlayers) {
         const playerId = activePlayer.playerId
         sendRawMessage(`/tp #${playerId} ${startPos.x} ${startPos.y}`)
@@ -645,7 +645,7 @@ async function everySecondCurseBotUpdate() {
 
       if (useCurseBotRoundStore().secondsPassedInCountingDownToRemoveNoSpeedState === 2) {
         const randomPlayerId = getRandomPlayerInGame().playerId
-        const curseStartPos = vec2(6, 176)
+        const curseStartPos = vec2(25, 188)
         sendRawMessage(`/tp #${randomPlayerId} ${curseStartPos.x} ${curseStartPos.y}`)
         useCurseBotRoundStore().lastPlayerIdWithCurseEffect = randomPlayerId
       }
