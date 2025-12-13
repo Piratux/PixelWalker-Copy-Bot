@@ -659,6 +659,10 @@ async function everySecondCurseBotUpdate() {
       break
     }
     case CurseBotState.PLAYING: {
+      // If people are AFK (different tab focused), they don't receive speed effect packet.
+      // So we give it every second to all players.
+      sendRawMessage(`/giveeffect @a speed 100`)
+
       const playerIdsInGame = getPlayerIdsInGame()
 
       if (playerIdsInGame.length === 0) {
