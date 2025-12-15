@@ -26,8 +26,6 @@ function buildRouter() {
 function handleAlert(to: RouteLocationNormalizedGeneric) {
   AlertService.clear()
 
-  console.log('usePwClientStore().roomType: ', usePwClientStore().roomType)
-
   if (
     [
       RouteName.IMPORT_EELVL,
