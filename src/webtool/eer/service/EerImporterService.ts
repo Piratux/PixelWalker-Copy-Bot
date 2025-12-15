@@ -351,7 +351,12 @@ function getPositionsAsVec2Array(data: EerBlock): vec2[] {
 export async function importFromEer(eerRoomId: string) {
   const client = await getPIOClient()
   const worldMeta = await client.bigDB.load('Worlds', eerRoomId)
-  const world: EerWorld = worldMeta!.dbCurrent as EerWorld
+
+  if (worldMeta?.dbCurrent === undefined || (worldMeta.dbCurrent as EerWorld)?.worlddata === undefined) {
+    throw new Error(`This EER world is empty and will not be imported.`)
+  }
+
+  const world: EerWorld = worldMeta.dbCurrent as EerWorld
   console.log('worldMeta: ', worldMeta)
 
   // TODO: check if worlddata exists, because if not, it means world has not been edited/saved?

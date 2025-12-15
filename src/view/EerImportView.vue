@@ -10,10 +10,15 @@ import { withLoading } from '@/core/util/LoaderProxy.ts'
 import { sendGlobalChatMessage } from '@/core/service/ChatMessageService.ts'
 import { importFromEer } from '@/webtool/eer/service/EerImporterService.ts'
 
+const form = ref<VForm>()
+
 const loadingOverlay = ref(false)
 const eerRoomId = ref('')
 
 async function onImportEerButtonClick() {
+  if (!(await form.value!.validate()).valid) {
+    return
+  }
   await withLoading(loadingOverlay, async () => {
     sendGlobalChatMessage(`Importing world from ${eerRoomId.value}`)
     await importFromEer(eerRoomId.value)
@@ -30,15 +35,17 @@ async function onImportEerButtonClick() {
         <v-row>
           <PiTextField v-model="eerRoomId" :required="true" label="EER Room ID (type /roomid to get it)"></PiTextField>
         </v-row>
-        <v-tooltip :disabled="usePwClientStore().isConnected" location="bottom" text="Requires connecting the bot">
-          <template #activator="{ props }">
-            <div style="width: 100%" v-bind="props">
-              <PiButton :disabled="!usePwClientStore().isConnected" color="green" type="submit"
-                >Import from EER
-              </PiButton>
-            </div>
-          </template>
-        </v-tooltip>
+        <v-row>
+          <v-tooltip :disabled="usePwClientStore().isConnected" location="bottom" text="Requires connecting the bot">
+            <template #activator="{ props }">
+              <div style="width: 100%" v-bind="props">
+                <PiButton :disabled="!usePwClientStore().isConnected" color="green" type="submit"
+                  >Import from EER
+                </PiButton>
+              </div>
+            </template>
+          </v-tooltip>
+        </v-row>
       </v-col>
     </v-form>
   </PiCardContainer>

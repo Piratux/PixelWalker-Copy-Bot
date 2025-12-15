@@ -38,11 +38,10 @@ watch(worldId, () => {
 })
 
 async function onConnectButtonClick() {
+  if (!(await form.value!.validate()).valid) {
+    return
+  }
   await withLoading(loadingOverlay, async () => {
-    if (!(await form.value!.validate()).valid) {
-      return
-    }
-
     await initPwClasses(worldId.value, email.value, password.value, secretEditKey.value, botType.value)
 
     await router.push({ name: RouteName.HOME })
