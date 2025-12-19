@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2025-12-19 Version 1.16.2
+- Website: Fixed an issue with EELVL/EER import where saving such imported world, that had world background, would cause PW server crash.
+
 2025-12-15 Version 1.16.1
 - Website: Fixed an issue where importing untitled (unsaved) EER world was giving unexpected errors.
 

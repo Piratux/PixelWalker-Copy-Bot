@@ -101,6 +101,8 @@ function applyWorldBackground(
     return
   }
 
+  backgroundColor = backgroundColor & 0xffffff // Remove transparency
+
   for (let x = 0; x < pwMapWidth; x++) {
     for (let y = 0; y < pwMapHeight; y++) {
       const hasBackground = deserialisedStructure.blocks[LayerType.Background][x][y].bId !== 0
