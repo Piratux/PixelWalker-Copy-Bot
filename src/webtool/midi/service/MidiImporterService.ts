@@ -134,7 +134,7 @@ function writeNotes(
           }
           lastX = Math.max(lastX, x)
 
-          blocks.blocks[LayerType.Foreground][x][y] = new Block(blockName, [Buffer.from(noteGroup)])
+          blocks.blocks[LayerType.Foreground][x][y] = new Block(blockName, [Uint8Array.from(noteGroup)])
 
           // Shows each note's colors, can only be turned on in dev mode
           if (showColors) {

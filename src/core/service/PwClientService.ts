@@ -6,7 +6,7 @@ import { getPwApiClient, getPwGameClient, getPwGameWorldHelper, usePwClientStore
 import { sendGlobalChatMessage } from '@/core/service/ChatMessageService.ts'
 import { registerCopyBotCallbacks } from '@/copybot/service/PacketHandlerCopyBotService.ts'
 import ManyKeysMap from 'many-keys-map'
-import { EER_MAPPINGS } from '@/webtool/eer/block/EerMappings.ts'
+import { EER_MAPPINGS, EerListBlockResult } from '@/webtool/eer/block/EerMappings.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { registerBomBotCallbacks } from '@/bombot/service/PacketHandlerBomBotService.ts'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
@@ -18,6 +18,7 @@ import { vec2 } from '@basementuniverse/vec'
 import { TimeoutError, workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { createFailedToJoinWorldErrorString } from '@/copybot/service/CopyBotErrorService.ts'
 import { registerCurseBotCallbacks } from '@/cursebot/service/PacketHandlerCurseBotService.ts'
+import { toRaw } from 'vue'
 
 export async function authenticate(pwApiClient: PWApiClient): Promise<void> {
   const authenticationResult = await pwApiClient.authenticate()
@@ -57,28 +58,24 @@ function initEelvlBlocks(blocks: ListBlockResult[]) {
   useEelvlClientStore().blocksByParameters = new ManyKeysMap()
 
   blocks.forEach((block) => {
-    if (block.LegacyId !== undefined) {
-      if (block.LegacyMorph !== undefined) {
-        block.LegacyMorph.forEach((morph) => {
-          // When there are multiple values in block.LegacyMorph, it means that multiple morph values represent exact same block.
-          // Only laser blocks in EELVL have multiple morphs.
-          useEelvlClientStore().blocksByParameters.set([block.LegacyId!, morph], block)
+    Object.entries(block.LegacyMorphs).forEach(([legacyId, morphs]) => {
+      if (Array.isArray(morphs)) {
+        morphs.forEach((morph) => {
+          useEelvlClientStore().blocksByParameters.set([Number(legacyId), morph], block)
         })
       } else {
-        useEelvlClientStore().blocksByParameters.set([block.LegacyId], block)
+        useEelvlClientStore().blocksByParameters.set([Number(legacyId)], block)
       }
-    }
+    })
   })
 }
 
-function initEerBlocks(eerBlocks: ListBlockResult[]) {
+function initEerBlocks(eerBlocks: EerListBlockResult[]) {
   eerBlocks.forEach((block) => {
     if (block.LegacyId !== undefined) {
       if (block.LegacyMorph !== undefined) {
         block.LegacyMorph.forEach((morph) => {
-          // When there are multiple values in block.LegacyMorph, it means that multiple morph values represent exact same block.
-          // Only laser blocks in EELVL have multiple morphs.
-          useEerClientStore().blocksByParameters.set([block.LegacyId!, morph], block)
+          useEerClientStore().blocksByParameters.set([block.LegacyId, morph], block)
         })
       } else {
         useEerClientStore().blocksByParameters.set([block.LegacyId], block)
@@ -233,7 +230,7 @@ export function requireBotAsWorldOwner(): void {
 }
 
 export function getAllWorldBlocks(pwGameWorldHelper: PWGameWorldHelper): DeserialisedStructure {
-  return pwGameWorldHelper.sectionBlocks(0, 0, pwGameWorldHelper.width - 1, pwGameWorldHelper.height - 1)
+  return toRaw(pwGameWorldHelper).sectionBlocks(0, 0, pwGameWorldHelper.width - 1, pwGameWorldHelper.height - 1)
 }
 
 export function hotReloadCallbacks(callbacks: CallbackEntry[]) {

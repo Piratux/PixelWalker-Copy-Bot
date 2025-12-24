@@ -23,6 +23,7 @@ import { ByteArray } from 'playerioclient'
 import { EelvlExportResult } from '@/webtool/eelvl/type/EelvlExportResult.ts'
 import { MissingBlockInfo } from '@/webtool/eelvl/type/MissingBlockInfo.ts'
 import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
+import { isEmpty } from 'lodash-es'
 
 function addBlocksEntry(blocks: ManyKeysMap<EelvlBlockEntry, vec2[]>, key: EelvlBlockEntry, x: number, y: number) {
   mapGetOrInsert(blocks, key, []).push(vec2(x, y))
@@ -173,27 +174,27 @@ function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock | s
 
   switch (pwBlockName) {
     case PwBlockName.COIN_GOLD_DOOR:
-      return { blockId: EelvlBlockId.COIN_GOLD_DOOR, intParameter: pwBlock.args[0] as number }
+      return { blockId: EelvlBlockId.COIN_GOLD_DOOR, intParameter: pwBlock.args.coins as number }
     case PwBlockName.COIN_GOLD_GATE:
-      return { blockId: EelvlBlockId.COIN_GOLD_GATE, intParameter: pwBlock.args[0] as number }
+      return { blockId: EelvlBlockId.COIN_GOLD_GATE, intParameter: pwBlock.args.coins as number }
     case PwBlockName.COIN_BLUE_DOOR:
-      return { blockId: EelvlBlockId.COIN_BLUE_DOOR, intParameter: pwBlock.args[0] as number }
+      return { blockId: EelvlBlockId.COIN_BLUE_DOOR, intParameter: pwBlock.args.coins as number }
     case PwBlockName.COIN_BLUE_GATE:
-      return { blockId: EelvlBlockId.COIN_BLUE_GATE, intParameter: pwBlock.args[0] as number }
+      return { blockId: EelvlBlockId.COIN_BLUE_GATE, intParameter: pwBlock.args.coins as number }
     case PwBlockName.EFFECTS_JUMP_HEIGHT:
       return getPwToEelvlEffectsJumpHeightBlock(pwBlock)
     case PwBlockName.EFFECTS_FLY:
-      return { blockId: EelvlBlockId.EFFECTS_FLY, intParameter: pwBlock.args[0] === true ? 1 : 0 }
+      return { blockId: EelvlBlockId.EFFECTS_FLY, intParameter: pwBlock.args.enabled === true ? 1 : 0 }
     case PwBlockName.EFFECTS_SPEED:
       return getPwToEelvlEffectsSpeedBlock(pwBlock)
     case PwBlockName.EFFECTS_INVULNERABILITY:
-      return { blockId: EelvlBlockId.EFFECTS_INVULNERABILITY, intParameter: pwBlock.args[0] === true ? 1 : 0 }
+      return { blockId: EelvlBlockId.EFFECTS_INVULNERABILITY, intParameter: pwBlock.args.enabled === true ? 1 : 0 }
     case PwBlockName.EFFECTS_CURSE:
-      return { blockId: EelvlBlockId.EFFECTS_CURSE, intParameter: pwBlock.args[0] as number }
+      return { blockId: EelvlBlockId.EFFECTS_CURSE, intParameter: pwBlock.args.duration as number }
     case PwBlockName.EFFECTS_ZOMBIE:
-      return { blockId: EelvlBlockId.EFFECTS_ZOMBIE, intParameter: pwBlock.args[0] as number }
+      return { blockId: EelvlBlockId.EFFECTS_ZOMBIE, intParameter: pwBlock.args.duration as number }
     case PwBlockName.EFFECTS_POISON:
-      return { blockId: EelvlBlockId.EFFECTS_POISON, intParameter: pwBlock.args[0] as number }
+      return { blockId: EelvlBlockId.EFFECTS_POISON, intParameter: pwBlock.args.duration as number }
     case PwBlockName.EFFECTS_GRAVITY_FORCE:
       return getPwToEelvlEffectsGravityForceBlock(pwBlock)
     case PwBlockName.EFFECTS_MULTI_JUMP:
@@ -201,15 +202,15 @@ function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock | s
     case PwBlockName.TOOL_PORTAL_WORLD_SPAWN:
       return { blockId: EelvlBlockId.TOOL_PORTAL_WORLD_SPAWN, intParameter: 1 }
     case PwBlockName.SIGN_NORMAL:
-      return { blockId: EelvlBlockId.SIGN_NORMAL, signType: 0, signText: pwBlock.args[0] as string }
+      return { blockId: EelvlBlockId.SIGN_NORMAL, signType: 0, signText: pwBlock.args.text as string }
     case PwBlockName.SIGN_RED:
-      return { blockId: EelvlBlockId.SIGN_NORMAL, signType: 2, signText: pwBlock.args[0] as string }
+      return { blockId: EelvlBlockId.SIGN_NORMAL, signType: 2, signText: pwBlock.args.text as string }
     case PwBlockName.SIGN_GREEN:
-      return `${PwBlockName.SIGN_GREEN} text: '${pwBlock.args[0] as string}'`
+      return `${PwBlockName.SIGN_GREEN} text: '${pwBlock.args.text as string}'`
     case PwBlockName.SIGN_BLUE:
-      return { blockId: EelvlBlockId.SIGN_NORMAL, signType: 1, signText: pwBlock.args[0] as string }
+      return { blockId: EelvlBlockId.SIGN_NORMAL, signType: 1, signText: pwBlock.args.text as string }
     case PwBlockName.SIGN_GOLD:
-      return { blockId: EelvlBlockId.SIGN_NORMAL, signType: 3, signText: pwBlock.args[0] as string }
+      return { blockId: EelvlBlockId.SIGN_NORMAL, signType: 3, signText: pwBlock.args.text as string }
     case PwBlockName.PORTAL_VISIBLE_LEFT:
     case PwBlockName.PORTAL_VISIBLE_RIGHT:
     case PwBlockName.PORTAL_VISIBLE_UP:
@@ -227,35 +228,40 @@ function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock | s
         worldPortalTargetSpawnPointId: 1,
       }
     case PwBlockName.SWITCH_LOCAL_TOGGLE:
-      return { blockId: EelvlBlockId.SWITCH_LOCAL_TOGGLE, intParameter: pwBlock.args[0] as number }
+      return { blockId: EelvlBlockId.SWITCH_LOCAL_TOGGLE, intParameter: pwBlock.args.switch_id as number }
     case PwBlockName.SWITCH_LOCAL_ACTIVATOR:
       return getPwToEelvlSwitchActivatorBlock(pwBlock, EelvlBlockId.SWITCH_LOCAL_ACTIVATOR)
     case PwBlockName.SWITCH_LOCAL_RESETTER:
       return getPwToEelvlSwitchResetterBlock(pwBlock, true)
     case PwBlockName.SWITCH_LOCAL_DOOR:
-      return { blockId: EelvlBlockId.SWITCH_LOCAL_DOOR, intParameter: pwBlock.args[0] as number }
+      return { blockId: EelvlBlockId.SWITCH_LOCAL_DOOR, intParameter: pwBlock.args.switch_id as number }
     case PwBlockName.SWITCH_LOCAL_GATE:
-      return { blockId: EelvlBlockId.SWITCH_LOCAL_GATE, intParameter: pwBlock.args[0] as number }
+      return { blockId: EelvlBlockId.SWITCH_LOCAL_GATE, intParameter: pwBlock.args.switch_id as number }
     case PwBlockName.SWITCH_GLOBAL_TOGGLE:
-      return { blockId: EelvlBlockId.SWITCH_GLOBAL_TOGGLE, intParameter: pwBlock.args[0] as number }
+      return { blockId: EelvlBlockId.SWITCH_GLOBAL_TOGGLE, intParameter: pwBlock.args.switch_id as number }
     case PwBlockName.SWITCH_GLOBAL_ACTIVATOR:
       return getPwToEelvlSwitchActivatorBlock(pwBlock, EelvlBlockId.SWITCH_GLOBAL_ACTIVATOR)
     case PwBlockName.SWITCH_GLOBAL_RESETTER:
       return getPwToEelvlSwitchResetterBlock(pwBlock, false)
     case PwBlockName.SWITCH_GLOBAL_DOOR:
-      return { blockId: EelvlBlockId.SWITCH_GLOBAL_DOOR, intParameter: pwBlock.args[0] as number }
+      return { blockId: EelvlBlockId.SWITCH_GLOBAL_DOOR, intParameter: pwBlock.args.switch_id as number }
     case PwBlockName.SWITCH_GLOBAL_GATE:
-      return { blockId: EelvlBlockId.SWITCH_GLOBAL_GATE, intParameter: pwBlock.args[0] as number }
+      return { blockId: EelvlBlockId.SWITCH_GLOBAL_GATE, intParameter: pwBlock.args.switch_id as number }
     case PwBlockName.HAZARD_DEATH_DOOR:
-      return { blockId: EelvlBlockId.HAZARD_DEATH_DOOR, intParameter: pwBlock.args[0] as number }
+      return { blockId: EelvlBlockId.HAZARD_DEATH_DOOR, intParameter: pwBlock.args.deaths as number }
     case PwBlockName.HAZARD_DEATH_GATE:
-      return { blockId: EelvlBlockId.HAZARD_DEATH_GATE, intParameter: pwBlock.args[0] as number }
+      return { blockId: EelvlBlockId.HAZARD_DEATH_GATE, intParameter: pwBlock.args.deaths as number }
     case PwBlockName.NOTE_DRUM:
       return getPwToEelvlNoteBlock(pwBlock, PwBlockName.NOTE_DRUM, EelvlBlockId.NOTE_DRUM)
     case PwBlockName.NOTE_PIANO:
       return getPwToEelvlNoteBlock(pwBlock, PwBlockName.NOTE_PIANO, EelvlBlockId.NOTE_PIANO)
     case PwBlockName.NOTE_GUITAR:
       return getPwToEelvlNoteBlock(pwBlock, PwBlockName.NOTE_GUITAR, EelvlBlockId.NOTE_GUITAR)
+    case PwBlockName.TIME_DOOR:
+      return getPwToEelvlTimeDoor(pwBlock)
+    // NOTE: This is not 1 to 1 mapping
+    case PwBlockName.FIREWORKS:
+      return { blockId: EelvlBlockId.FIREWORKS, intParameter: 1 }
     // NOTE: PW Devs will not fix this
     case PwBlockName.CHRISTMAS_GIFT_HALF_RED:
       return { blockId: EelvlBlockId.CHRISTMAS_GIFT_HALF_RED, intParameter: 1 }
@@ -282,11 +288,12 @@ function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock | s
         }
       }
 
-      if (mappedPwBlock.LegacyId !== undefined) {
-        if (mappedPwBlock.LegacyMorph !== undefined) {
-          return { blockId: mappedPwBlock.LegacyId, intParameter: mappedPwBlock.LegacyMorph[0] }
+      if (!isEmpty(mappedPwBlock.LegacyMorphs)) {
+        const [blockId, morph] = Object.entries(mappedPwBlock.LegacyMorphs)[0]
+        if (morph !== null) {
+          return { blockId: Number(blockId), intParameter: morph[0] }
         } else {
-          return { blockId: mappedPwBlock.LegacyId }
+          return { blockId: Number(blockId) }
         }
       }
 
@@ -304,7 +311,7 @@ function createMissingBlockSign(message: string): EelvlBlock {
 }
 
 function getPwToEelvlEffectsJumpHeightBlock(pwBlock: Block): EelvlBlock | string {
-  const jumpHeight = pwBlock.args[0] as number
+  const jumpHeight = pwBlock.args.percentage as number
   switch (jumpHeight) {
     case 75:
       return { blockId: EelvlBlockId.EFFECTS_JUMP_HEIGHT, intParameter: 2 }
@@ -318,7 +325,7 @@ function getPwToEelvlEffectsJumpHeightBlock(pwBlock: Block): EelvlBlock | string
 }
 
 function getPwToEelvlEffectsSpeedBlock(pwBlock: Block): EelvlBlock | string {
-  const speed = pwBlock.args[0] as number
+  const speed = pwBlock.args.percentage as number
   switch (speed) {
     case 60:
       return { blockId: EelvlBlockId.EFFECTS_SPEED, intParameter: 2 }
@@ -332,7 +339,7 @@ function getPwToEelvlEffectsSpeedBlock(pwBlock: Block): EelvlBlock | string {
 }
 
 function getPwToEelvlEffectsGravityForceBlock(pwBlock: Block): EelvlBlock | string {
-  const gravityForce = pwBlock.args[0] as number
+  const gravityForce = pwBlock.args.percentage as number
   switch (gravityForce) {
     case 15:
       return { blockId: EelvlBlockId.EFFECTS_GRAVITY_FORCE, intParameter: 1 }
@@ -344,7 +351,7 @@ function getPwToEelvlEffectsGravityForceBlock(pwBlock: Block): EelvlBlock | stri
 }
 
 function getPwToEelvlEffectsMultiJumpBlock(pwBlock: Block): EelvlBlock {
-  let jumpCount = pwBlock.args[0] as number
+  let jumpCount = pwBlock.args.jumps as number
   if (jumpCount < 0 || jumpCount > 999) {
     jumpCount = 1000 // EELVL uses 1000 as infinite jumps
   }
@@ -352,8 +359,8 @@ function getPwToEelvlEffectsMultiJumpBlock(pwBlock: Block): EelvlBlock {
 }
 
 function getPwToEelvlPortalBlock(pwBlock: Block, eelvlBlockId: EelvlBlockId): EelvlBlock | string {
-  const portalId = pwBlock.args[0] as string
-  const portalTarget = pwBlock.args[1] as string
+  const portalId = pwBlock.args.portal_id as string
+  const portalTarget = pwBlock.args.target_id as string
   let rotation
   switch (pwBlock.name as PwBlockName) {
     case PwBlockName.PORTAL_VISIBLE_LEFT:
@@ -391,7 +398,7 @@ function getPwToEelvlNoteBlock(
   pwBlockName: PwBlockName,
   eelvlBlockId: EelvlBlockId,
 ): EelvlBlock | string {
-  const notes = pwBlock.args[0] as Uint8Array
+  const notes = pwBlock.args.notes as Uint8Array
   if (notes.length === 1) {
     let intParameter = notes.at(0)!
     if (eelvlBlockId === EelvlBlockId.NOTE_PIANO) {
@@ -410,9 +417,9 @@ function getPwToEelvlNoteBlock(
 }
 
 function getPwToEelvlSwitchActivatorBlock(pwBlock: Block, eelvlBlockId: EelvlBlockId): EelvlBlock | string {
-  const switchIdArg = pwBlock.args[0] as number
-  const switchStateArg = pwBlock.args[1] as number // 0 = OFF, 1 = ON
-  if (switchStateArg === 0) {
+  const switchIdArg = pwBlock.args.switch_id as number
+  const switchStateArg = pwBlock.args.enabled as boolean
+  if (!switchStateArg) {
     return { blockId: eelvlBlockId, intParameter: switchIdArg }
   } else {
     const pwBlockName =
@@ -424,12 +431,24 @@ function getPwToEelvlSwitchActivatorBlock(pwBlock: Block, eelvlBlockId: EelvlBlo
 }
 
 function getPwToEelvlSwitchResetterBlock(pwBlock: Block, isLocal: boolean): EelvlBlock | string {
-  const switchStateArg = pwBlock.args[0] as number // 0 = OFF, 1 = ON
-  if (switchStateArg === 0) {
+  const switchStateArg = pwBlock.args.enabled as boolean
+  if (!switchStateArg) {
     const eelvlBlockId = isLocal ? EelvlBlockId.SWITCH_LOCAL_ACTIVATOR : EelvlBlockId.SWITCH_GLOBAL_ACTIVATOR
     return { blockId: eelvlBlockId, intParameter: 1000 }
   }
 
   const pwBlockName = isLocal ? PwBlockName.SWITCH_LOCAL_RESETTER : PwBlockName.SWITCH_GLOBAL_RESETTER
   return `${pwBlockName} switch state: ON}`
+}
+
+function getPwToEelvlTimeDoor(pwBlock: Block): EelvlBlock | string {
+  const time = pwBlock.args.time as number
+  const offset = pwBlock.args.offset as number
+  if (time === 500 && offset === 500) {
+    return { blockId: EelvlBlockId.TIMEDOOR }
+  }
+  if (time === 500 && offset === 0) {
+    return { blockId: EelvlBlockId.TIMEGATE }
+  }
+  return `TIME_DOOR time: ${time}, offset: ${offset}`
 }

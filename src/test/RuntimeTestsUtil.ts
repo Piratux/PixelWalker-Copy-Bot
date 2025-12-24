@@ -12,6 +12,8 @@ import { vec2 } from '@basementuniverse/vec'
 import { getBotData, selectBlocks } from '@/copybot/service/PacketHandlerCopyBotService.ts'
 import { Promisable } from '@/core/util/Promise.ts'
 import { CopyBotData } from '@/copybot/type/CopyBotData.ts'
+import { toRaw } from 'vue'
+import { expect } from 'vitest'
 
 export function compareDeserialisedStructureData(
   receivedData: DeserialisedStructure,
@@ -55,7 +57,7 @@ export async function getDataFromMidiFile(fileUrl: string): Promise<Deserialised
 }
 
 export function verifyExpectedBlocks(expectedOutputBlocks: WorldBlock[], areaSize = vec2(10, 10)) {
-  const currentBlocks = getPwGameWorldHelper().sectionBlocks(0, 0, areaSize.x - 1, areaSize.y - 1)
+  const currentBlocks = toRaw(getPwGameWorldHelper()).sectionBlocks(0, 0, areaSize.x - 1, areaSize.y - 1)
   const expectedBlocks = createEmptyBlocks(areaSize)
   for (const worldBlock of expectedOutputBlocks) {
     expectedBlocks.blocks[worldBlock.layer][worldBlock.pos.x][worldBlock.pos.y] = worldBlock.block
@@ -81,7 +83,8 @@ export async function runSelectCommandTest(
 ) {
   const testAreaSize = vec2(10, 10)
   const clearTestAreaBlocks = createEmptyBlocks(testAreaSize)
-  await placeWorldDataBlocks(clearTestAreaBlocks)
+
+  await expect(placeWorldDataBlocks(clearTestAreaBlocks), 'Failed to place world data blocks').resolves.toBe(true)
 
   await placeMultipleBlocks(inputBlocks)
   selectArea(selectFrom, selectTo)

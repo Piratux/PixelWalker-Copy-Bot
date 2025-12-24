@@ -7,7 +7,7 @@ import {
   getPwGameWorldHelper,
   usePwClientStore,
 } from '@/core/store/PwClientStore.ts'
-import { Block, ComponentTypeHeader, IPlayer, LayerType, Point } from 'pw-js-world'
+import { Block, IPlayer, LayerType, Point } from 'pw-js-world'
 import { cloneDeep, isEqual } from 'lodash-es'
 import { CopyBotData, createBotData } from '@/copybot/type/CopyBotData.ts'
 import { getPlayerCopyBotData } from '@/copybot/store/CopyBotStore.ts'
@@ -34,7 +34,7 @@ import {
 } from '@/core/service/WorldService.ts'
 import { addUndoItemWorldBlock, performRedo, performUndo } from '@/copybot/service/UndoRedoService.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
-import { ProtoGen } from 'pw-js-api'
+import { AnyBlockField, ProtoGen } from 'pw-js-api'
 import {
   commonPlayerInitPacketReceived,
   createEmptyBlocksFullWorldSize,
@@ -295,7 +295,7 @@ function printblocksCommandReceived(_args: string[], playerId: number) {
         result += `{ pos: vec2(${pos.x}, ${pos.y})`
         result += `, layer: LayerType.${LayerType[block.layer]}`
         result += `, block: new Block(PwBlockName.${block.block.name}`
-        if (block.block.args.length > 0) {
+        if (block.block.hasArgs()) {
           result += `, ${JSON.stringify(block.block.args)}`
         }
         result += `) },`
@@ -712,8 +712,8 @@ function editIdCommand(args: string[], playerId: number): WorldBlock[] {
   }
 
   if (
-    (searchForBlock.BlockDataArgs !== undefined || replaceWithBlock.BlockDataArgs !== undefined) &&
-    !isEqual(searchForBlock.BlockDataArgs, replaceWithBlock.BlockDataArgs)
+    (searchForBlock.Fields !== undefined || replaceWithBlock.Fields !== undefined) &&
+    !isEqual(searchForBlock.Fields, replaceWithBlock.Fields)
   ) {
     throw new GameError(`find and replace block arguments must match`, playerId)
   }
@@ -759,14 +759,16 @@ function editArithmeticCommand(args: string[], playerId: number, op: mathOp, opP
           editedBlocks.push(deepBlock)
           return deepBlock
         }
-        deepBlock.block.args = deepBlock.block.args.map((arg) => {
-          if (typeof arg === 'number') {
-            counter++
-            return Math.floor(op(arg, amount))
-          } else {
-            return arg
-          }
-        })
+        deepBlock.block.args = Object.fromEntries(
+          Object.entries(deepBlock.block.args).map(([key, value]) => {
+            if (typeof value === 'number') {
+              counter++
+              return [key, Math.floor(op(value, amount))]
+            } else {
+              return [key, value]
+            }
+          }),
+        )
         editedBlocks.push(deepBlock)
         return deepBlock
       }
@@ -833,7 +835,7 @@ function flipCommandReceived(args: string[], playerId: number) {
 function applySmartTransformForBlockWithIntArgument(
   pastePosBlock: WorldBlock,
   nextBlock: WorldBlock,
-  argIdx: number,
+  argName: string,
   blockCopy: WorldBlock,
   repetition: number,
 ) {
@@ -841,8 +843,8 @@ function applySmartTransformForBlockWithIntArgument(
     return
   }
 
-  const diff = (nextBlock.block.args[argIdx] as number) - (pastePosBlock.block.args[argIdx] as number)
-  blockCopy.block.args[argIdx] = (blockCopy.block.args[argIdx] as number) + diff * repetition
+  const diff = (nextBlock.block.args[argName] as number) - (pastePosBlock.block.args[argName] as number)
+  blockCopy.block.args[argName] = (blockCopy.block.args[argName] as number) + diff * repetition
 }
 
 // Colour wise smart increment.
@@ -852,7 +854,7 @@ function applySmartTransformForBlockWithIntArgument(
 function applySmartTransformForBlockWithColorArgument(
   pastePosBlock: WorldBlock,
   nextBlock: WorldBlock,
-  argIdx: number,
+  argName: string,
   blockCopy: WorldBlock,
   repetition: number,
 ) {
@@ -860,9 +862,9 @@ function applySmartTransformForBlockWithColorArgument(
     return
   }
 
-  const nextBlockColour = uint32ToColour(nextBlock.block.args[argIdx] as number)
-  const pastePosBlockColour = uint32ToColour(pastePosBlock.block.args[argIdx] as number)
-  const blockCopyColour = uint32ToColour(blockCopy.block.args[argIdx] as number)
+  const nextBlockColour = uint32ToColour(nextBlock.block.args[argName] as number)
+  const pastePosBlockColour = uint32ToColour(pastePosBlock.block.args[argName] as number)
+  const blockCopyColour = uint32ToColour(blockCopy.block.args[argName] as number)
 
   const diffR = nextBlockColour.r - pastePosBlockColour.r
   const diffG = nextBlockColour.g - pastePosBlockColour.g
@@ -875,7 +877,7 @@ function applySmartTransformForBlockWithColorArgument(
   const newColour = { r: newR, g: newG, b: newB }
 
   try {
-    blockCopy.block.args[argIdx] = colourToUint32(newColour)
+    blockCopy.block.args[argName] = colourToUint32(newColour)
   } catch {
     throw new GameError(createColourOutOfBoundsErrorString(newColour))
   }
@@ -894,7 +896,7 @@ function applySmartTransformForBlockWithColorArgument(
 function applySmartTransformForPortalBlock(
   pastePosBlock: WorldBlock,
   nextBlock: WorldBlock,
-  argIdx: number,
+  argName: string,
   blockCopy: WorldBlock,
   repetition: number,
 ) {
@@ -902,14 +904,14 @@ function applySmartTransformForPortalBlock(
     return
   }
 
-  const pastePosBlockPortalIdPartArray = portalIdToNumberAndStringArray(pastePosBlock.block.args[argIdx] as string)
-  const nextBlockPortalIdPartArray = portalIdToNumberAndStringArray(nextBlock.block.args[argIdx] as string)
+  const pastePosBlockPortalIdPartArray = portalIdToNumberAndStringArray(pastePosBlock.block.args[argName] as string)
+  const nextBlockPortalIdPartArray = portalIdToNumberAndStringArray(nextBlock.block.args[argName] as string)
 
   if (!numberAndStringArrayTypesMatch(pastePosBlockPortalIdPartArray, nextBlockPortalIdPartArray)) {
     return
   }
 
-  const blockCopyPortalIdPartArray = portalIdToNumberAndStringArray(blockCopy.block.args[argIdx] as string)
+  const blockCopyPortalIdPartArray = portalIdToNumberAndStringArray(blockCopy.block.args[argName] as string)
 
   const portalId = pastePosBlockPortalIdPartArray
     .map((pastePosBlockPortalIdPart, i) => {
@@ -926,7 +928,7 @@ function applySmartTransformForPortalBlock(
     throw new GameError(createPortalIdTooLongErrorString(portalId))
   }
 
-  blockCopy.block.args[argIdx] = portalId
+  blockCopy.block.args[argName] = portalId
 }
 
 function applySmartTransformForBlocks(
@@ -944,21 +946,18 @@ function applySmartTransformForBlocks(
     const blockCopy = cloneDeep(pastedBlock)
 
     if (pastePosBlock.block.bId === nextBlockX.block.bId || pastePosBlock.block.bId === nextBlockY.block.bId) {
-      const blockArgTypes: ComponentTypeHeader[] = Block.getArgTypesByBlockId(pastePosBlock.block.bId)
-      for (let i = 0; i < blockArgTypes.length; i++) {
-        const blockArgType = blockArgTypes[i]
+      const blockArgTypes: AnyBlockField[] = Block.getFieldsByBlockId(pastePosBlock.block.bId)
+      for (const blockArgType of blockArgTypes) {
+        const argName = blockArgType.Name
         if (blockIsPortal(pastePosBlock.block.name)) {
-          applySmartTransformForPortalBlock(pastePosBlock, nextBlockX, i, blockCopy, repetitionX)
-          applySmartTransformForPortalBlock(pastePosBlock, nextBlockY, i, blockCopy, repetitionY)
-        } else if (
-          blockHasColorArgument(pastePosBlock.block.name as PwBlockName) &&
-          blockArgType === ComponentTypeHeader.UInt32
-        ) {
-          applySmartTransformForBlockWithColorArgument(pastePosBlock, nextBlockX, i, blockCopy, repetitionX)
-          applySmartTransformForBlockWithColorArgument(pastePosBlock, nextBlockY, i, blockCopy, repetitionY)
-        } else if (blockArgType === ComponentTypeHeader.Int32) {
-          applySmartTransformForBlockWithIntArgument(pastePosBlock, nextBlockX, i, blockCopy, repetitionX)
-          applySmartTransformForBlockWithIntArgument(pastePosBlock, nextBlockY, i, blockCopy, repetitionY)
+          applySmartTransformForPortalBlock(pastePosBlock, nextBlockX, argName, blockCopy, repetitionX)
+          applySmartTransformForPortalBlock(pastePosBlock, nextBlockY, argName, blockCopy, repetitionY)
+        } else if (blockHasColorArgument(pastePosBlock.block.name as PwBlockName) && blockArgType.Type === 'UInt32') {
+          applySmartTransformForBlockWithColorArgument(pastePosBlock, nextBlockX, argName, blockCopy, repetitionX)
+          applySmartTransformForBlockWithColorArgument(pastePosBlock, nextBlockY, argName, blockCopy, repetitionY)
+        } else if (blockArgType.Type === 'Int32') {
+          applySmartTransformForBlockWithIntArgument(pastePosBlock, nextBlockX, argName, blockCopy, repetitionX)
+          applySmartTransformForBlockWithIntArgument(pastePosBlock, nextBlockY, argName, blockCopy, repetitionY)
         }
       }
     }

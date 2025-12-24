@@ -1,4 +1,4 @@
-import { beforeEach, describe, test } from 'vitest'
+import { beforeEach, describe, expect, test } from 'vitest'
 import { getPwApiClient, getPwGameClient, getPwGameWorldHelper, usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { compareDeserialisedStructureData } from '@/test/RuntimeTestsUtil.ts'
 import { authenticate, clearWorld, getAllWorldBlocks, joinWorld } from '@/core/service/PwClientService.ts'
@@ -17,7 +17,9 @@ describe.sequential('Packets', () => {
 
   test('Map update from WorldBlockPlacedPacket', { timeout: 60_000 }, async () => {
     const expectedData = await getAnotherWorldBlocks(everyBlockWorldId, getPwApiClient())
-    await placeWorldDataBlocks(expectedData)
+
+    await expect(placeWorldDataBlocks(expectedData), 'Failed to place world data blocks').resolves.toBe(true)
+
     const receivedData = getAllWorldBlocks(getPwGameWorldHelper())
 
     compareDeserialisedStructureData(receivedData, expectedData)
@@ -25,7 +27,8 @@ describe.sequential('Packets', () => {
 
   test('Map update from PlayerInitPacket.world_data', { timeout: 60_000 }, async () => {
     const expectedData = await getAnotherWorldBlocks(everyBlockWorldId, getPwApiClient())
-    await placeWorldDataBlocks(expectedData)
+
+    await expect(placeWorldDataBlocks(expectedData), 'Failed to place world data blocks').resolves.toBe(true)
 
     getPwGameClient().disconnect(false)
 

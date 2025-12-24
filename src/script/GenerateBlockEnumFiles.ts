@@ -39,7 +39,7 @@ async function generateEelvlBlockIdEnum() {
 
   tsOutput += '}\n\nexport type EelvlBlockIdKeys = keyof typeof EelvlBlockId\r\n'
 
-  await writeFile('./src/eelvl/gen/EelvlBlockId.ts', tsOutput)
+  await writeFile('./src/webtool/eelvl/gen/EelvlBlockId.ts', tsOutput)
 }
 
 async function generateEerBlockIdEnum() {
@@ -54,7 +54,7 @@ async function generateEerBlockIdEnum() {
 
   tsOutput += '}\n\nexport type EerBlockIdKeys = keyof typeof EerBlockId\r\n'
 
-  await writeFile('./src/eer/gen/EerBlockId.ts', tsOutput)
+  await writeFile('./src/webtool/eer/gen/EerBlockId.ts', tsOutput)
 }
 
 function getGeneratedFileHeading() {

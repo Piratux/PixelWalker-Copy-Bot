@@ -214,7 +214,7 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
     case EelvlBlockId.EFFECTS_MULTI_JUMP:
       return getEelvlToPwEffectsMultiJumpBlock(eelvlBlock)
     case EelvlBlockId.TOOL_PORTAL_WORLD_SPAWN:
-      return createBlock(PwBlockName.TOOL_PORTAL_WORLD_SPAWN, [eelvlBlock.intParameter!])
+      return createBlock(PwBlockName.TOOL_PORTAL_WORLD_SPAWN, [eelvlBlock.intParameter!.toString()])
     case EelvlBlockId.SIGN_NORMAL:
       switch (eelvlBlock.signType) {
         case 0:
@@ -235,7 +235,7 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
     case EelvlBlockId.PORTAL_WORLD:
       return createBlock(PwBlockName.PORTAL_WORLD, [
         eelvlBlock.worldPortalTargetWorldId!,
-        eelvlBlock.worldPortalTargetSpawnPointId!,
+        eelvlBlock.worldPortalTargetSpawnPointId!.toString(),
       ])
     case EelvlBlockId.SWITCH_LOCAL_TOGGLE:
       return createBlock(PwBlockName.SWITCH_LOCAL_TOGGLE, [eelvlBlock.intParameter!])
@@ -263,6 +263,20 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
       return getEelvlToPwNoteBlock(eelvlBlock, PwBlockName.NOTE_PIANO)
     case EelvlBlockId.NOTE_GUITAR:
       return getEelvlToPwNoteBlock(eelvlBlock, PwBlockName.NOTE_GUITAR)
+    // It doesn't matter which one is time door and which one is time gate as they're symmetrical
+    case EelvlBlockId.TIMEDOOR:
+      return createBlock(PwBlockName.TIME_DOOR, [500, 500, false])
+    case EelvlBlockId.TIMEGATE:
+      return createBlock(PwBlockName.TIME_DOOR, [500, 0, false])
+    // NOTE: This is not 1 to 1 mapping
+    case EelvlBlockId.FIREWORKS:
+      return new Block(PwBlockName.FIREWORKS, {
+        startColor: 16711680,
+        fadeToColor: 16777215,
+        shape: 0,
+        sizeMax: 8,
+        sparkle: false,
+      })
     // NOTE: PW Devs will not fix this
     case EelvlBlockId.CHRISTMAS_GIFT_HALF_RED:
       return createBlock(PwBlockName.CHRISTMAS_GIFT_HALF_RED)
@@ -416,7 +430,7 @@ function getEelvlToPwNoteBlock(eelvlBlock: EelvlBlock, pwBlockName: PwBlockName)
     }
     noteValue = getEelvlToPwDrumTypeMap().get(noteValue)!
   }
-  const noteBuffer = Buffer.from([noteValue])
+  const noteBuffer = Uint8Array.from([noteValue])
 
   return createBlock(pwBlockName, [noteBuffer])
 }
@@ -425,9 +439,9 @@ function getEelvlToPwSwitchActivatorBlock(eelvlBlock: EelvlBlock, isLocal: boole
   const switchId = eelvlBlock.intParameter!
   if (switchId === 1000) {
     const pwBlockName = isLocal ? PwBlockName.SWITCH_LOCAL_RESETTER : PwBlockName.SWITCH_GLOBAL_RESETTER
-    return createBlock(pwBlockName, [0])
+    return createBlock(pwBlockName, [false])
   }
 
   const pwBlockName = isLocal ? PwBlockName.SWITCH_LOCAL_ACTIVATOR : PwBlockName.SWITCH_GLOBAL_ACTIVATOR
-  return createBlock(pwBlockName, [eelvlBlock.intParameter!, 0])
+  return createBlock(pwBlockName, [false, eelvlBlock.intParameter!])
 }

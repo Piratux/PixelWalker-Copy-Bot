@@ -1,6 +1,5 @@
 import {
   Block,
-  BufferReader,
   createBlockPackets,
   DeserialisedStructure,
   LayerType,
@@ -132,9 +131,7 @@ async function placePackets(packets: SendableBlockPacket[], blockCount: number):
 }
 
 function updateBlockMap(blockPacket: SendableBlockPacket) {
-  const { positions, layer, blockId, extraFields } = blockPacket
-
-  const args = extraFields ? Block.deserializeArgs(BufferReader.from(extraFields)) : undefined
+  const { positions, layer, blockId, fields } = blockPacket
 
   for (let i = 0, len = positions.length; i < len; i++) {
     const { x, y } = positions[i]
@@ -144,7 +141,7 @@ function updateBlockMap(blockPacket: SendableBlockPacket) {
       continue
     }
 
-    getPwGameWorldHelper().blocks[layer][x][y] = new Block(blockId, args)
+    getPwGameWorldHelper().blocks[layer][x][y] = new Block(blockId, Block.parseArgFields(fields))
   }
 }
 
