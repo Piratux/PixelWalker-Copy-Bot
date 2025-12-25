@@ -33,7 +33,12 @@ async function onImportEerButtonClick() {
     <v-form ref="form" validate-on="submit lazy" @submit.prevent="onImportEerButtonClick">
       <v-col>
         <v-row>
-          <PiTextField v-model="eerRoomId" :required="true" label="EER Room ID (type /roomid to get it)"></PiTextField>
+          <PiTextField
+            v-model="eerRoomId"
+            :required="true"
+            label="EER Room ID (type /roomid to get it)"
+            @input="eerRoomId = eerRoomId.trim()"
+          ></PiTextField>
         </v-row>
         <v-row>
           <v-tooltip :disabled="usePwClientStore().isConnected" location="bottom" text="Requires connecting the bot">

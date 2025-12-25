@@ -268,6 +268,8 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
       return createBlock(PwBlockName.TIME_DOOR, [500, 500, false])
     case EelvlBlockId.TIMEGATE:
       return createBlock(PwBlockName.TIME_DOOR, [500, 0, false])
+    case EelvlBlockId.LABEL:
+      return `Missing PixelWalker block: LABEL, \ntext: ${eelvlBlock.labelText}`
     // NOTE: This is not 1 to 1 mapping
     case EelvlBlockId.FIREWORKS:
       return new Block(PwBlockName.FIREWORKS, {
@@ -315,6 +317,10 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
 
       if (pwBlockMorph0 !== undefined) {
         return `Unknown block parameter. Name: ${eelvlBlockName}, parameter: ${eelvlBlock.intParameter}`
+      }
+
+      if (isEelvlNpc(eelvlBlock.blockId)) {
+        return `Missing PixelWalker block: ${eelvlBlockName},\nnpcName: ${eelvlBlock.npcName},\nmessage1: ${eelvlBlock.npcMessage1},\nmessage2: ${eelvlBlock.npcMessage2},\nmessage3: ${eelvlBlock.npcMessage3}`
       }
 
       if (eelvlLayer !== EelvlLayer.BACKGROUND) {
