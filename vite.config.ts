@@ -38,11 +38,15 @@ export default defineConfig(() => {
       alias: [{ find: '@', replacement: path.resolve(__dirname, 'src') }],
     },
     test: {
+      fileParallelism: false,
+      watch: true,
       browser: {
         enabled: true,
         provider: playwright(),
         // https://vitest.dev/guide/browser/playwright
         instances: [{ browser: 'chromium' }],
+        headless: true,
+        screenshotFailures: false,
       },
       coverage: {
         reporter: ['html'],
