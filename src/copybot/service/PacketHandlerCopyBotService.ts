@@ -246,14 +246,10 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
       const singleBlock = sortedListBlocks[idx]
       const pos = vec2(x, y)
       let worldBlock: WorldBlock
-      if ((singleBlock.PaletteId as PwBlockName) === PwBlockName.PORTAL_WORLD) {
-        worldBlock = {
-          block: new Block(singleBlock.Id, ['ewki341n7ve153l', 0]),
-          layer: singleBlock.Layer,
-          pos,
-        }
-      } else if (blockIsPortal(singleBlock.PaletteId)) {
-        worldBlock = { block: new Block(singleBlock.Id, ['0', '0']), layer: singleBlock.Layer, pos }
+      if (singleBlock.Fields.some((f) => f.Required)) {
+        // TODO: required field may not always be a string
+        const args = Object.fromEntries(singleBlock.Fields.map((f) => [f.Name, '0']))
+        worldBlock = { block: new Block(singleBlock.Id, args), layer: singleBlock.Layer, pos }
       } else {
         worldBlock = { block: new Block(singleBlock.Id), layer: singleBlock.Layer, pos }
       }
@@ -1164,6 +1160,12 @@ function updateWorldImportFinished(data: ProtoGen.WorldBlockPlacedPacket) {
     if (usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket <= 0) {
       usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket = 0
     }
+
+    const sortedPositions = data.positions
+      .map((pos) => ({ x: pos.x, y: pos.y }))
+      .sort((a, b) => (a.x !== b.x ? a.x - b.x : a.y - b.y))
+    const packetKey = JSON.stringify({ blockId: data.blockId, positions: sortedPositions })
+    usePwClientStore().unsuccessfullyPlacedBlockPackets.delete(packetKey)
   }
 }
 

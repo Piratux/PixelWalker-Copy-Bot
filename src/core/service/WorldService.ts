@@ -97,10 +97,18 @@ export async function placeLayerDataBlocks(
 }
 
 async function placePackets(packets: SendableBlockPacket[], blockCount: number): Promise<boolean> {
-  // TODO: use packet count instead of block count
   usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket = blockCount
   let lasttotalBlocksLeftToReceiveFromWorldBlockPlacedPacketValue =
     usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket
+
+  usePwClientStore().unsuccessfullyPlacedBlockPackets.clear()
+  for (const packet of packets) {
+    const sortedPositions = packet.positions
+      .map((pos) => ({ x: pos.x, y: pos.y }))
+      .sort((a, b) => (a.x !== b.x ? a.x - b.x : a.y - b.y))
+    const packetKey = JSON.stringify({ blockId: packet.blockId, positions: sortedPositions })
+    usePwClientStore().unsuccessfullyPlacedBlockPackets.set(packetKey, packet)
+  }
 
   for (const packet of packets) {
     placeBlockPacket(packet)
@@ -127,6 +135,10 @@ async function placePackets(packets: SendableBlockPacket[], blockCount: number):
 
     await sleep(100)
   }
+
+  console.error('Failed to place all blocks. Printing packets that could not be placed:')
+  console.error(usePwClientStore().unsuccessfullyPlacedBlockPackets)
+
   return false
 }
 

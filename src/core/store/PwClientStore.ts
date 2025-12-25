@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ListBlockResult, PWApiClient, PWGameClient } from 'pw-js-api'
-import { PWGameWorldHelper } from 'pw-js-world'
+import { PWGameWorldHelper, SendableBlockPacket } from 'pw-js-world'
 import { Raw, ref } from 'vue'
 import { BotType } from '@/core/enum/BotType.ts'
 
@@ -14,6 +14,7 @@ export const usePwClientStore = defineStore('PwClientStore', () => {
   const secretEditKey = ref<string>('')
   const botType = ref<BotType>(BotType.COPY_BOT)
   const totalBlocksLeftToReceiveFromWorldBlockPlacedPacket = ref<number>(0)
+  const unsuccessfullyPlacedBlockPackets = ref<Map<string, SendableBlockPacket>>(new Map())
   const blocks = ref<ListBlockResult[]>([]) // sorted and uppercased blocks
   const blocksByPwId = ref<Raw<Map<number, ListBlockResult>>>(new Map())
   const blocksByPwName = ref<Raw<Map<string, ListBlockResult>>>(new Map())
@@ -31,6 +32,7 @@ export const usePwClientStore = defineStore('PwClientStore', () => {
     secretEditKey,
     botType,
     totalBlocksLeftToReceiveFromWorldBlockPlacedPacket,
+    unsuccessfullyPlacedBlockPackets,
     blocks,
     blocksByPwId,
     blocksByPwName,
