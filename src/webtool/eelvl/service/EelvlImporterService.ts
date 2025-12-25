@@ -269,7 +269,7 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
     case EelvlBlockId.TIMEGATE:
       return createBlock(PwBlockName.TIME_DOOR, [500, 0, false])
     case EelvlBlockId.LABEL:
-      return `Missing PixelWalker block: LABEL, \ntext: ${eelvlBlock.labelText}`
+      return `Missing PixelWalker block: LABEL,\ntext: ${eelvlBlock.labelText}`
     // NOTE: This is not 1 to 1 mapping
     case EelvlBlockId.FIREWORKS:
       return new Block(PwBlockName.FIREWORKS, {
