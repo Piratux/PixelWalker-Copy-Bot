@@ -104,7 +104,8 @@ function getBlockArgs(eerBlockId: number, eerBlock: EerBlock): EerBlockEntry {
       if (hasEerBlockOneIntParameter(eerBlockId)) {
         const eerBlockIntParameter = getEerBlockIntParameter(eerBlock)
         if (eerBlockIntParameter === undefined) {
-          throw new Error(`EER block ${EerBlockId[eerBlockId as EerBlockId]} has no int parameter`)
+          console.warn('Missing int parameter for EER block: ', eerBlock)
+          return [1]
         }
         return [eerBlockIntParameter]
       } else if (isEerNpc(eerBlockId)) {
