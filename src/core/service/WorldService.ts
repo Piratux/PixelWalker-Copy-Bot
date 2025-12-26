@@ -10,6 +10,7 @@ import {
 import {
   getPwBlocksByPwId,
   getPwBlocksByPwName,
+  getPwBotType,
   getPwGameClient,
   getPwGameWorldHelper,
   usePwClientStore,
@@ -26,6 +27,8 @@ import { handleException } from '@/core/util/Exception.ts'
 import { clamp } from '@/core/util/Numbers.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
+import { toRaw } from 'vue'
+import { BotType } from '@/core/enum/BotType.ts'
 
 export function getBlockAt(pos: Point, layer: number): Block {
   try {
@@ -136,8 +139,10 @@ async function placePackets(packets: SendableBlockPacket[], blockCount: number):
     await sleep(100)
   }
 
-  console.error('Failed to place all blocks. Printing packets that could not be placed:')
-  console.error(usePwClientStore().unsuccessfullyPlacedBlockPackets)
+  if (getPwBotType() === BotType.COPY_BOT) {
+    console.error('Failed to place all blocks. Printing packets that could not be placed:')
+    console.error(toRaw(usePwClientStore().unsuccessfullyPlacedBlockPackets))
+  }
 
   return false
 }
