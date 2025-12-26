@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiTextField from '@/component/PiTextField.vue'
 import PiButton from '@/component/PiButton.vue'
@@ -13,6 +13,9 @@ import { getEnvDefaultWorldId } from '@/core/util/Environment.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { RouteName } from '@/router/RouteName.ts'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
+import { PWApiClient } from 'pw-js-api'
+import { LAST_TESTED_PW_VERSION } from '@/core/constant/General.ts'
+import { AlertService } from '@/core/service/AlertService.ts'
 
 const loadingOverlay = ref(false)
 const email = ref('')
@@ -46,6 +49,17 @@ async function onConnectButtonClick() {
 
     await router.push({ name: RouteName.HOME })
   })
+}
+
+onMounted(() => {
+  void showWarningAlertIfCurrentPWVersionIsUntested()
+})
+
+async function showWarningAlertIfCurrentPWVersionIsUntested() {
+  const version = await PWApiClient.getVersion()
+  if (version !== LAST_TESTED_PW_VERSION) {
+    AlertService.warning('Bot was not tested with latest PixelWalker version, so it may not work or work incorrectly')
+  }
 }
 
 function setDefaultWorldIdButtonClicked() {

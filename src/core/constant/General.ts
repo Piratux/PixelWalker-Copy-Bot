@@ -5,4 +5,4 @@ export const GENERIC_WEBSITE_ERROR =
 
 export const TOTAL_PW_LAYERS = 3
 
-// export const LAST_TESTED_VERSION = 'pixelwalker_2025_10_08'
+export const LAST_TESTED_PW_VERSION = '2025.12.2'
