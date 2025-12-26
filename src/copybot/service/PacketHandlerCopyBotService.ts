@@ -17,7 +17,6 @@ import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import {
   applyPosOffsetForBlocks,
-  blockHasColorArgument,
   blockIsPortal,
   convertDeserializedStructureToWorldBlocks,
   getAnotherWorldBlocks,
@@ -948,7 +947,8 @@ function applySmartTransformForBlocks(
         if (blockIsPortal(pastePosBlock.block.name)) {
           applySmartTransformForPortalBlock(pastePosBlock, nextBlockX, argName, blockCopy, repetitionX)
           applySmartTransformForPortalBlock(pastePosBlock, nextBlockY, argName, blockCopy, repetitionY)
-        } else if (blockHasColorArgument(pastePosBlock.block.name as PwBlockName) && blockArgType.Type === 'UInt32') {
+        } else if (blockArgType.Type === 'UInt32' && blockArgType.MaxValue === 16777215) {
+          // if blockArgType.MaxValue === 16777215, then argument is color
           applySmartTransformForBlockWithColorArgument(pastePosBlock, nextBlockX, argName, blockCopy, repetitionX)
           applySmartTransformForBlockWithColorArgument(pastePosBlock, nextBlockY, argName, blockCopy, repetitionY)
         } else if (blockArgType.Type === 'Int32') {
