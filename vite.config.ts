@@ -37,7 +37,10 @@ export default defineConfig(() => {
     resolve: {
       alias: [{ find: '@', replacement: path.resolve(__dirname, 'src') }],
     },
+    // vitest config
     test: {
+      // Uncomment for debugging tests
+      // inspectBrk: true,
       fileParallelism: false,
       watch: true,
       browser: {
