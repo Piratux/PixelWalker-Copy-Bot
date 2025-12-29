@@ -93,9 +93,12 @@ async function onExportEelvlButtonClick() {
             and foreground layer, blocks in overlay layer are not exported
           </li>
           <li>Strings in portal ID and portal target ID</li>
+          <li>Strings in world portal spawn point ID and world portal spawn point target ID</li>
           <li>White and black crystal</li>
           <li>1px and 2px outlines</li>
           <li>Red, blue and black outerspace decorations that also act as signs</li>
+          <li>Configurable time doors</li>
+          <li>Configurable fireworks</li>
         </ul>
       </v-row>
       <v-row>All missing blocks are replaced with sign (except for backgrounds).</v-row>
