@@ -356,6 +356,15 @@ async function placeShiftBotMap(mapEntry: ShiftBotMapEntry) {
   await placeWorldDataBlocksUsingRandomPositionsPattern(worldBlocks)
 }
 
+function mapIsValid(mapBlocks: DeserialisedStructure) {
+  const coinBlocks = getReplacedExitWithCoinBlocks(mapBlocks, 1)
+  const { entranceBlocks } = getReplacedEntryWithEntranceBlocks(mapBlocks)
+
+  // TODO: validate if there are no unallowed blocks
+
+  return entranceBlocks.length > 0 && coinBlocks.length > 0
+}
+
 function loadMaps(
   shiftBotBlocks: DeserialisedStructure,
   difficulty: ShiftBotLevelDifficulty,
@@ -373,7 +382,9 @@ function loadMaps(
         vec2.addm(sectionTopLeft, mapSize, vec2(-1, -1)),
       )
 
-      // TODO: validate map
+      if (!mapIsValid(mapBlocks)) {
+        continue
+      }
 
       const coinCount = countCoinsInMap(mapBlocks)
 
@@ -387,7 +398,7 @@ function loadMaps(
 
 async function loadShiftBotData() {
   sendGlobalChatMessage('Loading ShiftBot data...')
-  const shiftBotDataWorldId = 'r14edfbea3bba0a'
+  const shiftBotDataWorldId = 'lha96i2d435o05i'
   const shiftBotBlocks = await getAnotherWorldBlocks(shiftBotDataWorldId, getPwApiClient())
 
   useShiftBotWorldStore().mapRoundClearBlocks = getShiftBotWorldBlockStructure(
@@ -431,23 +442,23 @@ async function loadShiftBotData() {
   useShiftBotWorldStore().mapExitCloseBlock = shiftBotBlocks.blocks[LayerType.Foreground][122][492]
 
   {
-    const totalMapCount = vec2(12, 2)
+    const totalMapCount = vec2(24, 5)
     const mapSpacing = vec2.add(mapSize, vec2(0, 0))
     const topLeftMapOffset = vec2(1, 1)
 
     loadMaps(shiftBotBlocks, ShiftBotLevelDifficulty.EASY, totalMapCount, mapSize, mapSpacing, topLeftMapOffset)
   }
   {
-    const totalMapCount = vec2(12, 2)
+    const totalMapCount = vec2(24, 5)
     const mapSpacing = vec2.add(mapSize, vec2(0, 0))
-    const topLeftMapOffset = vec2(1, 55)
+    const topLeftMapOffset = vec2(1, 136)
 
     loadMaps(shiftBotBlocks, ShiftBotLevelDifficulty.MEDIUM, totalMapCount, mapSize, mapSpacing, topLeftMapOffset)
   }
   {
-    const totalMapCount = vec2(12, 3)
+    const totalMapCount = vec2(24, 5)
     const mapSpacing = vec2.add(mapSize, vec2(0, 0))
-    const topLeftMapOffset = vec2(1, 109)
+    const topLeftMapOffset = vec2(1, 271)
 
     loadMaps(shiftBotBlocks, ShiftBotLevelDifficulty.HARD, totalMapCount, mapSize, mapSpacing, topLeftMapOffset)
   }
@@ -639,16 +650,14 @@ function countCoinsInMap(mapBlocks: DeserialisedStructure) {
   return coinCount
 }
 
-async function replaceExitWithCoinBlocks() {
-  const mapEntry = useShiftBotRoundStore().currentMapEntry!
-  const coinCount = mapEntry.coinCount
+function getReplacedExitWithCoinBlocks(mapBlocks: DeserialisedStructure, coinCount: number): WorldBlock[] {
   const coinBlocks: WorldBlock[] = []
-  for (let x = 0; x < mapEntry.blocks.width; x++) {
-    for (let y = 0; y < mapEntry.blocks.height; y++) {
-      if (x !== 0 && y !== 0 && x !== mapEntry.blocks.width - 1 && y !== mapEntry.blocks.height - 1) {
+  for (let x = 0; x < mapBlocks.width; x++) {
+    for (let y = 0; y < mapBlocks.height; y++) {
+      if (x !== 0 && y !== 0 && x !== mapBlocks.width - 1 && y !== mapBlocks.height - 1) {
         continue
       }
-      const block = mapEntry.blocks.blocks[LayerType.Foreground][x][y]
+      const block = mapBlocks.blocks[LayerType.Foreground][x][y]
       if (block.bId !== useShiftBotWorldStore().mapExitBlock.bId) {
         continue
       }
@@ -660,7 +669,7 @@ async function replaceExitWithCoinBlocks() {
       })
     }
   }
-  await placeMultipleBlocks(coinBlocks)
+  return coinBlocks
 }
 
 function getEntranceCloseBlocks(entranceBlocks: WorldBlock[], entrancePositions: vec2[]): WorldBlock[] {
@@ -676,15 +685,17 @@ function getEntranceCloseBlocks(entranceBlocks: WorldBlock[], entrancePositions:
   })
 }
 
-async function replaceEntryWithEntranceBlocks() {
+function getReplacedEntryWithEntranceBlocks(mapBlocks: DeserialisedStructure): {
+  entranceBlocks: WorldBlock[]
+  entrancePositions: vec2[]
+} {
   const entranceBlocks: WorldBlock[] = []
   const entrancePositions: vec2[] = []
-  const mapEntry = useShiftBotRoundStore().currentMapEntry!
   const mapEntranceBlockId = useShiftBotWorldStore().mapEntranceBlock.bId
 
   // Top entrance
   for (let x = 1; x < mapSize.x; x++) {
-    if (mapEntry.blocks.blocks[LayerType.Foreground][x][0].bId === mapEntranceBlockId) {
+    if (mapBlocks.blocks[LayerType.Foreground][x][0].bId === mapEntranceBlockId) {
       entrancePositions.push(vec2(x, 0))
       for (let i = -1; i <= 1; i++) {
         entranceBlocks.push({
@@ -694,7 +705,7 @@ async function replaceEntryWithEntranceBlocks() {
         })
       }
 
-      if (mapEntry.blocks.blocks[LayerType.Foreground][x - 1][0].bId !== mapEntranceBlockId) {
+      if (mapBlocks.blocks[LayerType.Foreground][x - 1][0].bId !== mapEntranceBlockId) {
         entranceBlocks.push({
           block: cloneDeep(useShiftBotWorldStore().mapEntranceCloseBlock),
           layer: LayerType.Foreground,
@@ -706,7 +717,7 @@ async function replaceEntryWithEntranceBlocks() {
 
   // Left entrance
   for (let y = 1; y < mapSize.y; y++) {
-    if (mapEntry.blocks.blocks[LayerType.Foreground][0][y].bId === mapEntranceBlockId) {
+    if (mapBlocks.blocks[LayerType.Foreground][0][y].bId === mapEntranceBlockId) {
       entrancePositions.push(vec2(0, y))
       for (let i = -1; i <= 1; i++) {
         entranceBlocks.push({
@@ -716,7 +727,7 @@ async function replaceEntryWithEntranceBlocks() {
         })
       }
 
-      if (mapEntry.blocks.blocks[LayerType.Foreground][0][y + 1].bId !== mapEntranceBlockId) {
+      if (mapBlocks.blocks[LayerType.Foreground][0][y + 1].bId !== mapEntranceBlockId) {
         entranceBlocks.push({
           block: cloneDeep(useShiftBotWorldStore().mapEntranceCloseBlock),
           layer: LayerType.Foreground,
@@ -729,7 +740,7 @@ async function replaceEntryWithEntranceBlocks() {
   // Bottom entrance
   const maxY = mapSize.y - 1
   for (let x = mapSize.x - 2; x >= 0; x--) {
-    if (mapEntry.blocks.blocks[LayerType.Foreground][x][maxY].bId === mapEntranceBlockId) {
+    if (mapBlocks.blocks[LayerType.Foreground][x][maxY].bId === mapEntranceBlockId) {
       entrancePositions.push(vec2(x, maxY))
       for (let i = -1; i <= 1; i++) {
         entranceBlocks.push({
@@ -739,7 +750,7 @@ async function replaceEntryWithEntranceBlocks() {
         })
       }
 
-      if (mapEntry.blocks.blocks[LayerType.Foreground][x + 1][maxY].bId !== mapEntranceBlockId) {
+      if (mapBlocks.blocks[LayerType.Foreground][x + 1][maxY].bId !== mapEntranceBlockId) {
         entranceBlocks.push({
           block: cloneDeep(useShiftBotWorldStore().mapEntranceCloseBlock),
           layer: LayerType.Foreground,
@@ -752,7 +763,7 @@ async function replaceEntryWithEntranceBlocks() {
   // Right entrance
   const maxX = mapSize.x - 1
   for (let y = mapSize.y - 2; y >= 0; y--) {
-    if (mapEntry.blocks.blocks[LayerType.Foreground][maxX][y].bId === mapEntranceBlockId) {
+    if (mapBlocks.blocks[LayerType.Foreground][maxX][y].bId === mapEntranceBlockId) {
       entrancePositions.push(vec2(maxX, y))
       for (let i = -1; i <= 1; i++) {
         entranceBlocks.push({
@@ -762,7 +773,7 @@ async function replaceEntryWithEntranceBlocks() {
         })
       }
 
-      if (mapEntry.blocks.blocks[LayerType.Foreground][maxX][y - 1].bId !== mapEntranceBlockId) {
+      if (mapBlocks.blocks[LayerType.Foreground][maxX][y - 1].bId !== mapEntranceBlockId) {
         entranceBlocks.push({
           block: cloneDeep(useShiftBotWorldStore().mapEntranceCloseBlock),
           layer: LayerType.Foreground,
@@ -771,15 +782,21 @@ async function replaceEntryWithEntranceBlocks() {
       }
     }
   }
-
-  useShiftBotRoundStore().entranceCloseBlocks = getEntranceCloseBlocks(entranceBlocks, entrancePositions)
-
-  await placeMultipleBlocks(entranceBlocks)
+  return { entranceBlocks, entrancePositions }
 }
 
 async function adjustMapForRoundStart() {
-  await replaceExitWithCoinBlocks()
-  await replaceEntryWithEntranceBlocks()
+  const coinBlocks = getReplacedExitWithCoinBlocks(
+    useShiftBotRoundStore().currentMapEntry!.blocks,
+    useShiftBotRoundStore().currentMapEntry!.coinCount,
+  )
+  await placeMultipleBlocks(coinBlocks)
+
+  const { entranceBlocks, entrancePositions } = getReplacedEntryWithEntranceBlocks(
+    useShiftBotRoundStore().currentMapEntry!.blocks,
+  )
+  useShiftBotRoundStore().entranceCloseBlocks = getEntranceCloseBlocks(entranceBlocks, entrancePositions)
+  await placeMultipleBlocks(entranceBlocks)
 }
 
 function getRequiredPlayersCountToFinishLevelEarlyToEndRound() {
@@ -920,13 +937,7 @@ async function everySecondShiftBotUpdate() {
         },
       ])
 
-      const start = performance.now()
-
       await clearMapAreaAfterRound()
-
-      const end = performance.now()
-
-      sendGlobalChatMessage(`Map cleared in ${((end - start) / 1000).toFixed(2)} sec`)
 
       for (const playerId of getPlayerIdsInGame()) {
         const player = getPwGameWorldHelper().getPlayer(playerId)!
