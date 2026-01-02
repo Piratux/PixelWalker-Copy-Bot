@@ -28,7 +28,7 @@ import {
   mergeWorldBlocks,
   placeMultipleBlocks,
   placeWorldDataBlocks,
-  placeWorldDataBlocksUsingPattern,
+  placeWorldDataBlocksUsingColumnsLeftToRightPattern,
 } from '@/core/service/WorldService.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { getWorldIdIfUrl } from '@/core/util/WorldIdExtractor.ts'
@@ -609,7 +609,7 @@ async function placeBomBotWorld() {
 async function placeBomBotMap(mapEntry: BomBotMapEntry) {
   sendGlobalChatMessage('Loading map: ' + mapEntry.mapName + ' by ' + mapEntry.authorName)
 
-  await placeWorldDataBlocksUsingPattern(mapEntry.blocks, mapTopLeftPos)
+  await placeWorldDataBlocksUsingColumnsLeftToRightPattern(mapEntry.blocks, mapTopLeftPos)
 }
 
 function getBomBotStructure(bomBotBlocks: DeserialisedStructure, topLeft: vec2, size: vec2, offset: vec2 = vec2(0, 0)) {

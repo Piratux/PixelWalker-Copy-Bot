@@ -20,11 +20,10 @@ import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { sleep } from '@/core/util/Sleep.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { vec2 } from '@basementuniverse/vec'
-import { cloneDeep } from 'lodash-es'
+import { cloneDeep, shuffle } from 'lodash-es'
 import { PWApiClient, PWGameClient } from 'pw-js-api'
 import { authenticate, getAllWorldBlocks, joinWorld } from '@/core/service/PwClientService.ts'
 import { handleException } from '@/core/util/Exception.ts'
-import { clamp } from '@/core/util/Numbers.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { toRaw } from 'vue'
@@ -57,14 +56,12 @@ export async function placeWorldDataBlocks(
   return await placePackets(packets, worldData.width * worldData.height * TOTAL_PW_LAYERS)
 }
 
-export async function placeWorldDataBlocksUsingPattern(
+export async function placeWorldDataBlocksUsingColumnsLeftToRightPattern(
   worldData: DeserialisedStructure,
   pos: Point = vec2(0, 0),
-  blocksPlacedPerPositionSpeed = 50,
 ): Promise<void> {
-  blocksPlacedPerPositionSpeed = clamp(blocksPlacedPerPositionSpeed, 1, 50)
-
-  const delayBetweenPlacementsMs = Math.ceil(1000 / blocksPlacedPerPositionSpeed)
+  const BLOCKS_PLACED_PER_POSITION_SPEED = 50
+  const delayBetweenPlacementsMs = Math.ceil(1000 / BLOCKS_PLACED_PER_POSITION_SPEED)
 
   const worldDataWidth = worldData.width
   const worldDataHeight = worldData.height
@@ -85,6 +82,45 @@ export async function placeWorldDataBlocksUsingPattern(
       await sleep(delayBetweenPlacementsMs)
     }
   }
+}
+
+export async function placeWorldDataBlocksUsingRandomPositionsPattern(
+  blocks: WorldBlock[],
+  maxAirPositionsPerPacket = 200,
+): Promise<void> {
+  const PACKETS_PLACED_PER_POSITION_SPEED = 150
+
+  const delayBetweenPlacementsMs = Math.ceil(1000 / PACKETS_PLACED_PER_POSITION_SPEED)
+
+  const shuffledBlocks = shuffle(blocks)
+  const packets = createBlockPackets(shuffledBlocks)
+  const splitPackets: SendableBlockPacket[] = []
+
+  for (const packet of packets) {
+    let splitPacket: SendableBlockPacket = cloneDeep(packet)
+    splitPacket.positions = []
+    for (const pos of packet.positions) {
+      splitPacket.positions.push(pos)
+      if (packet.blockId !== 0 || splitPacket.positions.length >= maxAirPositionsPerPacket) {
+        splitPackets.push(splitPacket)
+        splitPacket = cloneDeep(packet)
+        splitPacket.positions = []
+      }
+    }
+    if (splitPacket.positions.length > 0) {
+      splitPackets.push(splitPacket)
+    }
+  }
+
+  const randomIndexes = shuffle(Array.from(Array(splitPackets.length).keys()))
+
+  for (const idx of randomIndexes) {
+    placeBlockPacket(splitPackets[idx])
+    await sleep(delayBetweenPlacementsMs)
+  }
+
+  // We are not tracking when packets will be placed, so we do optimistic sleep here to try not to interfere with other block place awaits.
+  await sleep(1000)
 }
 
 export async function placeLayerDataBlocks(

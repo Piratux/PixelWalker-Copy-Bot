@@ -28,6 +28,7 @@ const botTypeItems = [
   { title: 'Copy Bot', value: BotType.COPY_BOT },
   { title: 'BomBot', value: BotType.BOM_BOT },
   { title: 'CurseBot', value: BotType.CURSE_BOT },
+  { title: 'ShiftBot', value: BotType.SHIFT_BOT },
 ]
 const form = ref<VForm>()
 

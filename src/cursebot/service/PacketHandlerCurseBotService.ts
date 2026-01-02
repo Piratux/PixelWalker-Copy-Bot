@@ -624,7 +624,6 @@ async function everySecondCurseBotUpdate() {
       }
 
       setCurseBotState(CurseBotState.WAITING_FOR_ALL_PLAYERS_TO_BE_TELEPORTED_TO_MAP)
-      useCurseBotRoundStore().playersThatWereSelectedForRoundStart = activePlayers
 
       break
     }

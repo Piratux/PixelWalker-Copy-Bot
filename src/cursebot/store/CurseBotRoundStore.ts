@@ -4,7 +4,6 @@ import { Player } from 'pw-js-world'
 
 export const useCurseBotRoundStore = defineStore('CurseBotRoundStore', () => {
   const playersInGame = ref<Player[]>([])
-  const playersThatWereSelectedForRoundStart = ref<Player[]>([])
   const waitingForMorePlayersMessagePrintedOnce = ref<boolean>(false)
   const secondsPassedInCountingDownToRemoveNoSpeedState = ref<number>(0)
   const secondsPassedInWaitingForAllPlayersToBeTeleportedToMapState = ref<number>(0)
@@ -15,7 +14,6 @@ export const useCurseBotRoundStore = defineStore('CurseBotRoundStore', () => {
 
   return {
     playersInGame,
-    playersThatWereSelectedForRoundStart,
     waitingForMorePlayersMessagePrintedOnce,
     secondsPassedInCountingDownToRemoveNoSpeedState,
     secondsPassedInWaitingForAllPlayersToBeTeleportedToMapState,

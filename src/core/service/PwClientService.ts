@@ -1,4 +1,4 @@
-import { ListBlockResult, PWApiClient, PWGameClient } from 'pw-js-api'
+import { ListBlockResult, ProtoGen, PWApiClient, PWGameClient } from 'pw-js-api'
 import { GENERIC_CHAT_ERROR, TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { Block, DeserialisedStructure, PWGameWorldHelper } from 'pw-js-world'
 import { placeWorldDataBlocks } from '@/core/service/WorldService.ts'
@@ -19,6 +19,7 @@ import { TimeoutError, workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { createFailedToJoinWorldErrorString } from '@/copybot/service/CopyBotErrorService.ts'
 import { registerCurseBotCallbacks } from '@/cursebot/service/PacketHandlerCurseBotService.ts'
 import { toRaw } from 'vue'
+import { registerShiftBotCallbacks } from '@/shiftbot/service/PacketHandlerShiftBotService.ts'
 
 export async function authenticate(pwApiClient: PWApiClient): Promise<void> {
   const authenticationResult = await pwApiClient.authenticate()
@@ -116,6 +117,8 @@ export async function initPwClasses(
     registerBomBotCallbacks()
   } else if (botType === BotType.CURSE_BOT) {
     registerCurseBotCallbacks()
+  } else if (botType === BotType.SHIFT_BOT) {
+    registerShiftBotCallbacks()
   }
 
   await joinWorld(getPwGameClient(), usePwClientStore().worldId)
@@ -264,5 +267,21 @@ export function handlePlaceBlocksResult(success: boolean): void {
     AlertService.success(message)
   } else {
     throw new GameError('Failed to place all blocks.')
+  }
+}
+
+export function updateAwaitedWorldBlockPlacedPackets(data: ProtoGen.WorldBlockPlacedPacket) {
+  // Not really reliable, but good enough
+  if (usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket > 0) {
+    usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket -= data.positions.length
+    if (usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket <= 0) {
+      usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket = 0
+    }
+
+    const sortedPositions = data.positions
+      .map((pos) => ({ x: pos.x, y: pos.y }))
+      .sort((a, b) => (a.x !== b.x ? a.x - b.x : a.y - b.y))
+    const packetKey = JSON.stringify({ blockId: data.blockId, positions: sortedPositions })
+    usePwClientStore().unsuccessfullyPlacedBlockPackets.delete(packetKey)
   }
 }

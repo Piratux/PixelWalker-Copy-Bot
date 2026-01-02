@@ -5,7 +5,6 @@ import {
   getPwBotType,
   getPwGameClient,
   getPwGameWorldHelper,
-  usePwClientStore,
 } from '@/core/store/PwClientStore.ts'
 import { Block, IPlayer, LayerType, Point } from 'pw-js-world'
 import { cloneDeep, isEqual } from 'lodash-es'
@@ -40,6 +39,7 @@ import {
   handlePlaceBlocksResult,
   hotReloadCallbacks,
   requirePlayerAndBotEditPermission,
+  updateAwaitedWorldBlockPlacedPackets,
 } from '@/core/service/PwClientService.ts'
 import { isDeveloper, isWorldOwner, requireDeveloper } from '@/core/util/Environment.ts'
 import { getWorldIdIfUrl } from '@/core/util/WorldIdExtractor.ts'
@@ -1153,27 +1153,11 @@ export function selectBlocks(botData: CopyBotData, blockPos: Point, playerId: nu
   sendPrivateChatMessage(`Selected ${selectedTypeText} x: ${blockPos.x} y: ${blockPos.y}`, playerId)
 }
 
-function updateWorldImportFinished(data: ProtoGen.WorldBlockPlacedPacket) {
-  // Not really reliable, but good enough
-  if (usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket > 0) {
-    usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket -= data.positions.length
-    if (usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket <= 0) {
-      usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket = 0
-    }
-
-    const sortedPositions = data.positions
-      .map((pos) => ({ x: pos.x, y: pos.y }))
-      .sort((a, b) => (a.x !== b.x ? a.x - b.x : a.y - b.y))
-    const packetKey = JSON.stringify({ blockId: data.blockId, positions: sortedPositions })
-    usePwClientStore().unsuccessfullyPlacedBlockPackets.delete(packetKey)
-  }
-}
-
 function worldBlockPlacedPacketReceived(
   data: ProtoGen.WorldBlockPlacedPacket,
   states?: { player: IPlayer | undefined; oldBlocks: Block[]; newBlocks: Block[] },
 ) {
-  updateWorldImportFinished(data)
+  updateAwaitedWorldBlockPlacedPackets(data)
 
   if (data.playerId === getPwGameWorldHelper().botPlayerId) {
     return
