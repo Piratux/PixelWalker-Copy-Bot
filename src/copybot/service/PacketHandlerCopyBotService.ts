@@ -62,6 +62,7 @@ import { getImportedFromEelvlData } from '@/webtool/eelvl/service/EelvlImporterS
 import { bufferToArrayBuffer } from '@/core/util/Buffers.ts'
 import { colourToUint32, uint32ToColour } from '@/core/util/Colours.ts'
 import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
+import { modulo } from '@/core/util/Modulo.ts'
 
 const callbacks: CallbackEntry[] = [
   { name: 'playerInitPacket', fn: commonPlayerInitPacketReceived },
@@ -944,6 +945,10 @@ function applySmartTransformForPortalBlock(
   blockCopy.block.args[argName] = portalId
 }
 
+function applyWrapForTimeDoorBlockOffsetAttribute(blockCopy: WorldBlock) {
+  blockCopy.block.args.offset = modulo(blockCopy.block.args.offset as number, (blockCopy.block.args.time as number) * 2)
+}
+
 function applySmartTransformForBlocks(
   pastedBlocks: WorldBlock[],
   pastePosBlocks: WorldBlock[],
@@ -972,6 +977,10 @@ function applySmartTransformForBlocks(
         } else if (blockArgType.Type === 'Int32') {
           applySmartTransformForBlockWithIntArgument(pastePosBlock, nextBlockX, argName, blockCopy, repetitionX)
           applySmartTransformForBlockWithIntArgument(pastePosBlock, nextBlockY, argName, blockCopy, repetitionY)
+
+          if ((pastePosBlock.block.name as PwBlockName) === PwBlockName.TIME_DOOR) {
+            applyWrapForTimeDoorBlockOffsetAttribute(blockCopy)
+          }
         }
       }
     }

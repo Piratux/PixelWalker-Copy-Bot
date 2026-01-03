@@ -620,4 +620,84 @@ describe.sequential('.smartpaste', () => {
       })
     }).rejects.toThrowError(new GameError(createColourOutOfBoundsErrorString({ r: 0x8, g: 0x10f, b: 0xb2 }), playerId))
   })
+
+  test('.smartpaste 3 1 (time doors overflow wrap)', async () => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    const inputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 310, hideClock: false }),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 360, hideClock: false }),
+      },
+    ]
+    const expectedOutputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 310, hideClock: false }),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 360, hideClock: false }),
+      },
+      {
+        pos: vec2(2, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 10, hideClock: false }),
+      },
+    ]
+    await runSelectCommandTest(
+      inputBlocks,
+      expectedOutputBlocks,
+      vec2(0, 0),
+      vec2(0, 0),
+      async () => await commandReceived('.smartpaste 3 1', playerId),
+    )
+  })
+
+  test('.smartpaste 3 1 (time doors underflow wrap)', async () => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    const inputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 60, hideClock: false }),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 10, hideClock: false }),
+      },
+    ]
+    const expectedOutputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 60, hideClock: false }),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 10, hideClock: false }),
+      },
+      {
+        pos: vec2(2, 0),
+        layer: LayerType.Foreground,
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 360, hideClock: false }),
+      },
+    ]
+    await runSelectCommandTest(
+      inputBlocks,
+      expectedOutputBlocks,
+      vec2(0, 0),
+      vec2(0, 0),
+      async () => await commandReceived('.smartpaste 3 1', playerId),
+    )
+  })
 })
