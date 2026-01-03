@@ -29,7 +29,7 @@ function updatePortalDataItems() {
     for (let y = 0; y < height; y++) {
       const block = blocks[LayerType.Foreground][x][y]
       if (blockIsPortal(block.name)) {
-        const fromIdToTargetId = `${block.args[0] as string} -> ${block.args[1] as string}`
+        const fromIdToTargetId = `${block.args.portal_id as string} -> ${block.args.target_id as string}`
         mapGetOrInsert(portalMap, fromIdToTargetId, []).push(vec2(x, y))
       }
     }
