@@ -6,7 +6,11 @@ import { vec2 } from '@basementuniverse/vec'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { runSelectCommandTest } from '@/test/RuntimeTestsUtil.ts'
 import { commandReceived } from '@/copybot/service/PacketHandlerCopyBotService.ts'
-import { createFailedToJoinWorldErrorString } from '@/copybot/service/CopyBotErrorService.ts'
+import {
+  createFailedToJoinWorldErrorString,
+  createImportCommandDestinationAreaOutOfBoundsError,
+  createImportCommandSourceAreaOutOfBoundsError,
+} from '@/copybot/service/CopyBotErrorService.ts'
 import { GameError } from '@/core/class/GameError.ts'
 
 describe.sequential('.import', () => {
@@ -71,5 +75,37 @@ describe.sequential('.import', () => {
     await expect(async () => {
       await commandReceived('.import a', playerId)
     }).rejects.toThrowError(GameError)
+  })
+
+  test('.import (partial import too big area selected)', async () => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    await expect(async () => {
+      await commandReceived('.import 8nqftm1t0j43121 0 0 25 24 0 0', playerId)
+    }).rejects.toThrowError(createImportCommandSourceAreaOutOfBoundsError(playerId, 0, 0, 25, 24, 0, 0, 24, 24))
+    await expect(async () => {
+      await commandReceived('.import 8nqftm1t0j43121 0 0 24 25 0 0', playerId)
+    }).rejects.toThrowError(createImportCommandSourceAreaOutOfBoundsError(playerId, 0, 0, 24, 25, 0, 0, 24, 24))
+    await expect(async () => {
+      await commandReceived('.import 8nqftm1t0j43121 -1 0 24 24 0 0', playerId)
+    }).rejects.toThrowError(createImportCommandSourceAreaOutOfBoundsError(playerId, -1, 0, 24, 24, 0, 0, 24, 24))
+    await expect(async () => {
+      await commandReceived('.import 8nqftm1t0j43121 0 -1 24 24 0 0', playerId)
+    }).rejects.toThrowError(createImportCommandSourceAreaOutOfBoundsError(playerId, 0, -1, 24, 24, 0, 0, 24, 24))
+  })
+
+  test('.import (partial import destination area too big)', async () => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    await expect(async () => {
+      await commandReceived('.import 8nqftm1t0j43121 0 0 24 24 -1 0', playerId)
+    }).rejects.toThrowError(createImportCommandDestinationAreaOutOfBoundsError(playerId, -1, 0, 25, 25))
+    await expect(async () => {
+      await commandReceived('.import 8nqftm1t0j43121 0 0 24 24 0 -1', playerId)
+    }).rejects.toThrowError(createImportCommandDestinationAreaOutOfBoundsError(playerId, 0, -1, 25, 25))
+    await expect(async () => {
+      await commandReceived('.import 8nqftm1t0j43121 0 0 24 24 176 175', playerId)
+    }).rejects.toThrowError(createImportCommandDestinationAreaOutOfBoundsError(playerId, 176, 175, 25, 25))
+    await expect(async () => {
+      await commandReceived('.import 8nqftm1t0j43121 0 0 24 24 175 176', playerId)
+    }).rejects.toThrowError(createImportCommandDestinationAreaOutOfBoundsError(playerId, 175, 176, 25, 25))
   })
 })

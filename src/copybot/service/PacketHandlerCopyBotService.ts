@@ -52,6 +52,8 @@ import { CopyBotCommandName } from '@/copybot/enum/CopyBotCommandName.ts'
 import { CopyBotMaskCommandMode } from '@/copybot/enum/CopyBotMaskCommandMode.ts'
 import {
   createColourOutOfBoundsErrorString,
+  createImportCommandDestinationAreaOutOfBoundsError,
+  createImportCommandSourceAreaOutOfBoundsError,
   createPortalIdTooLongErrorString,
   createUnrecognisedMaskModeError,
 } from '@/copybot/service/CopyBotErrorService.ts'
@@ -334,10 +336,7 @@ async function importCommandReceived(args: string[], playerId: number) {
     const pasteSizeX = srcToX - srcFromX + 1
     const pasteSizeY = srcToY - srcFromY + 1
     if (destToX < 0 || destToY < 0 || destToX + pasteSizeX > mapWidth || destToY + pasteSizeY > mapHeight) {
-      throw new GameError(
-        `Pasted area would be placed at pos (${destToX}, ${destToY}) with size (${pasteSizeX}, ${pasteSizeY}), but that's outside world bounds`,
-        playerId,
-      )
+      throw createImportCommandDestinationAreaOutOfBoundsError(playerId, destToX, destToY, pasteSizeX, pasteSizeY)
     }
 
     // Allow specifying any 2 corners of source area
@@ -348,6 +347,25 @@ async function importCommandReceived(args: string[], playerId: number) {
     if (srcFromY > srcToY) {
       ;[srcFromY, srcToY] = [srcToY, srcFromY]
       destToY = destToY - (srcToY - srcFromY)
+    }
+
+    if (
+      srcFromX < 0 ||
+      srcFromY < 0 ||
+      srcToX + 1 > blocksFromAnotherWorld.width ||
+      srcToY + 1 > blocksFromAnotherWorld.height
+    ) {
+      throw createImportCommandSourceAreaOutOfBoundsError(
+        playerId,
+        srcFromX,
+        srcFromY,
+        srcToX,
+        srcToY,
+        0,
+        0,
+        blocksFromAnotherWorld.width - 1,
+        blocksFromAnotherWorld.height - 1,
+      )
     }
 
     const partialBlocks = getDeserialisedStructureSection(blocksFromAnotherWorld, srcFromX, srcFromY, srcToX, srcToY)

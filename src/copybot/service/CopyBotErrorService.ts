@@ -19,3 +19,33 @@ export function createColourOutOfBoundsErrorString(colour: Colour): string {
 export function createFailedToJoinWorldErrorString(worldId: string): string {
   return `Failed to join world with ID '${worldId}'.`
 }
+
+export function createImportCommandSourceAreaOutOfBoundsError(
+  playerId: number,
+  srcFromX: number,
+  srcFromY: number,
+  srcToX: number,
+  srcToY: number,
+  minSrcFromX: number,
+  minSrcFromY: number,
+  maxSrcToX: number,
+  maxSrcToY: number,
+): GameError {
+  return new GameError(
+    `Invalid specified source bounds. Entered bounds were '${srcFromX} ${srcFromY} ${srcToX} ${srcToY}', but maximum allowed bounds are '${minSrcFromX} ${minSrcFromY} ${maxSrcToX} ${maxSrcToY}'.`,
+    playerId,
+  )
+}
+
+export function createImportCommandDestinationAreaOutOfBoundsError(
+  playerId: number,
+  destToX: number,
+  destToY: number,
+  pasteSizeX: number,
+  pasteSizeY: number,
+): GameError {
+  return new GameError(
+    `Pasted area would be placed at pos (${destToX}, ${destToY}) with size (${pasteSizeX}, ${pasteSizeY}), but that's outside world bounds`,
+    playerId,
+  )
+}
