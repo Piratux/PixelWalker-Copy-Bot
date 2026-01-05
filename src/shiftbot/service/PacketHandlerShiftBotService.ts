@@ -624,7 +624,7 @@ function resetBotState() {
 }
 
 async function clearMapAreaAfterRound() {
-  await placeWorldDataBlocksUsingRandomPositionsPattern(useShiftBotWorldStore().mapRoundClearBlocks, 6)
+  await placeWorldDataBlocksUsingRandomPositionsPattern(useShiftBotWorldStore().mapRoundClearBlocks, 8)
 }
 
 function getLevelDifficultyForNextRound() {

@@ -88,9 +88,9 @@ export async function placeWorldDataBlocksUsingRandomPositionsPattern(
   blocks: WorldBlock[],
   maxAirPositionsPerPacket = 200,
 ): Promise<void> {
-  const PACKETS_PLACED_PER_POSITION_SPEED = 150
+  const PACKET_BATCHES_PLACED_PER_SECOND_SPEED = 20
 
-  const delayBetweenPlacementsMs = Math.ceil(1000 / PACKETS_PLACED_PER_POSITION_SPEED)
+  const delayBetweenPlacementsMs = Math.ceil(1000 / PACKET_BATCHES_PLACED_PER_SECOND_SPEED)
 
   const shuffledBlocks = shuffle(blocks)
   const packets = createBlockPackets(shuffledBlocks)
@@ -114,9 +114,15 @@ export async function placeWorldDataBlocksUsingRandomPositionsPattern(
 
   const randomIndexes = shuffle(Array.from(Array(splitPackets.length).keys()))
 
-  for (const idx of randomIndexes) {
+  const TOTAL_PACKETS_TO_PLACE_PER_BATCH = 10
+
+  // This batch mechanism is only needed because short sleeps (<10ms) take too long (take roughly ~20ms).
+  for (let i = 0; i < randomIndexes.length; i++) {
+    const idx = randomIndexes[i]
     placeBlockPacket(splitPackets[idx])
-    await sleep(delayBetweenPlacementsMs)
+    if (i % TOTAL_PACKETS_TO_PLACE_PER_BATCH === 0) {
+      await sleep(delayBetweenPlacementsMs)
+    }
   }
 
   // We are not tracking when packets will be placed, so we do optimistic sleep here to try not to interfere with other block place awaits.
