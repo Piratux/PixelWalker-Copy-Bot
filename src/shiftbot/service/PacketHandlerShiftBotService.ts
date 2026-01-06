@@ -160,18 +160,6 @@ function getPlayerIdsWhoCompletedLevel() {
   })
 }
 
-function checkIfRequiredFractionOfPlayersCompletedLevel(data: ProtoGen.PlayerTeamUpdatePacket) {
-  if (useShiftBotWorldStore().currentState === ShiftBotState.PLAYING && data.teamId === TEAM_YELLOW) {
-    const totalCompleted = getPlayerIdsWhoCompletedLevel()
-    const totalCompletedCount = totalCompleted.length
-
-    if (totalCompletedCount >= getRequiredPlayersCountToFinishLevelEarlyToEndRound()) {
-      sendGlobalChatMessage(`Round over! Players not finished are eliminated.`)
-      setShiftBotState(ShiftBotState.ROUND_FINISHED)
-    }
-  }
-}
-
 function checkIfPlayerTouchedRedTeamToDisqualify(data: ProtoGen.PlayerTeamUpdatePacket) {
   if (
     ![ShiftBotState.PREPARING_FOR_FIRST_ROUND, ShiftBotState.ROUND_START].includes(
@@ -197,12 +185,26 @@ function checkIfPlayerCompletedLevel(data: ProtoGen.PlayerTeamUpdatePacket) {
       return
     }
 
+    const totalCompleted = getPlayerIdsWhoCompletedLevel()
+    const totalCompletedCount = totalCompleted.length
+
+    const lastPlayerCompletedLevel = totalCompletedCount >= getRequiredPlayersCountToFinishLevelEarlyToEndRound()
+
     if (!useShiftBotRoundStore().atLeastOnePlayerCompletedLevel) {
       useShiftBotRoundStore().timestampInMsWhenFirstPlayerCompletedLevel = performance.now()
       useShiftBotRoundStore().atLeastOnePlayerCompletedLevel = true
-      sendGlobalChatMessage(
-        `${player.username.toUpperCase()} finished. ${WAIT_TIME_BEFORE_ROUND_ENDS_AFTER_FIRST_WINNER_MS / 1000} seconds left!`,
-      )
+      if (lastPlayerCompletedLevel) {
+        sendGlobalChatMessage(`${player.username.toUpperCase()} finished.`)
+      } else {
+        sendGlobalChatMessage(
+          `${player.username.toUpperCase()} finished. ${WAIT_TIME_BEFORE_ROUND_ENDS_AFTER_FIRST_WINNER_MS / 1000} seconds left!`,
+        )
+      }
+    }
+
+    if (lastPlayerCompletedLevel) {
+      sendGlobalChatMessage(`Round over! Players not finished are eliminated.`)
+      setShiftBotState(ShiftBotState.ROUND_FINISHED)
     }
   }
 }
@@ -210,7 +212,6 @@ function checkIfPlayerCompletedLevel(data: ProtoGen.PlayerTeamUpdatePacket) {
 function playerTeamUpdatePacketReceived(data: ProtoGen.PlayerTeamUpdatePacket) {
   checkIfPlayerTeleportedToMap(data)
   checkIfPlayerCompletedLevel(data)
-  checkIfRequiredFractionOfPlayersCompletedLevel(data)
   checkIfPlayerTouchedRedTeamToDisqualify(data)
 }
 
