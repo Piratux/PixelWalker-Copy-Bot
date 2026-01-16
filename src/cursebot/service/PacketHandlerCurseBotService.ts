@@ -101,19 +101,23 @@ function handleCurseBotError(e: unknown) {
   handleException(e)
 }
 
+function giveAnotherPlayerCurseIfNeeded(playerId: number) {
+  if (
+    (useCurseBotWorldStore().currentState === CurseBotState.PLAYING ||
+      useCurseBotWorldStore().currentState === CurseBotState.COUNTING_DOWN_TO_REMOVE_NO_SPEED) &&
+    playerId === useCurseBotRoundStore().lastPlayerIdWithCurseEffect
+  ) {
+    const curseLength = CURSE_LENGTH_MS - (performance.now() - useCurseBotRoundStore().timestampInMsWhenCursePickedUp)
+    givePlayerCurse(getRandomPlayerInGame().playerId, curseLength)
+  }
+}
+
 function disqualifyPlayerFromRound(playerId: number) {
   if (getPlayerIdsInGame().includes(playerId)) {
     removePlayerFromPlayersInGame(playerId)
     sendRawMessage(`/team #${playerId} ${TEAM_NONE}`)
 
-    if (
-      (useCurseBotWorldStore().currentState === CurseBotState.PLAYING ||
-        useCurseBotWorldStore().currentState === CurseBotState.COUNTING_DOWN_TO_REMOVE_NO_SPEED) &&
-      playerId === useCurseBotRoundStore().lastPlayerIdWithCurseEffect
-    ) {
-      const curseLength = CURSE_LENGTH_MS - (performance.now() - useCurseBotRoundStore().timestampInMsWhenCursePickedUp)
-      givePlayerCurse(getRandomPlayerInGame().playerId, curseLength)
-    }
+    giveAnotherPlayerCurseIfNeeded(playerId)
   }
 }
 
@@ -544,6 +548,8 @@ function givePlayerCurse(playerId: number, curseLengthMs: number) {
 
   sendRawMessage(`/giveeffect #${playerId} curse ${curseLengthMs}`)
   sendGlobalChatMessage(`${getPwGameWorldHelper().getPlayer(playerId)?.username} has been cursed! Steal their curse!`)
+
+  useCurseBotRoundStore().lastPlayerIdWithCurseEffect = playerId
 }
 
 function resetBotState() {
@@ -650,12 +656,14 @@ async function everySecondCurseBotUpdate() {
         const curseStartPos = vec2(25, 188)
         sendRawMessage(`/tp #${randomPlayerId} ${curseStartPos.x} ${curseStartPos.y}`)
         useCurseBotRoundStore().lastPlayerIdWithCurseEffect = randomPlayerId
+
+        // This is intentionally initialised early
+        useCurseBotRoundStore().timestampInMsWhenCursePickedUp = performance.now()
       }
 
       // We need to give player curse after a short delay after teleporting, otherwise they may transfer it to other starting players
       if (useCurseBotRoundStore().secondsPassedInCountingDownToRemoveNoSpeedState === 3) {
         givePlayerCurse(useCurseBotRoundStore().lastPlayerIdWithCurseEffect, CURSE_LENGTH_MS)
-        useCurseBotRoundStore().timestampInMsWhenCursePickedUp = performance.now()
       }
       break
     }
@@ -708,7 +716,9 @@ async function everySecondCurseBotUpdate() {
 function disqualifyPlayerFromRoundBecauseAfk(playerId: number) {
   const afkPos = vec2(7, 195)
   sendRawMessage(`/tp #${playerId} ${afkPos.x} ${afkPos.y}`)
+  sendRawMessage(`/cleareffects #${playerId}`) // remove curse
   makePlayerAfk(playerId)
+  giveAnotherPlayerCurseIfNeeded(playerId)
 }
 
 function makePlayerAfk(playerId: number) {
