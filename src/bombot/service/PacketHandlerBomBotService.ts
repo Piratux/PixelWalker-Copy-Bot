@@ -1122,11 +1122,9 @@ async function everySecondBomBotUpdate() {
         }
       }
 
-      if (
-        !playerIdsInGame.includes(useBomBotRoundStore().bomberPlayerId) ||
-        useBomBotRoundStore().secondsSpentByBomber >= mapSize.x
-      ) {
-        if (useBomBotRoundStore().bomberPlayerId !== 0) {
+      const bomberDidNotPlaceBombInTime = useBomBotRoundStore().secondsSpentByBomber >= mapSize.x
+      if (!playerIdsInGame.includes(useBomBotRoundStore().bomberPlayerId) || bomberDidNotPlaceBombInTime) {
+        if (useBomBotRoundStore().bomberPlayerId !== 0 && bomberDidNotPlaceBombInTime) {
           disqualifyPlayerFromRoundBecauseAfk(useBomBotRoundStore().bomberPlayerId)
         }
 
