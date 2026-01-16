@@ -737,7 +737,7 @@ function loadMaps(bomBotBlocks: DeserialisedStructure) {
 
       const mapInfoSignPos = vec2.add(sectionTopLeft, mapInfoSignOffset)
       const mapInfoSignBlock = bomBotBlocks.blocks[LayerType.Foreground][mapInfoSignPos.x][mapInfoSignPos.y]
-      const signBlockText = mapInfoSignBlock.args[0] as string
+      const signBlockText = mapInfoSignBlock.args.text as string
       const signBlockTextLines = signBlockText.split('\n')
       const mapName = signBlockTextLines[0].trim()
       const authorName = signBlockTextLines[2].trim()
@@ -868,12 +868,12 @@ function getActivePlayerCount() {
 }
 
 function getPlayerIdsInGame() {
-  console.log('useBomBotRoundStore().playersInGame: ', useBomBotRoundStore().playersInGame)
+  // console.log('useBomBotRoundStore().playersInGame: ', useBomBotRoundStore().playersInGame)
   return useBomBotRoundStore().playersInGame.map((p) => p.playerId)
 }
 
 function playerWinRound(playerId: number) {
-  console.log('Round finished')
+  // console.log('Round finished')
   const winPos = vec2(55, 58)
   sendRawMessage(`/tp #${playerId} ${winPos.x} ${winPos.y}`)
   sendRawMessage(`/givecrown #${playerId}`)
@@ -927,14 +927,14 @@ function abandonRoundDueToNoPlayersLeft() {
 function selectRandomBomber(): number {
   const playerIdsInGame = getPlayerIdsInGame()
 
-  console.log(
-    'useBomBotRoundStore().playerIdsBomberQueueOriginal (before): ',
-    useBomBotRoundStore().playerIdsBomberQueueOriginal,
-  )
-  console.log(
-    'useBomBotRoundStore().playerIdsBomberQueueRemainder (before): ',
-    useBomBotRoundStore().playerIdsBomberQueueRemainder,
-  )
+  // console.log(
+  //   'useBomBotRoundStore().playerIdsBomberQueueOriginal (before): ',
+  //   useBomBotRoundStore().playerIdsBomberQueueOriginal,
+  // )
+  // console.log(
+  //   'useBomBotRoundStore().playerIdsBomberQueueRemainder (before): ',
+  //   useBomBotRoundStore().playerIdsBomberQueueRemainder,
+  // )
 
   if (useBomBotRoundStore().playerIdsBomberQueueOriginal.length === 0) {
     useBomBotRoundStore().playerIdsBomberQueueOriginal = shuffle(cloneDeep(playerIdsInGame))
@@ -944,14 +944,14 @@ function selectRandomBomber(): number {
     useBomBotRoundStore().playerIdsBomberQueueRemainder = cloneDeep(useBomBotRoundStore().playerIdsBomberQueueOriginal)
   }
 
-  console.log(
-    'useBomBotRoundStore().playerIdsBomberQueueOriginal (after): ',
-    useBomBotRoundStore().playerIdsBomberQueueOriginal,
-  )
-  console.log(
-    'useBomBotRoundStore().playerIdsBomberQueueRemainder (after): ',
-    useBomBotRoundStore().playerIdsBomberQueueRemainder,
-  )
+  // console.log(
+  //   'useBomBotRoundStore().playerIdsBomberQueueOriginal (after): ',
+  //   useBomBotRoundStore().playerIdsBomberQueueOriginal,
+  // )
+  // console.log(
+  //   'useBomBotRoundStore().playerIdsBomberQueueRemainder (after): ',
+  //   useBomBotRoundStore().playerIdsBomberQueueRemainder,
+  // )
 
   return useBomBotRoundStore().playerIdsBomberQueueRemainder.pop()!
 }
@@ -1139,13 +1139,13 @@ async function everySecondBomBotUpdate() {
         }
 
         useBomBotRoundStore().bomberPlayerId = selectRandomBomber()
-        console.log(
-          'Selected bomber: ' +
-            useBomBotRoundStore().bomberPlayerId +
-            ' (' +
-            getPwGameWorldHelper().getPlayer(useBomBotRoundStore().bomberPlayerId)?.username +
-            ')',
-        )
+        // console.log(
+        //   'Selected bomber: ' +
+        //     useBomBotRoundStore().bomberPlayerId +
+        //     ' (' +
+        //     getPwGameWorldHelper().getPlayer(useBomBotRoundStore().bomberPlayerId)?.username +
+        //     ')',
+        // )
         sendRawMessage(
           `/tp #${useBomBotRoundStore().bomberPlayerId} ${bomberAreaTopLeft.x + getRandomInt(0, mapSize.x)} ${bomberAreaTopLeft.y}`,
         )
@@ -1396,7 +1396,7 @@ function isBomBotMapValid(
     bomBotBlocks.blocks[LayerType.Foreground][sectionTopLeft.x + mapInfoSignOffset.x][
       sectionTopLeft.y + mapInfoSignOffset.y
     ]
-  const signBlockText = mapInfoSignBlock.args[0] as string
+  const signBlockText = mapInfoSignBlock.args.text as string
   const signBlockTextLines = signBlockText.split('\n')
   const mapInfoSignHasAllInfo = signBlockTextLines.length == 3
   if (!mapInfoSignHasAllInfo) {

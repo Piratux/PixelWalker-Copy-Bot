@@ -57,7 +57,7 @@ export function handleException(exception: unknown): void {
     printGameErrorMessageInChat(gameError)
   } else if (errorFromPwPacket) {
     printGenericErrorMessageInChat()
-    console.error(exception)
+    console.error(errorFromPwPacket)
   } else if (exception instanceof Error) {
     console.error(exception)
     AlertService.error(exception.message)
