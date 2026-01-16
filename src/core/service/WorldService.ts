@@ -82,6 +82,9 @@ export async function placeWorldDataBlocksUsingColumnsLeftToRightPattern(
       await sleep(delayBetweenPlacementsMs)
     }
   }
+
+  // We are not tracking when packets will be placed, so we do optimistic sleep here to try not to interfere with other block place awaits.
+  await sleep(1000)
 }
 
 export async function placeWorldDataBlocksUsingRandomPositionsPattern(
