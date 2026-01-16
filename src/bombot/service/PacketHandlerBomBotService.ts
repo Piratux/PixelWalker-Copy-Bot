@@ -13,6 +13,7 @@ import {
   handlePlaceBlocksResult,
   hotReloadCallbacks,
   requirePlayerAndBotEditPermission,
+  updateAwaitedWorldBlockPlacedPackets,
 } from '@/core/service/PwClientService.ts'
 import { isDeveloper, isWorldOwner, requireDeveloper, requireWorldOwner } from '@/core/util/Environment.ts'
 import { vec2 } from '@basementuniverse/vec'
@@ -80,6 +81,7 @@ const callbacks: CallbackEntry[] = [
   { name: 'playerCountersUpdatePacket', fn: playerCountersUpdatePacketReceived },
   { name: 'playerLeftPacket', fn: playerLeftPacketReceived },
   { name: 'playerMovedPacket', fn: playerMovedPacketReceived },
+  { name: 'worldBlockPlacedPacket', fn: updateAwaitedWorldBlockPlacedPackets },
 ]
 
 export function registerBomBotCallbacks() {

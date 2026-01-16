@@ -6,6 +6,7 @@ import {
   commonPlayerInitPacketReceived,
   hotReloadCallbacks,
   requirePlayerAndBotEditPermission,
+  updateAwaitedWorldBlockPlacedPackets,
 } from '@/core/service/PwClientService.ts'
 import { isDeveloper, isWorldOwner, requireWorldOwner } from '@/core/util/Environment.ts'
 import { vec2 } from '@basementuniverse/vec'
@@ -57,6 +58,7 @@ const callbacks: CallbackEntry[] = [
   { name: 'playerLeftPacket', fn: playerLeftPacketReceived },
   { name: 'playerAddEffectPacket', fn: playerAddEffectPacketReceived },
   { name: 'playerCountersUpdatePacket', fn: playerCountersUpdatePacketReceived },
+  { name: 'worldBlockPlacedPacket', fn: updateAwaitedWorldBlockPlacedPackets },
 ]
 
 export function registerCurseBotCallbacks() {
