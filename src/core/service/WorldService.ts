@@ -390,7 +390,7 @@ export function getDeserialisedStructureSectionVec2(
 
 export function applyPosOffsetForBlocks(offsetPos: Point, worldBlocks: WorldBlock[]) {
   return worldBlocks.map((worldBlock) => {
-    const clonedBlock = cloneDeep(worldBlock)
+    const clonedBlock = cloneDeep(toRaw(worldBlock))
     clonedBlock.pos = vec2.add(clonedBlock.pos, offsetPos)
     return clonedBlock
   })

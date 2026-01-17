@@ -1113,7 +1113,7 @@ export async function pasteBlocks(botData: CopyBotData, blockPos: Point) {
         if (botData.smartRepeatEnabled) {
           finalBlocks = applySmartTransformForBlocks(finalBlocks, pastePosBlocks, nextBlocksX, nextBlocksY, x, y)
         }
-        allBlocks = allBlocks.concat(finalBlocks)
+        allBlocks.push(...finalBlocks)
       }
     }
 

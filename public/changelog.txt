@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2026-01-17 Version 1.17.4
+- Bot: Reduced amount of time it takes to place large quantities of blocks.
+
 2026-01-03 Version 1.17.3
 - Website: Fix portal id and target id not showing properly in portal list page.
 - Bot: Wrap offset argument for time door blocks when using .smartpaste command.
