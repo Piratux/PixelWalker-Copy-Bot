@@ -991,10 +991,7 @@ function disqualifyPlayerFromRoundBecauseAfk(playerId: number) {
 function makePlayerAfk(playerId: number) {
   sendRawMessage(`/team #${playerId} ${TEAM_RED}`)
   removePlayerFromPlayersInGame(playerId)
-  sendPrivateChatMessage(
-    'You are now marked as AFK. You can move at any time to unmark yourself or type .afk again',
-    playerId,
-  )
+  sendPrivateChatMessage('You are now marked as AFK. You can type .afk to unmark yourself.', playerId)
 }
 
 async function autoRestartShiftBot() {
