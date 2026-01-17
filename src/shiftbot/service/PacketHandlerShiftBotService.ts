@@ -444,22 +444,22 @@ async function loadShiftBotData() {
 
   {
     const totalMapCount = vec2(24, 5)
-    const mapSpacing = vec2.add(mapSize, vec2(0, 0))
+    const mapSpacing = vec2.add(mapSize, vec2(1, 1))
     const topLeftMapOffset = vec2(1, 1)
 
     loadMaps(shiftBotBlocks, ShiftBotLevelDifficulty.EASY, totalMapCount, mapSize, mapSpacing, topLeftMapOffset)
   }
   {
     const totalMapCount = vec2(24, 5)
-    const mapSpacing = vec2.add(mapSize, vec2(0, 0))
-    const topLeftMapOffset = vec2(1, 136)
+    const mapSpacing = vec2.add(mapSize, vec2(1, 1))
+    const topLeftMapOffset = vec2(1, 141)
 
     loadMaps(shiftBotBlocks, ShiftBotLevelDifficulty.MEDIUM, totalMapCount, mapSize, mapSpacing, topLeftMapOffset)
   }
   {
     const totalMapCount = vec2(24, 5)
-    const mapSpacing = vec2.add(mapSize, vec2(0, 0))
-    const topLeftMapOffset = vec2(1, 271)
+    const mapSpacing = vec2.add(mapSize, vec2(1, 1))
+    const topLeftMapOffset = vec2(1, 281)
 
     loadMaps(shiftBotBlocks, ShiftBotLevelDifficulty.HARD, totalMapCount, mapSize, mapSpacing, topLeftMapOffset)
   }
