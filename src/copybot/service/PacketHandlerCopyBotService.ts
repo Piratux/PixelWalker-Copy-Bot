@@ -768,11 +768,6 @@ function editArithmeticCommand(args: string[], playerId: number, op: mathOp, opP
     if (searchFor === '' || worldBlock.block.name.includes(searchFor)) {
       if (worldBlock.block.args.length !== 0) {
         const deepBlock = cloneDeep(worldBlock)
-        if (deepBlock.block.name === (PwBlockName.SWITCH_LOCAL_ACTIVATOR as string)) {
-          deepBlock.block.args[0] = Math.floor(op(deepBlock.block.args[0] as number, amount))
-          editedBlocks.push(deepBlock)
-          return deepBlock
-        }
         deepBlock.block.args = Object.fromEntries(
           Object.entries(deepBlock.block.args).map(([key, value]) => {
             if (typeof value === 'number') {

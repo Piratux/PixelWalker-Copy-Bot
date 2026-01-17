@@ -13,10 +13,22 @@ describe.sequential('.edit', () => {
     const inputBlocks: WorldBlock[] = [
       { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
       { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [10]) },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        block: new Block(PwBlockName.SWITCH_LOCAL_ACTIVATOR, { enabled: false, switch_id: 1 }),
+      },
     ]
     const expectedOutputBlocks: WorldBlock[] = [
       { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
       { pos: vec2(1, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.SWITCH_LOCAL_DOOR, [15]) },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        block: new Block(PwBlockName.SWITCH_LOCAL_ACTIVATOR, { enabled: false, switch_id: 6 }),
+      },
     ]
     await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(1, 0), () =>
       commandReceived(ctx.task.name, playerId),
