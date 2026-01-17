@@ -147,7 +147,7 @@ function checkIfPlayerTeleportedToMap(data: ProtoGen.PlayerTeamUpdatePacket) {
     const playerId = data.playerId!
     useShiftBotRoundStore().playersInGame.push(getPwGameWorldHelper().players.get(playerId)!)
     getPlayerShiftBotWorldData(playerId).plays++
-    sendRawMessage(`/counter #${playerId} blue =${getPlayerShiftBotWorldData(playerId).plays}`)
+    updatePlayerCounterStats(playerId)
   }
 }
 
@@ -237,6 +237,7 @@ function mergePlayerStats(playerId: number) {
     if (data.username === playerName && existingPlayerId !== playerId) {
       useShiftBotWorldStore().playerShiftBotWorldData.set(playerId, { ...data })
       useShiftBotWorldStore().playerShiftBotWorldData.delete(existingPlayerId)
+      updatePlayerCounterStats(playerId)
       break
     }
   }
@@ -567,12 +568,18 @@ function getPlayersInGameCount() {
   return getPlayerIdsInGame().length
 }
 
+function updatePlayerCounterStats(playerId: number) {
+  const playerBotData = getPlayerShiftBotWorldData(playerId)
+  sendRawMessage(`/counter #${playerId} blue =${playerBotData.plays}`)
+  sendRawMessage(`/counter #${playerId} white =${playerBotData.wins}`)
+}
+
 function playerWinRound(playerId: number) {
   sendRawMessage(`/givecrown #${playerId}`)
   sendRawMessage(`/team #${playerId} ${TEAM_NONE}`)
   sendGlobalChatMessage(`${getPwGameWorldHelper().getPlayer(playerId)?.username} wins!`)
   getPlayerShiftBotWorldData(playerId).wins++
-  sendRawMessage(`/counter #${playerId} white =${getPlayerShiftBotWorldData(playerId).wins}`)
+  updatePlayerCounterStats(playerId)
 
   setShiftBotState(ShiftBotState.CELEBRATING_VICTORY)
 

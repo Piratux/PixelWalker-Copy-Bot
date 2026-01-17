@@ -161,7 +161,7 @@ function checkIfPlayerTeleportedToStartPos(data: ProtoGen.PlayerTeamUpdatePacket
 
     useCurseBotRoundStore().playersInGame.push(getPwGameWorldHelper().players.get(playerId)!)
     getPlayerCurseBotWorldData(playerId).plays++
-    sendRawMessage(`/counter #${playerId} blue =${getPlayerCurseBotWorldData(playerId).plays}`)
+    updatePlayerCounterStats(playerId)
   }
 }
 
@@ -219,6 +219,7 @@ function mergePlayerStats(playerId: number) {
     if (data.username === playerName && existingPlayerId !== playerId) {
       useCurseBotWorldStore().playerCurseBotWorldData.set(playerId, { ...data })
       useCurseBotWorldStore().playerCurseBotWorldData.delete(existingPlayerId)
+      updatePlayerCounterStats(playerId)
       break
     }
   }
@@ -484,12 +485,18 @@ function getPlayerIdsInGame() {
   return useCurseBotRoundStore().playersInGame.map((p) => p.playerId)
 }
 
+function updatePlayerCounterStats(playerId: number) {
+  const playerBotData = getPlayerCurseBotWorldData(playerId)
+  sendRawMessage(`/counter #${playerId} blue =${playerBotData.plays}`)
+  sendRawMessage(`/counter #${playerId} white =${playerBotData.wins}`)
+}
+
 function playerWinRound(playerId: number) {
   sendRawMessage(`/givecrown #${playerId}`)
   sendRawMessage(`/team #${playerId} ${TEAM_NONE}`)
   sendGlobalChatMessage(`${getPwGameWorldHelper().getPlayer(playerId)?.username} wins!`)
   getPlayerCurseBotWorldData(playerId).wins++
-  sendRawMessage(`/counter #${playerId} white =${getPlayerCurseBotWorldData(playerId).wins}`)
+  updatePlayerCounterStats(playerId)
   sendRawMessage(`/cleareffects #${playerId}`) // remove potential curse
 
   setCurseBotState(CurseBotState.CELEBRATING_VICTORY)

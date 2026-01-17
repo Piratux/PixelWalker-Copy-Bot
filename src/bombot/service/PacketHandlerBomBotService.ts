@@ -426,7 +426,7 @@ function playerTeamUpdatePacketReceived(data: ProtoGen.PlayerTeamUpdatePacket) {
     useBomBotRoundStore().totalPlayersTeleportedToMap++
     useBomBotRoundStore().playersInGame.push(getPwGameWorldHelper().players.get(playerId)!)
     getPlayerBomBotWorldData(playerId).plays++
-    sendRawMessage(`/counter #${playerId} blue =${getPlayerBomBotWorldData(playerId).plays}`)
+    updatePlayerCounterStats(playerId)
   }
 }
 
@@ -452,6 +452,7 @@ function mergePlayerStats(playerId: number) {
     if (data.username === playerName && existingPlayerId !== playerId) {
       useBomBotWorldStore().playerBomBotWorldData.set(playerId, { ...data })
       useBomBotWorldStore().playerBomBotWorldData.delete(existingPlayerId)
+      updatePlayerCounterStats(playerId)
       break
     }
   }
@@ -874,6 +875,12 @@ function getPlayerIdsInGame() {
   return useBomBotRoundStore().playersInGame.map((p) => p.playerId)
 }
 
+function updatePlayerCounterStats(playerId: number) {
+  const playerBotData = getPlayerBomBotWorldData(playerId)
+  sendRawMessage(`/counter #${playerId} blue =${playerBotData.plays}`)
+  sendRawMessage(`/counter #${playerId} white =${playerBotData.wins}`)
+}
+
 function playerWinRound(playerId: number) {
   // console.log('Round finished')
   const winPos = vec2(55, 58)
@@ -882,7 +889,7 @@ function playerWinRound(playerId: number) {
   sendRawMessage(`/team #${playerId} ${TEAM_NONE}`)
   sendGlobalChatMessage(`${getPwGameWorldHelper().getPlayer(playerId)?.username} wins!`)
   getPlayerBomBotWorldData(playerId).wins++
-  sendRawMessage(`/counter #${playerId} white =${getPlayerBomBotWorldData(playerId).wins}`)
+  updatePlayerCounterStats(playerId)
 
   setBomBotState(BomBotState.RESET_STORE)
 
