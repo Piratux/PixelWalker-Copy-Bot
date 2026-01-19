@@ -138,6 +138,9 @@ export async function commandReceived(message: string, playerId: number) {
     case CopyBotCommandName.SMART_PASTE:
       await pasteCommandReceived(commandArgs, playerId, true)
       break
+    case CopyBotCommandName.SNAKE:
+      snakeCommandReceived(commandArgs, playerId)
+      break
     case CopyBotCommandName.UNDO:
       undoCommandReceived(commandArgs, playerId)
       break
@@ -392,7 +395,7 @@ function helpCommandReceived(args: string[], playerId: number) {
     sendPrivateChatMessage('Gold coin - select blocks', playerId)
     sendPrivateChatMessage('Blue coin - paste blocks', playerId)
     sendPrivateChatMessage(
-      'Commands: .help .ping .paste .smartpaste .undo .redo .import .edit .move .mask .flip',
+      'Commands: .help .ping .paste .smartpaste .undo .redo .import .edit .move .mask .flip .snake',
       playerId,
     )
     sendPrivateChatMessage('See more info about each command via .help [command]', playerId)
@@ -504,6 +507,19 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage(`Example usage 1: .import https://pixelwalker.net/world/9gf53f4qf5z1f42`, playerId)
       sendPrivateChatMessage(`Example usage 2: .import legacy:PW4gnKMssUb0I 2 4 25 16 2 4`, playerId)
       break
+    case CopyBotCommandName.SNAKE:
+      sendPrivateChatMessage('Correct usage is .snake [off | on time offset hideclock]', playerId)
+      sendPrivateChatMessage(
+        'Enables/disables snake mode - placing blue coins automatically increments time door offset',
+        playerId,
+      )
+      sendPrivateChatMessage('on/off - enables/disables snake mode', playerId)
+      sendPrivateChatMessage('time - time parameter in seconds', playerId)
+      sendPrivateChatMessage('offset - offset parameter in seconds', playerId)
+      sendPrivateChatMessage('hideclock - hide clock parameter. Allowed values "on" and "off"', playerId)
+      sendPrivateChatMessage(`Example usage 1: .snake on 2.3 3.1 on`, playerId)
+      sendPrivateChatMessage(`Example usage 2: .snake off`, playerId)
+      break
     // DEV commands
     case CopyBotCommandName.PLACE_ALL:
       sendPrivateChatMessage(
@@ -599,6 +615,52 @@ async function pasteCommandReceived(args: string[], playerId: number, smartPaste
       throw new GameError(e.message, playerId)
     }
     throw e
+  }
+}
+
+function snakeCommandReceived(args: string[], playerId: number) {
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+
+  const CORRECT_COMMAND_USAGE = `Correct usage is .snake [off | on time offset hideclock]`
+
+  if (args.length === 1) {
+    if (args[0].toLowerCase() !== 'off') {
+      throw new GameError(CORRECT_COMMAND_USAGE, playerId)
+    }
+
+    const botData = getBotData(playerId)
+    botData.snakeModeEnabled = false
+    sendPrivateChatMessage(`Snake mode disabled`, playerId)
+  }
+
+  if (args.length === 4) {
+    if (args[0].toLowerCase() !== 'on') {
+      throw new GameError(CORRECT_COMMAND_USAGE, playerId)
+    }
+
+    const time = Number(args[1])
+    const offset = Number(args[2])
+    if (isNaN(time) || isNaN(offset)) {
+      throw new GameError(CORRECT_COMMAND_USAGE, playerId)
+    }
+
+    const hideClock = args[3].toLowerCase() === 'on'
+
+    if (offset < 0 || time * 2 < offset) {
+      throw new GameError('Offset must be in range [0, 2 * time]', playerId)
+    }
+
+    if (time < 0.5) {
+      throw new GameError('Time must be greater than 0', playerId)
+    }
+
+    const botData = getBotData(playerId)
+    botData.snakeModeTime = time * 100
+    botData.snakeModeCurrentOffset = offset * 100
+    botData.snakeModeHideClock = hideClock
+    botData.snakeModeEnabled = true
+
+    sendPrivateChatMessage(`Snake mode enabled`, playerId)
   }
 }
 
@@ -1270,11 +1332,28 @@ function blueCoinBlockPlaced(
 
   const botData = getBotData(playerId)
 
-  if (botData.botState !== CopyBotState.SELECTED_TO) {
-    throw new GameError('You need to select area first', playerId)
+  if (!botData.snakeModeEnabled) {
+    if (botData.botState !== CopyBotState.SELECTED_TO) {
+      throw new GameError('You need to select area first', playerId)
+    }
   }
 
-  if (botData.moveEnabled) {
+  if (botData.snakeModeEnabled) {
+    for (const blockPos of data.positions) {
+      void placeMultipleBlocks([
+        {
+          block: new Block(PwBlockName.TIME_DOOR, {
+            time: botData.snakeModeTime,
+            offset: botData.snakeModeCurrentOffset,
+            hideClock: botData.snakeModeHideClock,
+          }),
+          layer: LayerType.Foreground,
+          pos: blockPos,
+        },
+      ])
+      botData.snakeModeCurrentOffset = modulo(botData.snakeModeCurrentOffset - 10, botData.snakeModeTime * 2)
+    }
+  } else if (botData.moveEnabled) {
     const blockPos = data.positions[data.positions.length - 1]
     void pasteBlocks(botData, blockPos)
   } else {

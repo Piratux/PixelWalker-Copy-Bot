@@ -24,6 +24,10 @@ export interface CopyBotData {
   replacedByLastMoveOperationBlocks: WorldBlock[]
   undoStack: UndoRedoItem[]
   redoStack: UndoRedoItem[]
+  snakeModeEnabled: boolean
+  snakeModeTime: number
+  snakeModeCurrentOffset: number
+  snakeModeHideClock: boolean
 }
 
 export type PlayerCopyBotData = Map<number, CopyBotData>
@@ -49,5 +53,9 @@ export function createBotData(): CopyBotData {
     replacedByLastMoveOperationBlocks: [],
     undoStack: [],
     redoStack: [],
+    snakeModeEnabled: false,
+    snakeModeTime: 0,
+    snakeModeCurrentOffset: 0,
+    snakeModeHideClock: false,
   }
 }

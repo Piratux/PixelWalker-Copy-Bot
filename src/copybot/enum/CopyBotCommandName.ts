@@ -11,6 +11,7 @@ export enum CopyBotCommandName {
   MASK = 'mask',
   SKIP_AIR = 'skipair',
   IMPORT = 'import',
+  SNAKE = 'snake',
   PLACE_ALL = 'placeall',
   PLACE_EELVL_EXPORT = 'placeeelvlexport',
   PRINT_BLOCKS = 'printblocks',

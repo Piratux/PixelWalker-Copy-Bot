@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2026-01-19 Version 1.18.0
+- Bot: Added command ".snake [off | on time offset hideclock]" - placing blue coins automatically increments time door offset".
+
 2026-01-17 Version 1.17.4
 - Bot: Reduced amount of time it takes to place large quantities of blocks.
 
