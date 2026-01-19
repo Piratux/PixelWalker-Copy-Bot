@@ -232,6 +232,63 @@ describe.sequential('.smartpaste', () => {
     )
   })
 
+  test('.smartpaste 2 2 (portal world)', async () => {
+    const playerId = getPwGameWorldHelper().botPlayerId
+    const inputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Foreground,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        block: new Block(PwBlockName.PORTAL_WORLD, { target: 'r3c188b31614b7f', spawn_id: '1' }),
+      },
+      {
+        pos: vec2(0, 1),
+        layer: LayerType.Foreground,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        block: new Block(PwBlockName.PORTAL_WORLD, { target: 'r3c188b31614b7f', spawn_id: '3' }),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        block: new Block(PwBlockName.PORTAL_WORLD, { target: 'r3c188b31614b7f', spawn_id: '2' }),
+      },
+    ]
+    const expectedOutputBlocks: WorldBlock[] = [
+      {
+        pos: vec2(0, 0),
+        layer: LayerType.Foreground,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        block: new Block(PwBlockName.PORTAL_WORLD, { target: 'r3c188b31614b7f', spawn_id: '1' }),
+      },
+      {
+        pos: vec2(0, 1),
+        layer: LayerType.Foreground,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        block: new Block(PwBlockName.PORTAL_WORLD, { target: 'r3c188b31614b7f', spawn_id: '3' }),
+      },
+      {
+        pos: vec2(1, 0),
+        layer: LayerType.Foreground,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        block: new Block(PwBlockName.PORTAL_WORLD, { target: 'r3c188b31614b7f', spawn_id: '2' }),
+      },
+      {
+        pos: vec2(1, 1),
+        layer: LayerType.Foreground,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        block: new Block(PwBlockName.PORTAL_WORLD, { target: 'r3c188b31614b7f', spawn_id: '4' }),
+      },
+    ]
+    await runSelectCommandTest(
+      inputBlocks,
+      expectedOutputBlocks,
+      vec2(0, 0),
+      vec2(0, 0),
+      async () => await commandReceived('.smartpaste 2 2', playerId),
+    )
+  })
+
   test('.smartpaste 3 2 (block mix)', async () => {
     const playerId = getPwGameWorldHelper().botPlayerId
     const inputBlocks: WorldBlock[] = [

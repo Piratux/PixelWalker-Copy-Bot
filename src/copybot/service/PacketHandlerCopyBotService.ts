@@ -16,7 +16,6 @@ import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import {
   applyPosOffsetForBlocks,
-  blockIsPortal,
   convertDeserializedStructureToWorldBlocks,
   getAnotherWorldBlocks,
   getBlockAt,
@@ -1024,7 +1023,7 @@ function applySmartTransformForBlocks(
       const blockArgTypes: AnyBlockField[] = Block.getFieldsByBlockId(pastePosBlock.block.bId)
       for (const blockArgType of blockArgTypes) {
         const argName = blockArgType.Name
-        if (blockIsPortal(pastePosBlock.block.name)) {
+        if (blockArgType.Type === 'String' && blockArgType.Pattern === '^[a-zA-Z0-9]{1,5}$') {
           applySmartTransformForPortalBlock(pastePosBlock, nextBlockX, argName, blockCopy, repetitionX)
           applySmartTransformForPortalBlock(pastePosBlock, nextBlockY, argName, blockCopy, repetitionY)
         } else if (blockArgType.Type === 'UInt32' && blockArgType.MaxValue === 16777215) {
