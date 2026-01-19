@@ -34,4 +34,8 @@ export const MENU_ITEMS: MenuItem[] = [
     text: 'Portal list',
     routeName: RouteName.LIST_PORTALS,
   },
+  {
+    text: 'Minimap teleporter',
+    routeName: RouteName.MINIMAP_TELEPORTER,
+  },
 ]

@@ -11,6 +11,7 @@ import PortalListView from '@/view/PortalListView.vue'
 import NotFoundView from '@/view/NotFoundView.vue'
 import { RouteName } from './RouteName.ts'
 import AdminLoginView from '@/view/AdminLoginView.vue'
+import MinimapTeleporterView from '@/view/MinimapTeleporterView.vue'
 
 const basePath = '/PixelWalker-Copy-Bot'
 
@@ -55,6 +56,10 @@ export const Routes: RouteRecordRaw[] = [
     {
       name: RouteName.LIST_PORTALS,
       component: PortalListView,
+    },
+    {
+      name: RouteName.MINIMAP_TELEPORTER,
+      component: MinimapTeleporterView,
     },
   ].map((route) => ({ ...route, path: `${basePath}/${route.name}` })),
   {

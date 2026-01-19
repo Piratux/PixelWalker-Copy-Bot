@@ -9,5 +9,6 @@ export enum RouteName {
   DEV = 'dev',
   IMPORT_EER = 'import-eer',
   LIST_PORTALS = 'list-portals',
+  MINIMAP_TELEPORTER = 'minimap-teleporter',
   NOT_FOUND = 'notFound',
 }

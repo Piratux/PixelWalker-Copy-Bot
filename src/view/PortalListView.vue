@@ -6,9 +6,7 @@ import PiButton from '@/component/PiButton.vue'
 import { LayerType, Point } from 'pw-js-world'
 import { blockIsPortal } from '@/core/service/WorldService.ts'
 import { vec2 } from '@basementuniverse/vec'
-import { GameError } from '@/core/class/GameError.ts'
-import { requireBotAsWorldOwner, requirePlayerAndBotEditPermission } from '@/core/service/PwClientService.ts'
-import { sendRawMessage } from '@/core/service/ChatMessageService.ts'
+import { teleportPlayer } from '@/core/service/PwClientService.ts'
 import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
 
 onMounted(() => {
@@ -41,30 +39,6 @@ function updatePortalDataItems() {
       positions,
     }))
     .sort((a, b) => a.fromIdToTargetId.localeCompare(b.fromIdToTargetId))
-}
-
-function getOwnerPlayerId(): number {
-  for (const [playerId, player] of getPwGameWorldHelper().players) {
-    if (player.isWorldOwner && playerId !== getPwGameWorldHelper().botPlayerId) {
-      return playerId
-    }
-  }
-
-  throw new GameError('No world owner player found')
-}
-
-function teleportPlayer(pos: Point) {
-  requireBotAsWorldOwner()
-
-  const playerId = getOwnerPlayerId()
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
-
-  for (const [playerId, player] of getPwGameWorldHelper().players) {
-    if (player.isWorldOwner && playerId !== getPwGameWorldHelper().botPlayerId) {
-      sendRawMessage(`/tp #${playerId} ${pos.x} ${pos.y}`)
-      break
-    }
-  }
 }
 
 interface PortalItem {

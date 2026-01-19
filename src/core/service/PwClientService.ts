@@ -1,9 +1,9 @@
 import { ListBlockResult, ProtoGen, PWApiClient, PWGameClient } from 'pw-js-api'
 import { GENERIC_CHAT_ERROR, TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
-import { Block, DeserialisedStructure, PWGameWorldHelper } from 'pw-js-world'
+import { Block, DeserialisedStructure, Point, PWGameWorldHelper } from 'pw-js-world'
 import { placeWorldDataBlocks } from '@/core/service/WorldService.ts'
 import { getPwApiClient, getPwGameClient, getPwGameWorldHelper, usePwClientStore } from '@/core/store/PwClientStore.ts'
-import { sendGlobalChatMessage } from '@/core/service/ChatMessageService.ts'
+import { sendGlobalChatMessage, sendRawMessage } from '@/core/service/ChatMessageService.ts'
 import { registerCopyBotCallbacks } from '@/copybot/service/PacketHandlerCopyBotService.ts'
 import ManyKeysMap from 'many-keys-map'
 import { EER_MAPPINGS, EerListBlockResult } from '@/webtool/eer/block/EerMappings.ts'
@@ -283,5 +283,29 @@ export function updateAwaitedWorldBlockPlacedPackets(data: ProtoGen.WorldBlockPl
       .sort((a, b) => (a.x !== b.x ? a.x - b.x : a.y - b.y))
     const packetKey = JSON.stringify({ blockId: data.blockId, positions: sortedPositions })
     usePwClientStore().unsuccessfullyPlacedBlockPackets.delete(packetKey)
+  }
+}
+
+function getOwnerPlayerId(): number {
+  for (const [playerId, player] of getPwGameWorldHelper().players) {
+    if (player.isWorldOwner && playerId !== getPwGameWorldHelper().botPlayerId) {
+      return playerId
+    }
+  }
+
+  throw new GameError('No world owner player found')
+}
+
+export function teleportPlayer(pos: Point) {
+  requireBotAsWorldOwner()
+
+  const playerId = getOwnerPlayerId()
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+
+  for (const [playerId, player] of getPwGameWorldHelper().players) {
+    if (player.isWorldOwner && playerId !== getPwGameWorldHelper().botPlayerId) {
+      sendRawMessage(`/tp #${playerId} ${pos.x} ${pos.y}`)
+      break
+    }
   }
 }
