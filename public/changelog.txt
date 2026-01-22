@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2026-01-22 Version 1.18.1
+- Bot: Updated to work with PixelWalker version 2026.1.0
+
 2026-01-19 Version 1.18.0
 - Bot: Added command ".snake [off | on time offset hideclock]" - placing blue coins automatically increments time door offset".
 - Bot: Add .smartpaste support for portal_world and tool_portal_world_spawn block spawn_id arguments.

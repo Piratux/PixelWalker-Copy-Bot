@@ -1023,7 +1023,10 @@ function applySmartTransformForBlocks(
       const blockArgTypes: AnyBlockField[] = Block.getFieldsByBlockId(pastePosBlock.block.bId)
       for (const blockArgType of blockArgTypes) {
         const argName = blockArgType.Name
-        if (blockArgType.Type === 'String' && blockArgType.Pattern === '^[a-zA-Z0-9]{1,5}$') {
+        if (
+          blockArgType.Type === 'String' &&
+          ['^[a-zA-Z0-9]{0,5}$', '^[a-zA-Z0-9]{1,5}$'].includes(blockArgType.Pattern!)
+        ) {
           applySmartTransformForPortalBlock(pastePosBlock, nextBlockX, argName, blockCopy, repetitionX)
           applySmartTransformForPortalBlock(pastePosBlock, nextBlockY, argName, blockCopy, repetitionY)
         } else if (blockArgType.Type === 'UInt32' && blockArgType.MaxValue === 16777215) {
