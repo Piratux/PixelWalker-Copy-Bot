@@ -47,6 +47,7 @@ const mapSize = vec2(32, 27)
 const afkPos = vec2(69, 77)
 
 const WAIT_TIME_BEFORE_ROUND_ENDS_AFTER_FIRST_WINNER_MS = 30_000
+// const WAIT_TIME_BEFORE_ROUND_ENDS_AFTER_FIRST_WINNER_MS = 10_000
 const MAX_ROUND_LENGTH_MS = 120_000
 // const MAX_ROUND_LENGTH_MS = 12_000
 
@@ -869,6 +870,7 @@ async function everySecondShiftBotUpdate() {
       useShiftBotRoundStore().currentLevel++
       useShiftBotRoundStore().secondsPassedInPlayingState = 0
       useShiftBotRoundStore().playersInformedOnceThatMinuteLeftBeforeMaxRoundLength = false
+      useShiftBotRoundStore().playersInformedOnceThatFiveSecondsLeftBeforeRoundEnds = false
 
       useShiftBotRoundStore().currentLevelDifficulty = getLevelDifficultyForNextRound()
 
@@ -910,6 +912,14 @@ async function everySecondShiftBotUpdate() {
       }
 
       if (useShiftBotRoundStore().atLeastOnePlayerCompletedLevel) {
+        if (
+          !useShiftBotRoundStore().playersInformedOnceThatFiveSecondsLeftBeforeRoundEnds &&
+          performance.now() - useShiftBotRoundStore().timestampInMsWhenFirstPlayerCompletedLevel >
+            WAIT_TIME_BEFORE_ROUND_ENDS_AFTER_FIRST_WINNER_MS - 5_000
+        ) {
+          useShiftBotRoundStore().playersInformedOnceThatFiveSecondsLeftBeforeRoundEnds = true
+          sendGlobalChatMessage(`5 seconds left!`)
+        }
         if (
           performance.now() - useShiftBotRoundStore().timestampInMsWhenFirstPlayerCompletedLevel >
           WAIT_TIME_BEFORE_ROUND_ENDS_AFTER_FIRST_WINNER_MS

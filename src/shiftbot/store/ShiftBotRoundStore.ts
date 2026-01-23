@@ -21,6 +21,7 @@ export const useShiftBotRoundStore = defineStore('ShiftBotRoundStore', () => {
   const entranceCloseBlocks = ref<Raw<WorldBlock[]>>([])
   const secondsPassedInPlayingState = ref<number>(0)
   const playersInformedOnceThatMinuteLeftBeforeMaxRoundLength = ref<boolean>(false)
+  const playersInformedOnceThatFiveSecondsLeftBeforeRoundEnds = ref<boolean>(false)
 
   return {
     playersInGame,
@@ -38,5 +39,6 @@ export const useShiftBotRoundStore = defineStore('ShiftBotRoundStore', () => {
     entranceCloseBlocks,
     secondsPassedInPlayingState,
     playersInformedOnceThatMinuteLeftBeforeMaxRoundLength,
+    playersInformedOnceThatFiveSecondsLeftBeforeRoundEnds,
   }
 })
