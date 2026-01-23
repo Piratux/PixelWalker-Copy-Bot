@@ -21,7 +21,7 @@ import {
   placeWorldDataBlocksUsingRandomPositionsPattern,
 } from '@/core/service/WorldService.ts'
 import { BotType } from '@/core/enum/BotType.ts'
-import { setCustomTimeout } from '@/core/util/Sleep.ts'
+import { setCustomTimeout, sleep } from '@/core/util/Sleep.ts'
 import { handleException } from '@/core/util/Exception.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
@@ -957,7 +957,10 @@ async function everySecondShiftBotUpdate() {
       break
     }
     case ShiftBotState.ROUND_FINISHED: {
-      // Immediately close the entrance
+      // Make it a bit easier for people to win together by slightly delaying entrance closing.
+      await sleep(500)
+
+      // Close the entrance
       await placeMultipleBlocks([
         {
           block: cloneDeep(useShiftBotWorldStore().mapEntranceCloseBlock),
