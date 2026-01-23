@@ -10,8 +10,8 @@ export const useShiftBotRoundStore = defineStore('ShiftBotRoundStore', () => {
   const waitingForMorePlayersMessagePrintedOnce = ref<boolean>(false)
   const secondsPassedInCountingDownToRemoveNoSpeedState = ref<number>(0)
   const secondsPassedInWaitingForAllPlayersToBeTeleportedToMapState = ref<number>(0)
-  const secondsPassedInCelebratingVictoryState = ref<number>(0)
-  const winnerPlayerId = ref<number>(0)
+  const secondsPassedInPauseAfterRoundState = ref<number>(0)
+  const winnerPlayerId = ref<number | null>(0)
   const currentLevelDifficulty = ref<ShiftBotLevelDifficulty>(ShiftBotLevelDifficulty.EASY)
   const currentLevel = ref<number>(0)
   const timestampInMsWhenRoundStarted = ref<number>(0)
@@ -27,7 +27,7 @@ export const useShiftBotRoundStore = defineStore('ShiftBotRoundStore', () => {
     waitingForMorePlayersMessagePrintedOnce,
     secondsPassedInCountingDownToRemoveNoSpeedState,
     secondsPassedInWaitingForAllPlayersToBeTeleportedToMapState,
-    secondsPassedInCelebratingVictoryState,
+    secondsPassedInPauseAfterRoundState,
     winnerPlayerId,
     currentLevelDifficulty,
     currentLevel,

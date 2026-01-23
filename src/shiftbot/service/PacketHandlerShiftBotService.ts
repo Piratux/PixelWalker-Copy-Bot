@@ -48,6 +48,7 @@ const afkPos = vec2(69, 77)
 
 const WAIT_TIME_BEFORE_ROUND_ENDS_AFTER_FIRST_WINNER_MS = 30_000
 const MAX_ROUND_LENGTH_MS = 120_000
+// const MAX_ROUND_LENGTH_MS = 12_000
 
 const FRACTION_OF_PLAYERS_REQUIRED_TO_FINISH_LEVEL_TO_END_ROUND = 0.9
 // const FRACTION_OF_PLAYERS_REQUIRED_TO_FINISH_LEVEL_TO_END_ROUND = 1
@@ -581,7 +582,7 @@ function playerWinRound(playerId: number) {
   getPlayerShiftBotWorldData(playerId).wins++
   updatePlayerCounterStats(playerId)
 
-  setShiftBotState(ShiftBotState.CELEBRATING_VICTORY)
+  setShiftBotState(ShiftBotState.PAUSE_AFTER_ROUND)
 
   updateLeaderboard()
 
@@ -929,7 +930,7 @@ async function everySecondShiftBotUpdate() {
 
         if (performance.now() - useShiftBotRoundStore().timestampInMsWhenRoundStarted > MAX_ROUND_LENGTH_MS) {
           sendGlobalChatMessage(`No winners after ${MAX_ROUND_LENGTH_MS / 1000} seconds, restarting round.`)
-          resetBotState()
+          setShiftBotState(ShiftBotState.ROUND_FINISHED)
         }
       }
 
@@ -961,8 +962,7 @@ async function everySecondShiftBotUpdate() {
       const totalCompletedCount = totalCompleted.length
 
       if (totalCompletedCount === 0) {
-        sendGlobalChatMessage('No players completed the level, restarting round.')
-        resetBotState()
+        setShiftBotState(ShiftBotState.PAUSE_AFTER_ROUND)
         return
       } else if (totalCompletedCount === 1) {
         playerWinRound(totalCompleted[0])
@@ -972,15 +972,18 @@ async function everySecondShiftBotUpdate() {
 
       break
     }
-    case ShiftBotState.CELEBRATING_VICTORY: {
-      useShiftBotRoundStore().secondsPassedInCelebratingVictoryState++
-      if (useShiftBotRoundStore().secondsPassedInCelebratingVictoryState === 2) {
+    case ShiftBotState.PAUSE_AFTER_ROUND: {
+      useShiftBotRoundStore().secondsPassedInPauseAfterRoundState++
+      if (
+        useShiftBotRoundStore().secondsPassedInPauseAfterRoundState === 2 &&
+        useShiftBotRoundStore().winnerPlayerId !== null
+      ) {
         const winPos = vec2(59, 79)
         const playerId = useShiftBotRoundStore().winnerPlayerId
         sendRawMessage(`/tp #${playerId} ${winPos.x} ${winPos.y}`)
       }
 
-      if (useShiftBotRoundStore().secondsPassedInCelebratingVictoryState > 5) {
+      if (useShiftBotRoundStore().secondsPassedInPauseAfterRoundState > 5) {
         resetBotState()
       }
       break
