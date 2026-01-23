@@ -31,8 +31,8 @@ export const MENU_ITEMS: MenuItem[] = [
     routeName: RouteName.IMPORT_EER,
   },
   {
-    text: 'Portal list',
-    routeName: RouteName.LIST_PORTALS,
+    text: 'Block finder',
+    routeName: RouteName.BLOCK_FINDER,
   },
   {
     text: 'Minimap teleporter',

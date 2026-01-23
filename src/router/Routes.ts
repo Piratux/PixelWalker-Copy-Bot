@@ -7,7 +7,7 @@ import EelvlExportView from '@/view/EelvlExportView.vue'
 import PngImportView from '@/view/PngImportView.vue'
 import DevView from '@/view/DevView.vue'
 import EerImportView from '@/view/EerImportView.vue'
-import PortalListView from '@/view/PortalListView.vue'
+import BlockFinderView from '@/view/BlockFinderView.vue'
 import NotFoundView from '@/view/NotFoundView.vue'
 import { RouteName } from './RouteName.ts'
 import AdminLoginView from '@/view/AdminLoginView.vue'
@@ -54,8 +54,8 @@ export const Routes: RouteRecordRaw[] = [
       component: EerImportView,
     },
     {
-      name: RouteName.LIST_PORTALS,
-      component: PortalListView,
+      name: RouteName.BLOCK_FINDER,
+      component: BlockFinderView,
     },
     {
       name: RouteName.MINIMAP_TELEPORTER,

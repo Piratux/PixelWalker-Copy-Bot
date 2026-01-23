@@ -8,7 +8,7 @@ export enum RouteName {
   IMPORT_MIDI = 'import-midi',
   DEV = 'dev',
   IMPORT_EER = 'import-eer',
-  LIST_PORTALS = 'list-portals',
+  BLOCK_FINDER = 'block-finder',
   MINIMAP_TELEPORTER = 'minimap-teleporter',
-  NOT_FOUND = 'notFound',
+  NOT_FOUND = 'not-found',
 }
