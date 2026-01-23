@@ -870,7 +870,8 @@ async function everySecondShiftBotUpdate() {
       useShiftBotRoundStore().currentLevel++
       useShiftBotRoundStore().secondsPassedInPlayingState = 0
       useShiftBotRoundStore().playersInformedOnceThatMinuteLeftBeforeMaxRoundLength = false
-      useShiftBotRoundStore().playersInformedOnceThatFiveSecondsLeftBeforeRoundEnds = false
+      useShiftBotRoundStore().playersInformedOnceThatFiveSecondsLeftBeforeRoundEndsBecausePlayerWon = false
+      useShiftBotRoundStore().playersInformedOnceThatFiveSecondsLeftBeforeRoundEndsBecauseMaxRoundLengthReached = false
 
       useShiftBotRoundStore().currentLevelDifficulty = getLevelDifficultyForNextRound()
 
@@ -913,11 +914,11 @@ async function everySecondShiftBotUpdate() {
 
       if (useShiftBotRoundStore().atLeastOnePlayerCompletedLevel) {
         if (
-          !useShiftBotRoundStore().playersInformedOnceThatFiveSecondsLeftBeforeRoundEnds &&
+          !useShiftBotRoundStore().playersInformedOnceThatFiveSecondsLeftBeforeRoundEndsBecausePlayerWon &&
           performance.now() - useShiftBotRoundStore().timestampInMsWhenFirstPlayerCompletedLevel >
             WAIT_TIME_BEFORE_ROUND_ENDS_AFTER_FIRST_WINNER_MS - 5_000
         ) {
-          useShiftBotRoundStore().playersInformedOnceThatFiveSecondsLeftBeforeRoundEnds = true
+          useShiftBotRoundStore().playersInformedOnceThatFiveSecondsLeftBeforeRoundEndsBecausePlayerWon = true
           sendGlobalChatMessage(`5 seconds left!`)
         }
         if (
@@ -935,6 +936,15 @@ async function everySecondShiftBotUpdate() {
           useShiftBotRoundStore().playersInformedOnceThatMinuteLeftBeforeMaxRoundLength = true
           sendGlobalChatMessage(
             `1 minute left, before the round automatically ends if no one has completed the level yet.`,
+          )
+        }
+        if (
+          !useShiftBotRoundStore().playersInformedOnceThatFiveSecondsLeftBeforeRoundEndsBecauseMaxRoundLengthReached &&
+          performance.now() - useShiftBotRoundStore().timestampInMsWhenRoundStarted > MAX_ROUND_LENGTH_MS - 5_000
+        ) {
+          useShiftBotRoundStore().playersInformedOnceThatFiveSecondsLeftBeforeRoundEndsBecauseMaxRoundLengthReached = true
+          sendGlobalChatMessage(
+            `5 seconds left, before the round automatically ends if no one has completed the level yet.`,
           )
         }
 
