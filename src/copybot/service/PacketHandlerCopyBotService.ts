@@ -827,21 +827,19 @@ function editArithmeticCommand(args: string[], playerId: number, op: mathOp, opP
   const botData = getBotData(playerId)
   botData.selectedBlocks = botData.selectedBlocks.map((worldBlock) => {
     if (searchFor === '' || worldBlock.block.name.includes(searchFor)) {
-      if (worldBlock.block.args.length !== 0) {
-        const deepBlock = cloneDeep(worldBlock)
-        deepBlock.block.args = Object.fromEntries(
-          Object.entries(deepBlock.block.args).map(([key, value]) => {
-            if (typeof value === 'number') {
-              counter++
-              return [key, Math.floor(op(value, amount))]
-            } else {
-              return [key, value]
-            }
-          }),
-        )
-        editedBlocks.push(deepBlock)
-        return deepBlock
-      }
+      const deepBlock = cloneDeep(worldBlock)
+      deepBlock.block.args = Object.fromEntries(
+        Object.entries(deepBlock.block.args).map(([key, value]) => {
+          if (typeof value === 'number') {
+            counter++
+            return [key, Math.floor(op(value, amount))]
+          } else {
+            return [key, value]
+          }
+        }),
+      )
+      editedBlocks.push(deepBlock)
+      return deepBlock
     }
     return worldBlock
   })
