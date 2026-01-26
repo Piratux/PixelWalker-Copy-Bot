@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2026-01-26 Version 1.20.0
+- Bot: Updated to work with PixelWalker version 2026.2.3
+
 2026-01-23 Version 1.19.0
 - Website: Added Block Finder page that allows searching for blocks in the world by block name and their attributes.
 - Website: Removed List Portals page.

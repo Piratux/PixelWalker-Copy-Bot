@@ -31,7 +31,7 @@ interface EerBlock {
   rotation?: number
   text?: string
   signtype?: number
-  // eslint-disable-next-line @typescript-eslint/naming-convention
+
   text_color?: string
   wrapLength?: number
   id?: number

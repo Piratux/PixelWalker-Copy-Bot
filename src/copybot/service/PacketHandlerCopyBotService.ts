@@ -1345,7 +1345,7 @@ function blueCoinBlockPlaced(
           block: new Block(PwBlockName.TIME_DOOR, {
             time: botData.snakeModeTime,
             offset: botData.snakeModeCurrentOffset,
-            hideClock: botData.snakeModeHideClock,
+            hide_clock: botData.snakeModeHideClock,
           }),
           layer: LayerType.Foreground,
           pos: blockPos,

@@ -22,6 +22,12 @@ export default defineConfigWithVueTs(
           selector: 'enumMember',
           format: ['UPPER_CASE'],
         },
+        {
+          selector: 'property',
+          // Allow snake_case for properties to accommodate various naming conventions from APIs.
+          format: ['camelCase', 'PascalCase', 'UPPER_CASE', 'snake_case'],
+          leadingUnderscore: 'allow',
+        },
       ],
       '@typescript-eslint/strict-boolean-expressions': [
         'error',

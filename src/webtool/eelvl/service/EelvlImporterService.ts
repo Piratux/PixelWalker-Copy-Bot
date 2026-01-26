@@ -265,19 +265,26 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
       return getEelvlToPwNoteBlock(eelvlBlock, PwBlockName.NOTE_GUITAR)
     // It doesn't matter which one is time door and which one is time gate as they're symmetrical
     case EelvlBlockId.TIMEDOOR:
-      return createBlock(PwBlockName.TIME_DOOR, [500, 500, false])
+      return new Block(PwBlockName.TIME_DOOR, {
+        time: 500,
+        offset: 500,
+        hide_clock: false,
+      })
     case EelvlBlockId.TIMEGATE:
-      return createBlock(PwBlockName.TIME_DOOR, [500, 0, false])
+      return new Block(PwBlockName.TIME_DOOR, {
+        time: 500,
+        offset: 0,
+        hide_clock: false,
+      })
     case EelvlBlockId.LABEL:
       return `Missing PixelWalker block: LABEL,\ntext: ${eelvlBlock.labelText}`
     // NOTE: This is not 1 to 1 mapping
     case EelvlBlockId.FIREWORKS:
       return new Block(PwBlockName.FIREWORKS, {
-        startColor: 16711680,
-        fadeToColor: 16777215,
+        start_color: 16711680,
+        fade_to_color: 16777215,
         shape: 0,
-        sizeMax: 8,
-        sparkle: false,
+        size_max: 8,
       })
     // NOTE: PW Devs will not fix this
     case EelvlBlockId.CHRISTMAS_GIFT_HALF_RED:
@@ -294,8 +301,6 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
     // NOTE: PW Devs will not fix this
     case EelvlBlockId.CHRISTMAS_GIFT_HALF_YELLOW:
       return createBlock(PwBlockName.CHRISTMAS_GIFT_HALF_YELLOW)
-    case EelvlBlockId.OUTERSPACE_SIGN_GREEN:
-      return createBlock(PwBlockName.OUTERSPACE_SIGN_GREEN, [''])
 
     default: {
       const eelvlBlockName = EelvlBlockId[eelvlBlock.blockId]
@@ -308,7 +313,41 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
       )
 
       if (pwBlock !== undefined) {
-        return new Block(pwBlock.Id)
+        if (pwBlock.Fields !== undefined && pwBlock.Fields.length > 0) {
+          const args = {}
+          for (const field of pwBlock.Fields) {
+            if (field.DefaultValue === undefined) {
+              switch (field.Type) {
+                case 'String':
+                  // @ts-expect-error args is dynamic
+                  args[field.Name] = ''
+                  break
+                case 'Int32':
+                case 'UInt32':
+                  // @ts-expect-error args is dynamic
+                  args[field.Name] = 0
+                  break
+                case 'Boolean':
+                  // @ts-expect-error args is dynamic
+                  args[field.Name] = false
+                  break
+                default:
+                  break
+              }
+            } else {
+              if (pwBlock.PaletteId.startsWith('BORDER_') && field.Name === 'color') {
+                // @ts-expect-error args is dynamic
+                args[field.Name] = 0
+              } else {
+                // @ts-expect-error args is dynamic
+                args[field.Name] = field.DefaultValue
+              }
+            }
+          }
+          return new Block(pwBlock.Id, args)
+        } else {
+          return new Block(pwBlock.Id)
+        }
       }
 
       const pwBlockMorph0 = getPwBlocksByEelvlParameters().get(

@@ -238,19 +238,19 @@ describe.sequential('.smartpaste', () => {
       {
         pos: vec2(0, 0),
         layer: LayerType.Foreground,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         block: new Block(PwBlockName.PORTAL_WORLD, { target: 'r3c188b31614b7f', spawn_id: '1' }),
       },
       {
         pos: vec2(0, 1),
         layer: LayerType.Foreground,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         block: new Block(PwBlockName.PORTAL_WORLD, { target: 'r3c188b31614b7f', spawn_id: '3' }),
       },
       {
         pos: vec2(1, 0),
         layer: LayerType.Foreground,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         block: new Block(PwBlockName.PORTAL_WORLD, { target: 'r3c188b31614b7f', spawn_id: '2' }),
       },
     ]
@@ -258,25 +258,25 @@ describe.sequential('.smartpaste', () => {
       {
         pos: vec2(0, 0),
         layer: LayerType.Foreground,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         block: new Block(PwBlockName.PORTAL_WORLD, { target: 'r3c188b31614b7f', spawn_id: '1' }),
       },
       {
         pos: vec2(0, 1),
         layer: LayerType.Foreground,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         block: new Block(PwBlockName.PORTAL_WORLD, { target: 'r3c188b31614b7f', spawn_id: '3' }),
       },
       {
         pos: vec2(1, 0),
         layer: LayerType.Foreground,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         block: new Block(PwBlockName.PORTAL_WORLD, { target: 'r3c188b31614b7f', spawn_id: '2' }),
       },
       {
         pos: vec2(1, 1),
         layer: LayerType.Foreground,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         block: new Block(PwBlockName.PORTAL_WORLD, { target: 'r3c188b31614b7f', spawn_id: '4' }),
       },
     ]
@@ -684,29 +684,29 @@ describe.sequential('.smartpaste', () => {
       {
         pos: vec2(0, 0),
         layer: LayerType.Foreground,
-        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 310, hideClock: false }),
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 310, hide_clock: false }),
       },
       {
         pos: vec2(1, 0),
         layer: LayerType.Foreground,
-        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 360, hideClock: false }),
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 360, hide_clock: false }),
       },
     ]
     const expectedOutputBlocks: WorldBlock[] = [
       {
         pos: vec2(0, 0),
         layer: LayerType.Foreground,
-        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 310, hideClock: false }),
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 310, hide_clock: false }),
       },
       {
         pos: vec2(1, 0),
         layer: LayerType.Foreground,
-        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 360, hideClock: false }),
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 360, hide_clock: false }),
       },
       {
         pos: vec2(2, 0),
         layer: LayerType.Foreground,
-        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 10, hideClock: false }),
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 10, hide_clock: false }),
       },
     ]
     await runSelectCommandTest(
@@ -724,29 +724,29 @@ describe.sequential('.smartpaste', () => {
       {
         pos: vec2(0, 0),
         layer: LayerType.Foreground,
-        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 60, hideClock: false }),
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 60, hide_clock: false }),
       },
       {
         pos: vec2(1, 0),
         layer: LayerType.Foreground,
-        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 10, hideClock: false }),
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 10, hide_clock: false }),
       },
     ]
     const expectedOutputBlocks: WorldBlock[] = [
       {
         pos: vec2(0, 0),
         layer: LayerType.Foreground,
-        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 60, hideClock: false }),
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 60, hide_clock: false }),
       },
       {
         pos: vec2(1, 0),
         layer: LayerType.Foreground,
-        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 10, hideClock: false }),
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 10, hide_clock: false }),
       },
       {
         pos: vec2(2, 0),
         layer: LayerType.Foreground,
-        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 360, hideClock: false }),
+        block: new Block(PwBlockName.TIME_DOOR, { time: 200, offset: 360, hide_clock: false }),
       },
     ]
     await runSelectCommandTest(

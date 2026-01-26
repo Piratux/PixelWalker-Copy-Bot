@@ -16,7 +16,6 @@ describe.sequential('.edit', () => {
       {
         pos: vec2(1, 0),
         layer: LayerType.Foreground,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         block: new Block(PwBlockName.SWITCH_LOCAL_ACTIVATOR, { enabled: false, switch_id: 1 }),
       },
     ]
@@ -26,7 +25,6 @@ describe.sequential('.edit', () => {
       {
         pos: vec2(1, 0),
         layer: LayerType.Foreground,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         block: new Block(PwBlockName.SWITCH_LOCAL_ACTIVATOR, { enabled: false, switch_id: 6 }),
       },
     ]
