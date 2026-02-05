@@ -233,7 +233,7 @@ export function requireBotAsWorldOwner(): void {
 }
 
 export function getAllWorldBlocks(pwGameWorldHelper: PWGameWorldHelper): DeserialisedStructure {
-  return toRaw(pwGameWorldHelper).sectionBlocks(0, 0, pwGameWorldHelper.width - 1, pwGameWorldHelper.height - 1)
+  return toRaw(pwGameWorldHelper).sectionArea(0, 0, pwGameWorldHelper.width - 1, pwGameWorldHelper.height - 1)
 }
 
 export function hotReloadCallbacks(callbacks: CallbackEntry[]) {

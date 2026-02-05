@@ -1290,7 +1290,7 @@ function getAvailableSpawnPositions(blocks: DeserialisedStructure) {
 }
 
 function updateAvailablePlayerSpawnPositions() {
-  const blocks = toRaw(getPwGameWorldHelper()).sectionBlocks(
+  const blocks = toRaw(getPwGameWorldHelper()).sectionArea(
     mapTopLeftPos.x,
     mapTopLeftPos.y,
     mapTopLeftPos.x + mapSize.x - 1,
