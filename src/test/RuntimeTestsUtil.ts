@@ -1,4 +1,4 @@
-import { DeserialisedStructure } from 'pw-js-world'
+import { DeserialisedStructure, ILabel } from 'pw-js-world'
 import { deepStrictEqual } from 'node:assert'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { getImportedFromEelvlData } from '@/webtool/eelvl/service/EelvlImporterService.ts'
@@ -14,6 +14,7 @@ import { Promisable } from '@/core/util/Promise.ts'
 import { CopyBotData } from '@/copybot/type/CopyBotData.ts'
 import { toRaw } from 'vue'
 import { expect } from 'vitest'
+import { EelvlImportResult } from '@/webtool/eelvl/type/EelvlImportResult.ts'
 
 export function compareDeserialisedStructureData(
   receivedData: DeserialisedStructure,
@@ -38,10 +39,36 @@ export function compareDeserialisedStructureData(
   }
 }
 
-export async function getDataFromEelvlFile(fileUrl: string): Promise<DeserialisedStructure> {
+export function compareLabelData(receivedData: ILabel[], expectedData: ILabel[]) {
+  deepStrictEqual(receivedData.length, expectedData.length, new Error(`ERROR! Label count is not equal.`))
+  receivedData.sort((a, b) =>
+    a.position.x !== b.position.x ? a.position.x - b.position.x : a.position.y - b.position.y,
+  )
+  expectedData.sort((a, b) =>
+    a.position.x !== b.position.x ? a.position.x - b.position.x : a.position.y - b.position.y,
+  )
+  for (let i = 0; i < receivedData.length; i++) {
+    // We are not interested in outer type here
+    const receivedLabel = { ...receivedData[i] }
+    const expectedLabel = { ...expectedData[i] }
+
+    // ... and we are not interested in comparing ids as they're generated
+    receivedLabel.id = expectedLabel.id
+
+    deepStrictEqual(
+      receivedLabel,
+      expectedLabel,
+      new Error(
+        `ERROR! Label with ID ${expectedLabel.id} is not equal.\nGot:\n${JSON.stringify(receivedLabel)}.\nExpected:\n${JSON.stringify(expectedLabel)}`,
+      ),
+    )
+  }
+}
+
+export async function getDataFromEelvlFile(fileUrl: string): Promise<EelvlImportResult> {
   const fileRaw = await fetch(fileUrl)
   const fileArrayBuffer = await fileRaw.arrayBuffer()
-  return getImportedFromEelvlData(fileArrayBuffer).blocks
+  return getImportedFromEelvlData(fileArrayBuffer)
 }
 
 export async function getDataFromPngFile(fileUrl: string, quantized: boolean): Promise<DeserialisedStructure> {

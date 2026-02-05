@@ -99,9 +99,14 @@ async function onExportEelvlButtonClick() {
           <li>Red, blue and black outerspace decorations that also act as signs</li>
           <li>Configurable time doors</li>
           <li>Configurable fireworks</li>
+          <li>Arrow signs</li>
+          <li>Highly customizable labels</li>
         </ul>
       </v-row>
-      <v-row>All missing blocks are replaced with sign (except for backgrounds).</v-row>
+      <v-row
+        >All missing blocks are replaced with sign (except for backgrounds). Labels aren't exported as they can be
+        placed off-grid in PixelWalker.</v-row
+      >
       <v-row>
         <br />
         Fun fact: Signs only let you enter 140 characters in EEO. But it will happily accept EELVL file which has sign

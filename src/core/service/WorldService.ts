@@ -2,6 +2,8 @@ import {
   Block,
   createBlockPackets,
   DeserialisedStructure,
+  ILabel,
+  Label,
   LayerType,
   Point,
   PWGameWorldHelper,
@@ -28,6 +30,7 @@ import { GameError } from '@/core/class/GameError.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { toRaw } from 'vue'
 import { BotType } from '@/core/enum/BotType.ts'
+import { WorldData } from '@/core/type/WorldData.ts'
 
 export function getBlockAt(pos: Point, layer: number): Block {
   try {
@@ -317,7 +320,7 @@ export function numberAndStringArrayTypesMatch(array1: (number | string)[], arra
   return true
 }
 
-export async function getAnotherWorldBlocks(worldId: string, pwApiClient: PWApiClient): Promise<DeserialisedStructure> {
+export async function getAnotherWorldData(worldId: string, pwApiClient: PWApiClient): Promise<WorldData> {
   await authenticate(pwApiClient)
 
   const pwGameClient = new PWGameClient(pwApiClient)
@@ -325,12 +328,14 @@ export async function getAnotherWorldBlocks(worldId: string, pwApiClient: PWApiC
 
   let copyFromAnotherWorldFinished = false
   let blocksResult: DeserialisedStructure | null = null
+  let labelsResult: Map<string, Label> | null = null
 
   pwGameClient.addHook(pwGameWorldHelper.receiveHook).addCallback('playerInitPacket', () => {
     try {
       pwGameClient.send('playerInitReceived')
 
       blocksResult = getAllWorldBlocks(pwGameWorldHelper)
+      labelsResult = pwGameWorldHelper.labels
     } catch (e) {
       handleException(e)
     } finally {
@@ -346,10 +351,17 @@ export async function getAnotherWorldBlocks(worldId: string, pwApiClient: PWApiC
   }
 
   await workerWaitUntil(() => copyFromAnotherWorldFinished, { timeout: 10000, intervalBetweenAttempts: 1000 })
-  if (blocksResult === null) {
+  if (blocksResult === null || labelsResult === null) {
     throw new GameError(`Getting blocks from another world took too long. World ID: ${worldId}`)
   }
-  return blocksResult
+  return {
+    blocks: blocksResult,
+    labels: labelsResult,
+  }
+}
+
+export async function getAnotherWorldBlocks(worldId: string, pwApiClient: PWApiClient): Promise<DeserialisedStructure> {
+  return (await getAnotherWorldData(worldId, pwApiClient)).blocks
 }
 
 // Inclusive on both ends
@@ -410,4 +422,20 @@ export function mergeWorldBlocks(blocksBottom: WorldBlock[], blocksTop: WorldBlo
   })
 
   return filteredBlocksBottom.concat(blocksTop)
+}
+
+export function replaceAllLabels(labels: ILabel[]) {
+  for (const label of getPwGameWorldHelper().labels.values()) {
+    getPwGameClient().send('worldLabelDeleteRequestPacket', {
+      id: label.id,
+    })
+  }
+
+  for (const label of labels) {
+    // @ts-expect-error Waiting for fix as it should be optional
+    label.id = undefined
+    getPwGameClient().send('worldLabelUpsertRequestPacket', {
+      label: label,
+    })
+  }
 }

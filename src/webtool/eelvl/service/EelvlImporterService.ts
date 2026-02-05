@@ -1,11 +1,11 @@
 import { ByteArray } from 'playerioclient'
 import { EelvlBlockId } from '@/webtool/eelvl/gen/EelvlBlockId.ts'
-import { Block, BlockArg, DeserialisedStructure, LayerType } from 'pw-js-world'
+import { Block, BlockArg, DeserialisedStructure, ILabel, LayerType, TextAlignment } from 'pw-js-world'
 import { EelvlBlock } from '@/webtool/eelvl/type/EelvlBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { EelvlFileHeader } from '@/webtool/eelvl/type/EelvlFileHeader.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
-import { getBlockLayer, placeWorldDataBlocks } from '@/core/service/WorldService.ts'
+import { getBlockLayer, placeWorldDataBlocks, replaceAllLabels } from '@/core/service/WorldService.ts'
 import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { cloneDeep } from 'lodash-es'
 import { handlePlaceBlocksResult, requireBotEditPermission } from '@/core/service/PwClientService.ts'
@@ -19,6 +19,7 @@ import { EelvlLayer } from '@/webtool/eelvl/enum/EelvlLayer.ts'
 import { getPwBlocksByEelvlParameters } from '@/webtool/eelvl/store/EelvlClientStore.ts'
 import { EelvlImportResult } from '@/webtool/eelvl/type/EelvlImportResult.ts'
 import { MissingBlockInfo } from '@/webtool/eelvl/type/MissingBlockInfo.ts'
+import { colourToUint32, hexStringToColour } from '@/core/util/Colours.ts'
 
 export function getImportedFromEelvlData(fileData: ArrayBuffer): EelvlImportResult {
   const bytes = new ByteArray(new Uint8Array(fileData))
@@ -53,6 +54,7 @@ export function getImportedFromEelvlData(fileData: ArrayBuffer): EelvlImportResu
     }
   }
 
+  const labels: ILabel[] = []
   const missingBlocks: MissingBlockInfo[] = []
 
   while (bytes.hashposition < bytes.length) {
@@ -65,15 +67,31 @@ export function getImportedFromEelvlData(fileData: ArrayBuffer): EelvlImportResu
       continue
     }
 
-    const pwBlockOrMissingBlockInfo: Block | string = mapBlockIdEelvlToPw(eelvlBlock, eelvlLayer)
+    const pwBlockOrLabelOrMissingBlockInfo: Block | ILabel | string = mapBlockIdEelvlToPw(eelvlBlock, eelvlLayer)
     let pwBlock: Block
-    if (typeof pwBlockOrMissingBlockInfo === 'string') {
-      pwBlock = createMissingBlockSign(pwBlockOrMissingBlockInfo)
+    if (typeof pwBlockOrLabelOrMissingBlockInfo === 'string') {
+      pwBlock = createMissingBlockSign(pwBlockOrLabelOrMissingBlockInfo)
       for (const pos of blockPositions) {
-        missingBlocks.push({ pos: pos, info: pwBlockOrMissingBlockInfo })
+        missingBlocks.push({ pos: pos, info: pwBlockOrLabelOrMissingBlockInfo })
       }
+    } else if (pwBlockOrLabelOrMissingBlockInfo instanceof Block) {
+      pwBlock = pwBlockOrLabelOrMissingBlockInfo
     } else {
-      pwBlock = pwBlockOrMissingBlockInfo
+      for (const pos of blockPositions) {
+        const PW_MAX_LABELS_IN_WORLD = 50
+        if (labels.length < PW_MAX_LABELS_IN_WORLD) {
+          const gridAdjustedPos = vec2.mul(pos, vec2(16, 16))
+          const offsetPos = vec2.add(gridAdjustedPos, vec2(3, 3))
+          const flooredPos = vec2.map(offsetPos, Math.floor)
+          // NOTE: Font in PW labels differ from EE labels, so this is best effort to make it look similar
+          labels.push({ ...pwBlockOrLabelOrMissingBlockInfo, position: flooredPos })
+        } else if (pos.x >= 0 && pos.y >= 0 && pos.x < pwMapWidth && pos.y < pwMapHeight) {
+          pwBlock3DArray[LayerType.Foreground][pos.x][pos.y] = createMissingBlockSign(
+            `Label limit of ${PW_MAX_LABELS_IN_WORLD} reached. Label text: ${eelvlBlock.labelText}`,
+          )
+        }
+      }
+      continue
     }
     const pwLayer = getBlockLayer(pwBlock.bId)
     for (const pos of blockPositions) {
@@ -87,6 +105,7 @@ export function getImportedFromEelvlData(fileData: ArrayBuffer): EelvlImportResu
   applyWorldBackground(deserialisedStructure, pwMapWidth, pwMapHeight, world.backgroundColor)
   return {
     blocks: deserialisedStructure,
+    labels: labels,
     missingBlocks: missingBlocks,
   }
 }
@@ -121,6 +140,7 @@ export async function importFromEelvl(fileData: ArrayBuffer): Promise<MissingBlo
   const eelvlImportResult = getImportedFromEelvlData(fileData)
   const success = await placeWorldDataBlocks(eelvlImportResult.blocks)
   handlePlaceBlocksResult(success)
+  replaceAllLabels(eelvlImportResult.labels)
 
   return eelvlImportResult.missingBlocks
 }
@@ -185,7 +205,7 @@ export function createBlock(pwBlockName: PwBlockName, args?: BlockArg[]): Block 
   return new Block(pwBlockName, args)
 }
 
-function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Block | string {
+function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Block | ILabel | string {
   switch (eelvlBlock.blockId as EelvlBlockId) {
     case EelvlBlockId.COIN_GOLD_DOOR:
       return createBlock(PwBlockName.COIN_GOLD_DOOR, [eelvlBlock.intParameter!])
@@ -233,10 +253,10 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
     case EelvlBlockId.PORTAL_INVISIBLE_LEFT:
       return getEelvlToPwPortalBlock(eelvlBlock)
     case EelvlBlockId.PORTAL_WORLD:
-      return createBlock(PwBlockName.PORTAL_WORLD, [
-        eelvlBlock.worldPortalTargetWorldId!,
-        eelvlBlock.worldPortalTargetSpawnPointId!.toString(),
-      ])
+      return new Block(PwBlockName.PORTAL_WORLD, {
+        target: eelvlBlock.worldPortalTargetWorldId!,
+        spawn_id: '', // Avoiding error: "INFO: Invalid block: You do not have permission to specify a spawn ID for worlds you don't own."
+      })
     case EelvlBlockId.SWITCH_LOCAL_TOGGLE:
       return createBlock(PwBlockName.SWITCH_LOCAL_TOGGLE, [eelvlBlock.intParameter!])
     case EelvlBlockId.SWITCH_LOCAL_ACTIVATOR:
@@ -277,7 +297,7 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
         hide_clock: false,
       })
     case EelvlBlockId.LABEL:
-      return `Missing PixelWalker block: LABEL,\ntext: ${eelvlBlock.labelText}`
+      return getEelvlToPwLabel(eelvlBlock)
     // NOTE: This is not 1 to 1 mapping
     case EelvlBlockId.FIREWORKS:
       return new Block(PwBlockName.FIREWORKS, {
@@ -489,4 +509,23 @@ function getEelvlToPwSwitchActivatorBlock(eelvlBlock: EelvlBlock, isLocal: boole
 
   const pwBlockName = isLocal ? PwBlockName.SWITCH_LOCAL_ACTIVATOR : PwBlockName.SWITCH_GLOBAL_ACTIVATOR
   return createBlock(pwBlockName, [false, eelvlBlock.intParameter!])
+}
+
+function getEelvlToPwLabel(eelvlBlock: EelvlBlock): ILabel {
+  return {
+    id: '', // TODO: Waiting for fix
+    position: vec2(0, 0), // Position set elsewhere
+    text: eelvlBlock.labelText!,
+    color: colourToUint32({ ...hexStringToColour(eelvlBlock.labelTextColor!), a: 255 }),
+    maxWidth: -1,
+    shadow: true,
+    textAlignment: TextAlignment.LEFT,
+    fontSize: 12,
+    characterSpacing: 0,
+    lineSpacing: 0,
+    renderLayer: LayerType.Foreground,
+    shadowColor: colourToUint32({ r: 0, g: 0, b: 0, a: 50 }),
+    shadowOffsetX: 1,
+    shadowOffsetY: 1,
+  }
 }

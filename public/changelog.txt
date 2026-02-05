@@ -2,6 +2,8 @@ PixelWalker copy bot changelog
 
 2026-02-05 Version 1.21.0
 - Bot: Updated to work with PixelWalker version 2026.3.0
+- Bot: .import now also imports labels from another world.
+- Website: EELVL/EER Import now also imports labels from EELVL/EER worlds.
 
 2026-01-26 Version 1.20.0
 - Bot: Updated to work with PixelWalker version 2026.2.3

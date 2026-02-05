@@ -18,6 +18,7 @@ import {
   applyPosOffsetForBlocks,
   convertDeserializedStructureToWorldBlocks,
   getAnotherWorldBlocks,
+  getAnotherWorldData,
   getBlockAt,
   getBlockIdFromString,
   getBlockLayer,
@@ -28,6 +29,7 @@ import {
   placeMultipleBlocks,
   placeWorldDataBlocks,
   portalIdToNumberAndStringArray,
+  replaceAllLabels,
 } from '@/core/service/WorldService.ts'
 import { addUndoItemWorldBlock, performRedo, performUndo } from '@/copybot/service/UndoRedoService.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
@@ -323,7 +325,9 @@ async function importCommandReceived(args: string[], playerId: number) {
 
   sendGlobalChatMessage(`Importing world from ${worldId}`)
 
-  const blocksFromAnotherWorld = await getAnotherWorldBlocks(worldId, getPwApiClient())
+  const { blocks, labels } = await getAnotherWorldData(worldId, getPwApiClient())
+  const blocksFromAnotherWorld = blocks
+  const labelsFromAnotherWorld = labels
 
   const partialImportUsed = args.length === 7
   let allBlocks: WorldBlock[]
@@ -373,16 +377,20 @@ async function importCommandReceived(args: string[], playerId: number) {
 
     const partialBlocks = getDeserialisedStructureSection(blocksFromAnotherWorld, srcFromX, srcFromY, srcToX, srcToY)
     allBlocks = convertDeserializedStructureToWorldBlocks(partialBlocks, vec2(destToX, destToY))
+    // TODO: Maybe add labels just for that imported area?
   } else {
     const emptyBlocks = createEmptyBlocksFullWorldSize(getPwGameWorldHelper())
     const emptyBlocksWorldBlocks = convertDeserializedStructureToWorldBlocks(emptyBlocks)
     const worldDataWorldBlocks = convertDeserializedStructureToWorldBlocks(blocksFromAnotherWorld)
     allBlocks = mergeWorldBlocks(emptyBlocksWorldBlocks, worldDataWorldBlocks)
+
+    replaceAllLabels(Array.from(labelsFromAnotherWorld.values()))
   }
 
   const botData = getBotData(playerId)
   allBlocks = filterByLayerMasks(allBlocks, botData)
   allBlocks = filterBySkipAir(allBlocks, botData)
+  // TODO: Maybe .undo should also reset labels?
   addUndoItemWorldBlock(botData, allBlocks)
 
   const success = await placeMultipleBlocks(allBlocks)

@@ -73,7 +73,6 @@ async function onEelvlFileChange(event: Event) {
         <ul>
           <li>Block for picked up gold/blue coin [110, 111].</li>
           <li>Trophy [478 - 480, 484 - 486, 1540 - 1542].</li>
-          <li>Label [1000].</li>
           <li>Gold gate/door [200, 201].</li>
           <li>Golden easter egg decoration [1591].</li>
           <li>Green space decoration [1603].</li>
