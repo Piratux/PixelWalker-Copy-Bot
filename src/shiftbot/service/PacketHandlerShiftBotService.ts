@@ -45,6 +45,7 @@ const arenaStartAreaTopLeftPos = vec2(49, 75)
 const mapSize = vec2(32, 27)
 
 const afkPos = vec2(69, 77)
+const startPos = vec2(77, 49)
 
 const WAIT_TIME_BEFORE_ROUND_ENDS_AFTER_FIRST_WINNER_MS = 30_000
 // const WAIT_TIME_BEFORE_ROUND_ENDS_AFTER_FIRST_WINNER_MS = 10_000
@@ -855,7 +856,6 @@ async function everySecondShiftBotUpdate() {
 
       const activePlayers = getActivePlayers()
 
-      const startPos = vec2(77, 49)
       for (const activePlayer of activePlayers) {
         const playerId = activePlayer.playerId
         sendRawMessage(`/tp #${playerId} ${startPos.x} ${startPos.y}`)
@@ -910,6 +910,14 @@ async function everySecondShiftBotUpdate() {
       if (useShiftBotRoundStore().secondsPassedInPlayingState === 5) {
         await placeMultipleBlocks(useShiftBotRoundStore().entranceCloseBlocks)
         await placeMultipleBlocks(useShiftBotWorldStore().map5SecondsAfterRoundStartBlocks)
+      }
+
+      // It's not exactly clear how much time should pass before people can get energy after save
+      if ([20, 30, 40, 50].includes(useShiftBotRoundStore().secondsPassedInPlayingState)) {
+        // Allow coins in map to give energy.
+        getPwGameClient().send('worldActionUpdatePacket', {
+          action: ProtoGen.WorldActionUpdatePacket_Action.SAVE_WORLD,
+        })
       }
 
       if (useShiftBotRoundStore().atLeastOnePlayerCompletedLevel) {
