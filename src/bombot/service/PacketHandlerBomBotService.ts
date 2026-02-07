@@ -5,7 +5,12 @@ import {
   getPwGameClient,
   getPwGameWorldHelper,
 } from '@/core/store/PwClientStore.ts'
-import { sendGlobalChatMessage, sendPrivateChatMessage, sendRawMessage } from '@/core/service/ChatMessageService.ts'
+import {
+  sendGlobalChatMessage,
+  sendPrivateChatMessage,
+  sendRawMessage,
+  sendToastMessage,
+} from '@/core/service/ChatMessageService.ts'
 import { ProtoGen } from 'pw-js-api'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import {
@@ -245,10 +250,12 @@ function checkIfPowerUpUsed(playerId: number, keyStates: KeyStates, playerBlockP
   // That is, we want to prevent using 2 powerUps when pressing up 3 times quickly.
   botData.lastTimeUpPressedMs = 0
 
-  sendPrivateChatMessage(
+  sendToastMessage(
     `PowerUp ${BomBotPowerUp[botData.powerUpSelected]} used! ${botRoundData.powerUpsLeft} left`,
     playerId,
+    'atom',
   )
+
   placeStructureInsideMap(useBomBotWorldStore().powerUpData[botData.powerUpSelected].blocks, playerBlockPos)
 }
 
@@ -291,7 +298,7 @@ function checkIfPowerUpEquipped(playerId: number, keyStates: KeyStates, playerBl
   for (const powerUp of useBomBotWorldStore().powerUpData) {
     if (vec2.eq(playerBlockPos, powerUp.equipPos)) {
       botData.powerUpSelected = powerUp.type
-      sendPrivateChatMessage(`PowerUp selected: ${BomBotPowerUp[powerUp.type]}`, playerId)
+      sendToastMessage(`PowerUp selected: ${BomBotPowerUp[powerUp.type]}`, playerId, 'atom')
     }
   }
 }
@@ -305,7 +312,7 @@ function checkIfSpecialBombEquipped(playerId: number, keyStates: KeyStates, play
   for (const specialBomb of useBomBotWorldStore().specialBombData) {
     if (vec2.eq(playerBlockPos, specialBomb.equipPos)) {
       botData.specialBombSelected = specialBomb.type
-      sendPrivateChatMessage(`Special bomb selected: ${BomBotSpecialBomb[specialBomb.type]}`, playerId)
+      sendToastMessage(`Special bomb selected: ${BomBotSpecialBomb[specialBomb.type]}`, playerId, 'bomb')
     }
   }
 }
@@ -1097,6 +1104,10 @@ async function everySecondBomBotUpdate() {
 
       if (useBomBotRoundStore().secondsLeftBeforeBomberCanBomb > 0) {
         useBomBotRoundStore().secondsLeftBeforeBomberCanBomb--
+
+        if (useBomBotRoundStore().secondsLeftBeforeBomberCanBomb === 0) {
+          sendToastMessage('Bomb ready to be dropped!', useBomBotRoundStore().bomberPlayerId, 'bomb')
+        }
       }
 
       if (useBomBotRoundStore().secondsLeftBeforeBombMustBeRemoved > 0) {
@@ -1177,7 +1188,7 @@ function informFirstTimeBomberHowToBomb() {
   const botData = getPlayerBomBotWorldData(useBomBotRoundStore().bomberPlayerId)
   if (!botData.informedHowToPlaceBombOnce) {
     botData.informedHowToPlaceBombOnce = true
-    sendPrivateChatMessage('You are the bomber! Press space to place a bomb.', useBomBotRoundStore().bomberPlayerId)
+    sendToastMessage('You are the bomber! Press space to place a bomb.', useBomBotRoundStore().bomberPlayerId, 'bomb')
   }
 }
 
