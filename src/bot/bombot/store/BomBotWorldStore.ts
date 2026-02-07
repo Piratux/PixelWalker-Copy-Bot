@@ -2,12 +2,12 @@ import { defineStore } from 'pinia'
 import { Raw, ref } from 'vue'
 import { Block } from 'pw-js-world'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
-import { BomBotMapEntry } from '@/bombot/type/BomBotMapEntry.ts'
-import { BomBotState } from '@/bombot/enum/BomBotState.ts'
-import { BomBotBlockType } from '@/bombot/enum/BomBotBlockType.ts'
-import { PlayerBomBotWorldData } from '@/bombot/type/BomBotPlayerWorldData.ts'
-import { BomBotPowerUpData } from '@/bombot/type/BomBotPowerUpData.ts'
-import { BomBotSpecialBombData } from '@/bombot/type/BomBotSpecialBombData.ts'
+import { BomBotMapEntry } from '@/bot/bombot/type/BomBotMapEntry.ts'
+import { BomBotState } from '@/bot/bombot/enum/BomBotState.ts'
+import { BomBotBlockType } from '@/bot/bombot/enum/BomBotBlockType.ts'
+import { PlayerBomBotWorldData } from '@/bot/bombot/type/BomBotPlayerWorldData.ts'
+import { BomBotPowerUpData } from '@/bot/bombot/type/BomBotPowerUpData.ts'
+import { BomBotSpecialBombData } from '@/bot/bombot/type/BomBotSpecialBombData.ts'
 
 export const useBomBotWorldStore = defineStore('BomBotWorldStore', () => {
   const defaultBombBlocks = ref<Raw<WorldBlock[]>>([])

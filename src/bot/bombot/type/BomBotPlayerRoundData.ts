@@ -1,4 +1,4 @@
-import { POWER_UP_COUNT, SPECIAL_BOMB_COUNT } from '@/bombot/constant/General.ts'
+import { POWER_UP_COUNT, SPECIAL_BOMB_COUNT } from '@/bot/bombot/constant/General.ts'
 
 export interface BomBotRoundData {
   powerUpsLeft: number

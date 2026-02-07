@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { Raw, ref } from 'vue'
-import { CurseBotMapEntry } from '@/cursebot/type/CurseBotMapEntry.ts'
-import { CurseBotState } from '@/cursebot/enum/CurseBotState.ts'
-import { PlayerCurseBotWorldData } from '@/cursebot/type/CurseBotPlayerWorldData.ts'
+import { CurseBotMapEntry } from '@/bot/cursebot/type/CurseBotMapEntry.ts'
+import { CurseBotState } from '@/bot/cursebot/enum/CurseBotState.ts'
+import { PlayerCurseBotWorldData } from '@/bot/cursebot/type/CurseBotPlayerWorldData.ts'
 import { Block } from 'pw-js-world'
 
 export const useCurseBotWorldStore = defineStore('CurseBotWorldStore', () => {

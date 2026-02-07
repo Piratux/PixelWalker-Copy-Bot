@@ -1,8 +1,8 @@
-import { CopyBotState } from '@/copybot/enum/CopyBotState.ts'
+import { CopyBotState } from '@/bot/copybot/enum/CopyBotState.ts'
 import { Point } from 'pw-js-world'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
-import { UndoRedoItem } from '@/copybot/type/UndoRedoItem.ts'
+import { UndoRedoItem } from '@/bot/copybot/type/UndoRedoItem.ts'
 
 export interface CopyBotData {
   botState: CopyBotState

@@ -8,9 +8,9 @@ import {
 } from '@/core/store/PwClientStore.ts'
 import { Block, IPlayer, LayerType, Point } from 'pw-js-world'
 import { cloneDeep, isEqual } from 'lodash-es'
-import { CopyBotData, createBotData } from '@/copybot/type/CopyBotData.ts'
-import { getPlayerCopyBotData } from '@/copybot/store/CopyBotStore.ts'
-import { CopyBotState } from '@/copybot/enum/CopyBotState.ts'
+import { CopyBotData, createBotData } from '@/bot/copybot/type/CopyBotData.ts'
+import { getPlayerCopyBotData } from '@/bot/copybot/store/CopyBotStore.ts'
+import { CopyBotState } from '@/bot/copybot/enum/CopyBotState.ts'
 import { sendGlobalChatMessage, sendPrivateChatMessage } from '@/core/service/ChatMessageService.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
@@ -31,7 +31,7 @@ import {
   portalIdToNumberAndStringArray,
   replaceAllLabels,
 } from '@/core/service/WorldService.ts'
-import { addUndoItemWorldBlock, performRedo, performUndo } from '@/copybot/service/UndoRedoService.ts'
+import { addUndoItemWorldBlock, performRedo, performUndo } from '@/bot/copybot/service/UndoRedoService.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { AnyBlockField, ProtoGen } from 'pw-js-api'
 import {
@@ -49,15 +49,15 @@ import { GameError } from '@/core/class/GameError.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import { BotType } from '@/core/enum/BotType.ts'
-import { CopyBotCommandName } from '@/copybot/enum/CopyBotCommandName.ts'
-import { CopyBotMaskCommandMode } from '@/copybot/enum/CopyBotMaskCommandMode.ts'
+import { CopyBotCommandName } from '@/bot/copybot/enum/CopyBotCommandName.ts'
+import { CopyBotMaskCommandMode } from '@/bot/copybot/enum/CopyBotMaskCommandMode.ts'
 import {
   createColourOutOfBoundsErrorString,
   createImportCommandDestinationAreaOutOfBoundsError,
   createImportCommandSourceAreaOutOfBoundsError,
   createPortalIdTooLongErrorString,
   createUnrecognisedMaskModeError,
-} from '@/copybot/service/CopyBotErrorService.ts'
+} from '@/bot/copybot/service/CopyBotErrorService.ts'
 import { getExportedToEelvlData } from '@/webtool/eelvl/service/EelvlExporterService.ts'
 import { getImportedFromEelvlData } from '@/webtool/eelvl/service/EelvlImporterService.ts'
 import { bufferToArrayBuffer } from '@/core/util/Buffers.ts'

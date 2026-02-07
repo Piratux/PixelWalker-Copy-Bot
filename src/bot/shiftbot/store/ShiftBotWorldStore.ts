@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { Raw, ref } from 'vue'
-import { ShiftBotMapEntry } from '@/shiftbot/type/ShiftBotMapEntry.ts'
-import { ShiftBotState } from '@/shiftbot/enum/ShiftBotState.ts'
-import { PlayerShiftBotWorldData } from '@/shiftbot/type/ShiftBotPlayerWorldData.ts'
+import { ShiftBotMapEntry } from '@/bot/shiftbot/type/ShiftBotMapEntry.ts'
+import { ShiftBotState } from '@/bot/shiftbot/enum/ShiftBotState.ts'
+import { PlayerShiftBotWorldData } from '@/bot/shiftbot/type/ShiftBotPlayerWorldData.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { Block } from 'pw-js-world'
 

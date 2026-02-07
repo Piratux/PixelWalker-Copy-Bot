@@ -2,8 +2,8 @@ import { defineStore } from 'pinia'
 import { Raw, ref } from 'vue'
 import { Player } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
-import { PlayerBomBotRoundData } from '@/bombot/type/BomBotPlayerRoundData.ts'
-import { BomBotSpecialBomb } from '@/bombot/enum/BomBotSpecialBomb.ts'
+import { PlayerBomBotRoundData } from '@/bot/bombot/type/BomBotPlayerRoundData.ts'
+import { BomBotSpecialBomb } from '@/bot/bombot/enum/BomBotSpecialBomb.ts'
 
 export const useBomBotRoundStore = defineStore('BomBotRoundStore', () => {
   const availablePlayerSpawnPositions = ref<vec2[]>([])

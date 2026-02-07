@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { Raw, ref } from 'vue'
 import { Player } from 'pw-js-world'
-import { ShiftBotLevelDifficulty } from '@/shiftbot/enum/ShiftBotLevelDifficulty.ts'
-import { ShiftBotMapEntry } from '@/shiftbot/type/ShiftBotMapEntry.ts'
+import { ShiftBotLevelDifficulty } from '@/bot/shiftbot/enum/ShiftBotLevelDifficulty.ts'
+import { ShiftBotMapEntry } from '@/bot/shiftbot/type/ShiftBotMapEntry.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 
 export const useShiftBotRoundStore = defineStore('ShiftBotRoundStore', () => {

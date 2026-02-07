@@ -1,7 +1,7 @@
 import { describe, test } from 'vitest'
 import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
-import { commandReceived } from '@/copybot/service/PacketHandlerCopyBotService.ts'
-import { CopyBotCommandName } from '@/copybot/enum/CopyBotCommandName.ts'
+import { commandReceived } from '@/bot/copybot/service/PacketHandlerCopyBotService.ts'
+import { CopyBotCommandName } from '@/bot/copybot/enum/CopyBotCommandName.ts'
 
 describe.sequential('.help', () => {
   test('.help', async (ctx) => {

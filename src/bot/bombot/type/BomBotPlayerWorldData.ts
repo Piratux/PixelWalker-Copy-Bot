@@ -1,7 +1,7 @@
-import { BomBotPowerUp } from '@/bombot/enum/BomBotPowerUp.ts'
+import { BomBotPowerUp } from '@/bot/bombot/enum/BomBotPowerUp.ts'
 import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
-import { BomBotSpecialBomb } from '@/bombot/enum/BomBotSpecialBomb.ts'
-import { BomBotBombType } from '@/bombot/enum/BomBotBombType.ts'
+import { BomBotSpecialBomb } from '@/bot/bombot/enum/BomBotSpecialBomb.ts'
+import { BomBotBombType } from '@/bot/bombot/enum/BomBotBombType.ts'
 
 export interface BomBotWorldData {
   username: string // Because when player leaves, we can't obtain username from id anymore in PWGameWorldHelper.getPlayer()

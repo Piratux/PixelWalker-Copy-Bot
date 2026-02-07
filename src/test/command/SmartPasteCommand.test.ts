@@ -5,12 +5,12 @@ import { Block, LayerType } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { runSelectCommandTest } from '@/test/RuntimeTestsUtil.ts'
-import { commandReceived } from '@/copybot/service/PacketHandlerCopyBotService.ts'
+import { commandReceived } from '@/bot/copybot/service/PacketHandlerCopyBotService.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import {
   createColourOutOfBoundsErrorString,
   createPortalIdTooLongErrorString,
-} from '@/copybot/service/CopyBotErrorService.ts'
+} from '@/bot/copybot/service/CopyBotErrorService.ts'
 import { colourToUint32 } from '@/core/util/Colours.ts'
 
 describe.sequential('.smartpaste', () => {

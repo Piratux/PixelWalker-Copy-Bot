@@ -1,4 +1,4 @@
-import { CopyBotData } from '@/copybot/type/CopyBotData.ts'
+import { CopyBotData } from '@/bot/copybot/type/CopyBotData.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import {
   convertDeserializedStructureToWorldBlocks,

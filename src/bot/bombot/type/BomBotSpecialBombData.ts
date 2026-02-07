@@ -1,6 +1,6 @@
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { Block, Point } from 'pw-js-world'
-import { BomBotSpecialBomb } from '@/bombot/enum/BomBotSpecialBomb.ts'
+import { BomBotSpecialBomb } from '@/bot/bombot/enum/BomBotSpecialBomb.ts'
 
 export interface BomBotSpecialBombData {
   equipPos: Point
