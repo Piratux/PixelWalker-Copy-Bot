@@ -18,7 +18,7 @@ import {
 import { isDeveloper, isWorldOwner, requireDeveloper, requireWorldOwner } from '@/core/util/Environment.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { cloneDeep, shuffle } from 'lodash-es'
-import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
+import { Block, DeserialisedStructure, KeyStates, LayerType } from 'pw-js-world'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import {
@@ -133,25 +133,30 @@ function handleBomBotError(e: unknown) {
 
 function convertFromPixelPosToBlockPos(pixelPos: vec2): vec2 {
   const blockPos = vec2.div(pixelPos, 16)
-  blockPos.x = Math.round(blockPos.x)
-  blockPos.y = Math.round(blockPos.y)
-  return blockPos
+  return vec2.map(blockPos, Math.round)
 }
 
-function playerMovedPacketReceived(data: ProtoGen.PlayerMovedPacket) {
-  checkIfBombPlaced(data)
-  checkIfPowerUpUsed(data)
-  checkIfBombTypeChanged(data)
-  checkIfPowerUpEquipped(data)
-  checkIfSpecialBombEquipped(data)
+function playerMovedPacketReceived(data: ProtoGen.PlayerMovedPacket, states?: { keyStates: KeyStates }) {
+  const playerId = data.playerId!
+  const keyStates = states!.keyStates
+  const playerBlockPos = convertFromPixelPosToBlockPos(data.position!)
+  checkIfBombPlaced(playerId, keyStates, playerBlockPos)
+  checkIfPowerUpUsed(playerId, keyStates, playerBlockPos)
+  checkIfBombTypeChanged(playerId, keyStates)
+  checkIfPowerUpEquipped(playerId, keyStates, playerBlockPos)
+  checkIfSpecialBombEquipped(playerId, keyStates, playerBlockPos)
 }
 
-function checkIfBombPlaced(data: ProtoGen.PlayerMovedPacket) {
-  if (
-    !data.spaceJustDown ||
-    useBomBotWorldStore().currentState !== BomBotState.PLAYING ||
-    data.playerId !== useBomBotRoundStore().bomberPlayerId
-  ) {
+function checkIfBombPlaced(playerId: number, keyStates: KeyStates, playerBlockPos: vec2) {
+  if (!keyStates.jump.pressed) {
+    return
+  }
+
+  if (useBomBotWorldStore().currentState !== BomBotState.PLAYING) {
+    return
+  }
+
+  if (playerId !== useBomBotRoundStore().bomberPlayerId) {
     return
   }
 
@@ -163,12 +168,11 @@ function checkIfBombPlaced(data: ProtoGen.PlayerMovedPacket) {
     return
   }
 
-  const playerPos = convertFromPixelPosToBlockPos(data.position!)
-  const posX = clamp(playerPos.x, mapTopLeftPos.x, mapTopLeftPos.x + mapSize.x - 1)
+  const posX = clamp(playerBlockPos.x, mapTopLeftPos.x, mapTopLeftPos.x + mapSize.x - 1)
 
   useBomBotRoundStore().bombAvailable = false
 
-  const botData = getPlayerBomBotWorldData(data.playerId)
+  const botData = getPlayerBomBotWorldData(playerId)
   const bombPos = getBombSpawnPos(posX)
   if (botData.bombTypeChosen === BomBotBombType.NORMAL) {
     placeStructureInsideMap(useBomBotWorldStore().defaultBombBlocks, bombPos)
@@ -177,7 +181,7 @@ function checkIfBombPlaced(data: ProtoGen.PlayerMovedPacket) {
     placeStructureInsideMap(useBomBotWorldStore().specialBombData[botData.specialBombSelected!].blocks, bombPos)
     useBomBotRoundStore().lastBombType = botData.specialBombSelected
 
-    const botRoundData = getPlayerBomBotRoundData(data.playerId)
+    const botRoundData = getPlayerBomBotRoundData(playerId)
     botRoundData.specialBombsLeft--
 
     placeBombTypeIndicators()
@@ -189,23 +193,24 @@ function checkIfBombPlaced(data: ProtoGen.PlayerMovedPacket) {
   updateAvailablePlayerSpawnPositions()
 }
 
-function checkIfPowerUpUsed(data: ProtoGen.PlayerMovedPacket) {
-  if (
-    useBomBotWorldStore().currentState !== BomBotState.PLAYING ||
-    data.playerId === useBomBotRoundStore().bomberPlayerId ||
-    !getPlayerIdsInGame().includes(data.playerId!)
-  ) {
+function checkIfPowerUpUsed(playerId: number, keyStates: KeyStates, playerBlockPos: vec2) {
+  if (useBomBotWorldStore().currentState !== BomBotState.PLAYING) {
     return
   }
 
-  const playerPos = convertFromPixelPosToBlockPos(data.position!)
-
-  const upPressed = data.vertical === -1 && data.horizontal === 0
-  if (!upPressed) {
+  if (playerId === useBomBotRoundStore().bomberPlayerId) {
     return
   }
 
-  const posBelow = vec2.add(playerPos, vec2(0, 1))
+  if (!getPlayerIdsInGame().includes(playerId)) {
+    return
+  }
+
+  if (!keyStates.up.pressed) {
+    return
+  }
+
+  const posBelow = vec2.add(playerBlockPos, vec2(0, 1))
   const foregroundBlockBelow = getPwGameWorldHelper().getBlockAt(posBelow, LayerType.Foreground)
   const overlayBlockBelow = getPwGameWorldHelper().getBlockAt(posBelow, LayerType.Overlay)
   const playerIsInAir =
@@ -215,7 +220,7 @@ function checkIfPowerUpUsed(data: ProtoGen.PlayerMovedPacket) {
     return
   }
 
-  const botData = getPlayerBomBotWorldData(data.playerId!)
+  const botData = getPlayerBomBotWorldData(playerId)
   if (botData.powerUpSelected === null) {
     return
   }
@@ -229,7 +234,7 @@ function checkIfPowerUpUsed(data: ProtoGen.PlayerMovedPacket) {
     return
   }
 
-  const botRoundData = getPlayerBomBotRoundData(data.playerId!)
+  const botRoundData = getPlayerBomBotRoundData(playerId)
   if (botRoundData.powerUpsLeft <= 0) {
     return
   }
@@ -242,30 +247,30 @@ function checkIfPowerUpUsed(data: ProtoGen.PlayerMovedPacket) {
 
   sendPrivateChatMessage(
     `PowerUp ${BomBotPowerUp[botData.powerUpSelected]} used! ${botRoundData.powerUpsLeft} left`,
-    data.playerId!,
+    playerId,
   )
-  placeStructureInsideMap(useBomBotWorldStore().powerUpData[botData.powerUpSelected].blocks, playerPos)
+  placeStructureInsideMap(useBomBotWorldStore().powerUpData[botData.powerUpSelected].blocks, playerBlockPos)
 }
 
-function checkIfBombTypeChanged(data: ProtoGen.PlayerMovedPacket) {
-  if (
-    useBomBotWorldStore().currentState !== BomBotState.PLAYING ||
-    data.playerId !== useBomBotRoundStore().bomberPlayerId
-  ) {
+function checkIfBombTypeChanged(playerId: number, keyStates: KeyStates) {
+  if (useBomBotWorldStore().currentState !== BomBotState.PLAYING) {
     return
   }
 
-  const upPressed = data.vertical === -1 && data.horizontal === 0
-  if (!upPressed) {
+  if (playerId !== useBomBotRoundStore().bomberPlayerId) {
     return
   }
 
-  const botData = getPlayerBomBotWorldData(data.playerId)
+  if (!keyStates.up.pressed) {
+    return
+  }
+
+  const botData = getPlayerBomBotWorldData(playerId)
   if (botData.specialBombSelected === null) {
     return
   }
 
-  const botRoundData = getPlayerBomBotRoundData(data.playerId)
+  const botRoundData = getPlayerBomBotRoundData(playerId)
   if (botRoundData.specialBombsLeft <= 0) {
     return
   }
@@ -277,34 +282,28 @@ function checkIfBombTypeChanged(data: ProtoGen.PlayerMovedPacket) {
   useBomBotRoundStore().secondsLeftBeforeBomberCanBomb = 2
 }
 
-function checkIfPowerUpEquipped(data: ProtoGen.PlayerMovedPacket) {
-  const downPressed = data.vertical === 1 && data.horizontal === 0
-  if (!downPressed) {
+function checkIfPowerUpEquipped(playerId: number, keyStates: KeyStates, playerBlockPos: vec2) {
+  if (!keyStates.down.pressed) {
     return
   }
 
-  const playerId = data.playerId!
-  const playerPos = convertFromPixelPosToBlockPos(data.position!)
   const botData = getPlayerBomBotWorldData(playerId)
   for (const powerUp of useBomBotWorldStore().powerUpData) {
-    if (vec2.eq(playerPos, powerUp.equipPos)) {
+    if (vec2.eq(playerBlockPos, powerUp.equipPos)) {
       botData.powerUpSelected = powerUp.type
       sendPrivateChatMessage(`PowerUp selected: ${BomBotPowerUp[powerUp.type]}`, playerId)
     }
   }
 }
 
-function checkIfSpecialBombEquipped(data: ProtoGen.PlayerMovedPacket) {
-  const downPressed = data.vertical === 1 && data.horizontal === 0
-  if (!downPressed) {
+function checkIfSpecialBombEquipped(playerId: number, keyStates: KeyStates, playerBlockPos: vec2) {
+  if (!keyStates.down.pressed) {
     return
   }
 
-  const playerId = data.playerId!
-  const playerPos = convertFromPixelPosToBlockPos(data.position!)
   const botData = getPlayerBomBotWorldData(playerId)
   for (const specialBomb of useBomBotWorldStore().specialBombData) {
-    if (vec2.eq(playerPos, specialBomb.equipPos)) {
+    if (vec2.eq(playerBlockPos, specialBomb.equipPos)) {
       botData.specialBombSelected = specialBomb.type
       sendPrivateChatMessage(`Special bomb selected: ${BomBotSpecialBomb[specialBomb.type]}`, playerId)
     }
