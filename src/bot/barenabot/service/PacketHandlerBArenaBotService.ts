@@ -158,7 +158,11 @@ function disqualifyPlayerFromRound(playerId: number) {
   }
 }
 
-function playerDiedFromProjectile(playerId: number) {
+function playerDiedFromProjectile(playerId: number, killingPlayerId: number) {
+  const playerName = getPwGameWorldHelper().getPlayer(playerId)?.username ?? 'Unknown'
+  const killingPlayerName = getPwGameWorldHelper().getPlayer(killingPlayerId)?.username ?? 'Unknown'
+  sendToastMessage(`You shot ${playerName}!`, killingPlayerId, 'arrow-trend-up')
+  sendToastMessage(`You were shot by ${killingPlayerName}!`, playerId, 'skull')
   sendRawMessage(`/kill #${playerId}`)
   disqualifyPlayerFromRound(playerId)
 }
@@ -609,7 +613,7 @@ function updateProjectileCollision() {
       if (playerId !== undefined) {
         const playerData = getPlayerData(playerId)
         if (playerData.team !== projectileData.team) {
-          playerDiedFromProjectile(playerId)
+          playerDiedFromProjectile(playerId, projectileData.playerId)
         }
 
         // Ignore projectile collisions with the player that shot them
