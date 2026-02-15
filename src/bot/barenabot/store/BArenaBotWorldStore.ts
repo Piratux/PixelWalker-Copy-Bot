@@ -15,6 +15,7 @@ export const useBArenaBotWorldStore = defineStore('BArenaBotWorldStore', () => {
   const teamBlueProjectileFgBlock = ref<Raw<Block>>(new Block(0))
   const teamRedProjectileFgBlock = ref<Raw<Block>>(new Block(0))
   const mapEmptyFgBlock = ref<Raw<Block>>(new Block(0))
+  const playerIdQueue = ref<number[]>([])
 
   return {
     currentState,
@@ -27,5 +28,6 @@ export const useBArenaBotWorldStore = defineStore('BArenaBotWorldStore', () => {
     teamBlueProjectileFgBlock,
     teamRedProjectileFgBlock,
     mapEmptyFgBlock,
+    playerIdQueue,
   }
 })

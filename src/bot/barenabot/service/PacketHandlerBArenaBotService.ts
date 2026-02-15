@@ -80,7 +80,7 @@ const RED_TEAM_TANK_START_POSITIONS = [
   vec2(100, 120),
 ]
 
-const MAX_ROUND_LENGTH_MS = 120_000
+const MAX_ROUND_LENGTH_MS = 180_000
 
 // NOTE: it's not a good idea to rely on these being constant, but it will do for now
 const TEAM_NONE = 0
@@ -190,7 +190,10 @@ function playerResetPacketReceived(data: ProtoGen.PlayerResetPacket) {
 }
 
 function playerLeftPacketReceived(data: ProtoGen.PlayerLeftPacket) {
-  disqualifyPlayerFromRound(data.playerId)
+  const playerId = data.playerId
+  disqualifyPlayerFromRound(playerId)
+
+  useBArenaBotWorldStore().playerIdQueue = useBArenaBotWorldStore().playerIdQueue.filter((pId) => pId !== playerId)
 }
 
 function checkIfPlayerMoved(playerId: number, keyStates: KeyStates) {
@@ -274,6 +277,8 @@ function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
   if (playerId === undefined) {
     return
   }
+
+  useBArenaBotWorldStore().playerIdQueue.push(playerId)
 
   if (isWorldOwner(playerId)) {
     sendPrivateChatMessage('BArena bot is here! Type .start to start the round. Type .help to see commands', playerId)
@@ -477,6 +482,10 @@ async function startBArenaBot(loadWorld: boolean) {
   sendGlobalChatMessage('Starting BArenaBot...')
 
   useBArenaBotWorldStore().$reset()
+
+  useBArenaBotWorldStore().playerIdQueue = getPwGameWorldHelper()
+    .getPlayers()
+    .map((player) => player.playerId)
 
   if (loadWorld) {
     await placeBArenaBotWorld()
@@ -690,10 +699,6 @@ function getActivePlayers() {
   return Array.from(getPwGameWorldHelper().players.values()).filter((player) => player.states.teamId !== TEAM_RED)
 }
 
-function getActivePlayersIds() {
-  return getActivePlayers().map((p) => p.playerId)
-}
-
 function getActivePlayerCount() {
   return getActivePlayers().length
 }
@@ -767,15 +772,27 @@ function resetBotState() {
   setBArenaBotState(BArenaBotState.RESET_STORE)
 }
 
+function takePlayersForRound(totalPlayersForRound: number) {
+  const playerIdsAvailableForRoundStart = useBArenaBotWorldStore()
+    .playerIdQueue.filter((playerId) => getPwGameWorldHelper().players.get(playerId)?.states.teamId !== TEAM_RED)
+    .slice(0, totalPlayersForRound)
+
+  for (const playerId of playerIdsAvailableForRoundStart) {
+    useBArenaBotWorldStore().playerIdQueue = useBArenaBotWorldStore().playerIdQueue.filter((pId) => pId !== playerId)
+    useBArenaBotWorldStore().playerIdQueue.push(playerId)
+  }
+
+  return playerIdsAvailableForRoundStart
+}
+
 function calculatePlayerIdsFor2Teams(): [number[], number[]] {
-  let playerIds = getActivePlayersIds()
-  playerIds = shuffle(playerIds)
+  const activePlayerCount = getActivePlayerCount()
+  if (activePlayerCount === 0) {
+    return [[], []]
+  }
 
-  const cappedTeamSize = Math.min(MAX_PLAYERS_PER_TEAM * 2, playerIds.length)
-  playerIds = playerIds.slice(0, cappedTeamSize)
-
-  const evenTeamSize = playerIds.length - (playerIds.length % 2)
-  playerIds = playerIds.slice(0, evenTeamSize)
+  const totalPlayersForRound = Math.min(MAX_PLAYERS_PER_TEAM * 2, activePlayerCount) - (activePlayerCount % 2)
+  const playerIds = shuffle(takePlayersForRound(totalPlayersForRound))
 
   const halfTeamSize = playerIds.length / 2
   const redTeamPlayerIds = playerIds.slice(0, halfTeamSize)
