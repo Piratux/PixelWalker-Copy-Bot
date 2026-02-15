@@ -224,16 +224,16 @@ function playerTryUseGun(playerData: BArenaPlayerBotRoundData, playerId: number)
     return
   }
 
-  if (playerData.gunCooldownInTicks > 0) {
+  if (useBArenaBotWorldStore().ticksPassed - playerData.lastTickWhenUsedGun < GUN_RELOAD_COOLDOWN_TICKS) {
     return
   }
 
-  playerData.gunCooldownInTicks = GUN_RELOAD_COOLDOWN_TICKS
+  playerData.lastTickWhenUsedGun = useBArenaBotWorldStore().ticksPassed
   useBArenaBotRoundStore().projectileBArenaBotRoundData.push({
     pos: vec2.add(playerData.pos, playerData.lastMoveDirection),
     moveDirection: playerData.lastMoveDirection,
     team: playerData.team,
-    moveCooldownInTicks: PROJECTILE_MOVE_COOLDOWN_TICKS,
+    lastTickWhenMoved: useBArenaBotWorldStore().ticksPassed,
     playerId: playerId,
   })
 }
@@ -543,7 +543,7 @@ function tryToMovePlayerToNewPosition(playerData: BArenaPlayerBotRoundData, move
   const newPos = vec2.add(playerData.pos, moveDirection)
   if (canMovePlayerToPos(newPos)) {
     // We want to incur cooldown, only if player moved somewhere
-    playerData.moveCooldownInTicks = PLAYER_MOVE_COOLDOWN_TICKS
+    playerData.lastTickWhenMoved = useBArenaBotWorldStore().ticksPassed
 
     playerData.pos = newPos
     return true
@@ -552,7 +552,7 @@ function tryToMovePlayerToNewPosition(playerData: BArenaPlayerBotRoundData, move
 }
 
 function playerTryMove(playerData: BArenaPlayerBotRoundData) {
-  if (playerData.moveCooldownInTicks > 0) {
+  if (useBArenaBotWorldStore().ticksPassed - playerData.lastTickWhenMoved < PLAYER_MOVE_COOLDOWN_TICKS) {
     return
   }
 
@@ -584,17 +584,12 @@ function updateProjectilePosition() {
   // Make a copy, so that it's safe to delete elements while iterating
   const projectileDataCopy = [...useBArenaBotRoundStore().projectileBArenaBotRoundData]
   for (const projectileData of projectileDataCopy) {
-    if (projectileData.moveCooldownInTicks > 0) {
-      projectileData.moveCooldownInTicks--
-    }
-
-    if (projectileData.moveCooldownInTicks > 0) {
+    if (useBArenaBotWorldStore().ticksPassed - projectileData.lastTickWhenMoved < PROJECTILE_MOVE_COOLDOWN_TICKS) {
       continue
     }
 
-    const newPos = vec2.add(projectileData.pos, projectileData.moveDirection)
-    projectileData.moveCooldownInTicks = PROJECTILE_MOVE_COOLDOWN_TICKS
-    projectileData.pos = newPos
+    projectileData.lastTickWhenMoved = useBArenaBotWorldStore().ticksPassed
+    projectileData.pos = vec2.add(projectileData.pos, projectileData.moveDirection)
 
     // Makes sure that 2 projectiles moving towards each other still collide
     updateProjectileCollision()
@@ -636,30 +631,13 @@ function updateProjectileCollision() {
   )
 }
 
-function updatePlayerGunCooldown() {
-  for (const playerData of useBArenaBotRoundStore().playerBArenaBotRoundData.values()) {
-    if (playerData.gunCooldownInTicks > 0) {
-      playerData.gunCooldownInTicks--
-    }
-  }
-}
-
 function updatePlayerShootGun() {
   for (const [playerId, playerData] of useBArenaBotRoundStore().playerBArenaBotRoundData.entries()) {
     playerTryUseGun(playerData, playerId)
   }
 }
 
-function updatePlayerMoveCooldown() {
-  for (const playerData of useBArenaBotRoundStore().playerBArenaBotRoundData.values()) {
-    if (playerData.moveCooldownInTicks > 0) {
-      playerData.moveCooldownInTicks--
-    }
-  }
-}
-
 function everyTickBArenaBotUpdate(): void {
-  useBArenaBotWorldStore().ticksPassed++
   if (useBArenaBotWorldStore().ticksPassed % TICK_RATE === 0) {
     everySecondBArenaBotUpdate()
   }
@@ -669,12 +647,10 @@ function everyTickBArenaBotUpdate(): void {
 
     updateProjectilePosition()
 
-    updatePlayerMoveCooldown()
     updatePlayerPosition()
 
     updateProjectileCollision()
 
-    updatePlayerGunCooldown()
     updatePlayerShootGun()
 
     updateProjectileCollision()
@@ -685,6 +661,9 @@ function everyTickBArenaBotUpdate(): void {
   if (useBArenaBotWorldStore().currentState === BArenaBotState.COUNTING_DOWN_FOR_ROUND_START) {
     renderMap()
   }
+
+  // This must be called last in everyTickBArenaBotUpdate to avoid double move updates of players and projectiles
+  useBArenaBotWorldStore().ticksPassed++
 }
 
 async function everyTickUpdate(): Promise<void> {
@@ -823,8 +802,8 @@ function createTeamPlayerRoundData(teamPlayerIds: number[], team: BArenaTeam, te
       team: team,
       pos: teamTankStartPositions[i],
       moveDirection: vec2(0, 0),
-      moveCooldownInTicks: 0,
-      gunCooldownInTicks: 0,
+      lastTickWhenMoved: 0,
+      lastTickWhenUsedGun: 0,
       lastMoveDirection: vec2(0, team === BArenaTeam.RED ? -1 : 1), // Player shoots towards lobby by default
       holdingShootKey: false,
       playerIsAfk: true,

@@ -5,6 +5,6 @@ export interface BArenaBotProjectileRoundData {
   pos: vec2
   moveDirection: vec2
   team: BArenaTeam // which team player shot the projectile
-  moveCooldownInTicks: number
+  lastTickWhenMoved: number
   playerId: number // which player shot the projectile
 }

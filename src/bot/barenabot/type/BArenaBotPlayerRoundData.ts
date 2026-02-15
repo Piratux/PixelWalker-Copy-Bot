@@ -6,8 +6,8 @@ export interface BArenaPlayerBotRoundData {
   pos: vec2
   moveDirection: vec2
   team: BArenaTeam
-  moveCooldownInTicks: number
-  gunCooldownInTicks: number
+  lastTickWhenMoved: number
+  lastTickWhenUsedGun: number
   lastMoveDirection: vec2 // used to know which direction to shoot projectile
   holdingShootKey: boolean
   playerIsAfk: boolean
