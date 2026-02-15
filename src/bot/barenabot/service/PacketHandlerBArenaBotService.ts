@@ -666,6 +666,10 @@ function everyTickBArenaBotUpdate(): void {
 
     renderMap()
   }
+
+  if (useBArenaBotWorldStore().currentState === BArenaBotState.COUNTING_DOWN_FOR_ROUND_START) {
+    renderMap()
+  }
 }
 
 async function everyTickUpdate(): Promise<void> {
