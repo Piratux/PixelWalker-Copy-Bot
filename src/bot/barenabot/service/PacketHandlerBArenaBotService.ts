@@ -713,22 +713,27 @@ function updatePlayerCounterStats(playerId: number) {
   sendRawMessage(`/counter #${playerId} white =${playerBotData.wins}`)
 }
 
-function teamWinRound(teamName: 'RED' | 'BLUE') {
-  sendGlobalChatMessage(`Team ${teamName} wins!`)
-
+function teamWinRound(winningTeam: BArenaTeam) {
   setBArenaBotState(BArenaBotState.CELEBRATING_VICTORY)
+
+  sendGlobalChatMessage(`Team ${winningTeam === BArenaTeam.RED ? 'RED' : 'BLUE'} wins!`)
+
+  for (const [playerId, playerData] of useBArenaBotRoundStore().startingPlayerBArenaBotRoundData.entries()) {
+    if (playerData.team == winningTeam) {
+      getPlayerBArenaBotWorldData(playerId).wins++
+      updatePlayerCounterStats(playerId)
+    }
+  }
+
+  updateLeaderboard()
 }
 
-function giveRewardToWinningTeam() {
+function moveOutRemainingWinningPlayers() {
   for (const playerId of useBArenaBotRoundStore().playerBArenaBotRoundData.keys()) {
     sendRawMessage(`/givecrown #${playerId}`) // random player will be given crown
     sendRawMessage(`/team #${playerId} ${TEAM_NONE}`)
     sendRawMessage(`/tp #${playerId} ${winPos.x} ${winPos.y}`)
-    getPlayerBArenaBotWorldData(playerId).wins++
-    updatePlayerCounterStats(playerId)
   }
-
-  updateLeaderboard()
 }
 
 function updateLeaderboard() {
@@ -931,12 +936,12 @@ function everySecondBArenaBotUpdate() {
       )
 
       if (redTeamPlayerIdsInGame.length === 0 && redTeamProjectiles.length === 0) {
-        teamWinRound('BLUE')
+        teamWinRound(BArenaTeam.BLUE)
         return
       }
 
       if (blueTeamPlayerIdsInGame.length === 0 && blueTeamProjectiles.length === 0) {
-        teamWinRound('RED')
+        teamWinRound(BArenaTeam.RED)
         return
       }
 
@@ -963,7 +968,7 @@ function everySecondBArenaBotUpdate() {
 
       // Keep winning players in spot for a bit before moving them out
       if (useBArenaBotRoundStore().secondsPassedInCelebratingVictoryState === 2) {
-        giveRewardToWinningTeam()
+        moveOutRemainingWinningPlayers()
       }
 
       break
