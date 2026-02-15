@@ -714,17 +714,20 @@ function updatePlayerCounterStats(playerId: number) {
   sendRawMessage(`/counter #${playerId} white =${playerBotData.wins}`)
 }
 
-function teamWinRound(winningTeamPlayerIds: number[], teamName: 'RED' | 'BLUE') {
-  for (const playerId of winningTeamPlayerIds) {
+function teamWinRound(teamName: 'RED' | 'BLUE') {
+  sendGlobalChatMessage(`Team ${teamName} wins!`)
+
+  setBArenaBotState(BArenaBotState.CELEBRATING_VICTORY)
+}
+
+function giveRewardToWinningTeam() {
+  for (const playerId of useBArenaBotRoundStore().playerBArenaBotRoundData.keys()) {
     sendRawMessage(`/givecrown #${playerId}`) // random player will be given crown
     sendRawMessage(`/team #${playerId} ${TEAM_NONE}`)
     sendRawMessage(`/tp #${playerId} ${winPos.x} ${winPos.y}`)
-    sendGlobalChatMessage(`Team ${teamName} wins!`)
     getPlayerBArenaBotWorldData(playerId).wins++
     updatePlayerCounterStats(playerId)
   }
-
-  setBArenaBotState(BArenaBotState.CELEBRATING_VICTORY)
 
   updateLeaderboard()
 }
@@ -811,6 +814,7 @@ function createTeamPlayerRoundData(teamPlayerIds: number[], team: BArenaTeam, te
       playerHoldingShootKey: false,
     }
     useBArenaBotRoundStore().playerBArenaBotRoundData.set(playerId, playerData)
+    useBArenaBotRoundStore().startingPlayerBArenaBotRoundData.set(playerId, playerData)
   }
 }
 
@@ -896,12 +900,12 @@ function everySecondBArenaBotUpdate() {
       )
 
       if (redTeamPlayerIdsInGame.length === 0) {
-        teamWinRound(blueTeamPlayerIdsInGame, 'BLUE')
+        teamWinRound('BLUE')
         return
       }
 
       if (blueTeamPlayerIdsInGame.length === 0) {
-        teamWinRound(redTeamPlayerIdsInGame, 'RED')
+        teamWinRound('RED')
         return
       }
 
@@ -925,6 +929,12 @@ function everySecondBArenaBotUpdate() {
       if (useBArenaBotRoundStore().secondsPassedInCelebratingVictoryState > 5) {
         resetBotState()
       }
+
+      // Keep winning players in spot for a bit before moving them out
+      if (useBArenaBotRoundStore().secondsPassedInCelebratingVictoryState === 2) {
+        giveRewardToWinningTeam()
+      }
+
       break
     }
     default:

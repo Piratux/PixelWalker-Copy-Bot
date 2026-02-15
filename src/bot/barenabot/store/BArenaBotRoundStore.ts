@@ -9,6 +9,7 @@ export const useBArenaBotRoundStore = defineStore('BArenaBotRoundStore', () => {
   const secondsPassedInCountingDownForRoundStartState = ref<number>(0)
   const timestampInMsWhenRoundStart = ref<number>(0)
   const playerBArenaBotRoundData = ref<Raw<Map<number, BArenaPlayerBotRoundData>>>(new Map())
+  const startingPlayerBArenaBotRoundData = ref<Raw<Map<number, BArenaPlayerBotRoundData>>>(new Map()) // Used to know which players were selected at start of game
   const projectileBArenaBotRoundData = ref<Raw<BArenaBotProjectileRoundData[]>>([])
 
   return {
@@ -17,6 +18,7 @@ export const useBArenaBotRoundStore = defineStore('BArenaBotRoundStore', () => {
     secondsPassedInCountingDownForRoundStartState,
     timestampInMsWhenRoundStart,
     playerBArenaBotRoundData,
+    startingPlayerBArenaBotRoundData,
     projectileBArenaBotRoundData,
   }
 })
