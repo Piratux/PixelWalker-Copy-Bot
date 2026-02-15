@@ -25,7 +25,6 @@ import { getRandomArrayElement } from '@/core/util/Random.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
-import { getWorldIdIfUrl } from '@/core/util/WorldIdExtractor.ts'
 import { useCurseBotWorldStore } from '@/bot/cursebot/store/CurseBotWorldStore.ts'
 import { CurseBotState } from '@/bot/cursebot/enum/CurseBotState.ts'
 import { useCurseBotRoundStore } from '@/bot/cursebot/store/CurseBotRoundStore.ts'
@@ -363,7 +362,7 @@ function loadMaps(
 
 async function loadCurseBotData() {
   sendGlobalChatMessage('Loading CurseBot data...')
-  const curseBotDataWorldId = getWorldIdIfUrl('r0499638a6d91ec')
+  const curseBotDataWorldId = 'r0499638a6d91ec'
   const curseBotBlocks = await getAnotherWorldBlocks(curseBotDataWorldId, getPwApiClient())
 
   useCurseBotWorldStore().mapClearAfterEachRoundFgBlock = curseBotBlocks.blocks[LayerType.Foreground][12][498]

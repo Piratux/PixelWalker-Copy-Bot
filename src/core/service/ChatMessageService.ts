@@ -20,7 +20,6 @@ export function sendToastMessage(
   // Escape with double quotes
   message = message.replace(/"/g, '""')
 
-  console.log(`/toast ${playerIdOrSelector} "${message}" ${durationSeconds} ${icon ?? ''}`)
   sendRawMessage(`/toast ${playerIdOrSelector} "${message}" ${durationSeconds * 1000} ${icon ?? ''}`)
 }
 

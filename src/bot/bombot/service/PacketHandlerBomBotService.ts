@@ -37,7 +37,6 @@ import {
   placeWorldDataBlocksUsingColumnsLeftToRightPattern,
 } from '@/core/service/WorldService.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
-import { getWorldIdIfUrl } from '@/core/util/WorldIdExtractor.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { useBomBotWorldStore } from '@/bot/bombot/store/BomBotWorldStore.ts'
 import { BomBotState } from '@/bot/bombot/enum/BomBotState.ts'
@@ -62,6 +61,7 @@ import { BomBotCommandName } from '@/bot/bombot/enum/BomBotCommandName.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
 import { toRaw } from 'vue'
+import { isPosInsideArea } from '@/core/util/Geometry.ts'
 
 const blockTypeDataStartPos = vec2(20, 361) // inclusive x
 const blockTypeDataEndPos = vec2(389, 361) // exclusive x
@@ -347,13 +347,7 @@ function getBombSpawnPos(posX: number): vec2 {
 }
 
 function filterBlocksOutsideMapArea(blocks: WorldBlock[]): WorldBlock[] {
-  return blocks.filter(
-    (wb) =>
-      wb.pos.x >= mapTopLeftPos.x &&
-      wb.pos.x < mapTopLeftPos.x + mapSize.x &&
-      wb.pos.y >= mapTopLeftPos.y &&
-      wb.pos.y < mapTopLeftPos.y + mapSize.y,
-  )
+  return blocks.filter((wb) => isPosInsideArea(wb.pos, mapTopLeftPos, mapSize))
 }
 
 function disqualifyPlayerFromRound(playerId: number) {
@@ -761,7 +755,7 @@ function loadMaps(bomBotBlocks: DeserialisedStructure) {
 
 async function loadBomBotData() {
   sendGlobalChatMessage('Loading BomBot data')
-  const bomBotDataWorldId = getWorldIdIfUrl('lbsz7864s3a3yih')
+  const bomBotDataWorldId = 'lbsz7864s3a3yih'
   const bomBotBlocks = await getAnotherWorldBlocks(bomBotDataWorldId, getPwApiClient())
 
   useBomBotWorldStore().bombTimerBgBlockTimeLeft = bomBotBlocks.blocks[LayerType.Background][2][378]

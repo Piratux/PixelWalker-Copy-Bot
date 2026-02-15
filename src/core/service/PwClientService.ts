@@ -20,6 +20,7 @@ import { createFailedToJoinWorldErrorString } from '@/bot/copybot/service/CopyBo
 import { registerCurseBotCallbacks } from '@/bot/cursebot/service/PacketHandlerCurseBotService.ts'
 import { toRaw } from 'vue'
 import { registerShiftBotCallbacks } from '@/bot/shiftbot/service/PacketHandlerShiftBotService.ts'
+import { registerBArenaBotCallbacks } from '@/bot/barenabot/service/PacketHandlerBArenaBotService.ts'
 
 export async function authenticate(pwApiClient: PWApiClient): Promise<void> {
   const authenticationResult = await pwApiClient.authenticate()
@@ -119,6 +120,8 @@ export async function initPwClasses(
     registerCurseBotCallbacks()
   } else if (botType === BotType.SHIFT_BOT) {
     registerShiftBotCallbacks()
+  } else if (botType === BotType.BARENA_BOT) {
+    registerBArenaBotCallbacks()
   }
 
   await joinWorld(getPwGameClient(), usePwClientStore().worldId)
