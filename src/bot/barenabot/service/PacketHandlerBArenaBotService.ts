@@ -815,6 +815,8 @@ function createTeamPlayerRoundData(teamPlayerIds: number[], team: BArenaTeam, te
     }
     useBArenaBotRoundStore().playerBArenaBotRoundData.set(playerId, playerData)
     useBArenaBotRoundStore().startingPlayerBArenaBotRoundData.set(playerId, playerData)
+
+    getPlayerBArenaBotWorldData(playerId).plays++
   }
 }
 
