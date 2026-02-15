@@ -665,6 +665,8 @@ function everyTickBArenaBotUpdate(): void {
   }
 
   if (useBArenaBotWorldStore().currentState === BArenaBotState.PLAYING) {
+    updateProjectileCollision()
+
     updateProjectilePosition()
 
     updatePlayerMoveCooldown()
@@ -839,6 +841,11 @@ function createPlayerRoundData(redTeamPlayerIds: number[], blueTeamPlayerIds: nu
   createTeamPlayerRoundData(blueTeamPlayerIds, BArenaTeam.BLUE, BLUE_TEAM_TANK_START_POSITIONS)
 }
 
+function drawOccured() {
+  sendGlobalChatMessage('No players left, a draw!')
+  setBArenaBotState(BArenaBotState.CELEBRATING_VICTORY)
+}
+
 function everySecondBArenaBotUpdate() {
   // sendGlobalChatMessage(`[DEBUG] Current state: ${BArenaBotState[useBArenaBotWorldStore().currentState]}`)
   switch (useBArenaBotWorldStore().currentState) {
@@ -904,7 +911,11 @@ function everySecondBArenaBotUpdate() {
       const playerIdsInGame = getPlayerIdsInGame()
 
       if (playerIdsInGame.length === 0) {
-        abandonRoundDueToNoPlayersLeft()
+        if (useBArenaBotRoundStore().startingPlayerBArenaBotRoundData.size > 0) {
+          drawOccured()
+        } else {
+          abandonRoundDueToNoPlayersLeft()
+        }
         return
       }
 
@@ -915,12 +926,20 @@ function everySecondBArenaBotUpdate() {
         (playerId) => getPlayerData(playerId).team === BArenaTeam.BLUE,
       )
 
-      if (redTeamPlayerIdsInGame.length === 0) {
+      // We track projectiles to know if there might be a draw
+      const redTeamProjectiles = useBArenaBotRoundStore().projectileBArenaBotRoundData.filter(
+        (projectile) => projectile.team === BArenaTeam.RED,
+      )
+      const blueTeamProjectiles = useBArenaBotRoundStore().projectileBArenaBotRoundData.filter(
+        (projectile) => projectile.team === BArenaTeam.BLUE,
+      )
+
+      if (redTeamPlayerIdsInGame.length === 0 && redTeamProjectiles.length === 0) {
         teamWinRound('BLUE')
         return
       }
 
-      if (blueTeamPlayerIdsInGame.length === 0) {
+      if (blueTeamPlayerIdsInGame.length === 0 && blueTeamProjectiles.length === 0) {
         teamWinRound('RED')
         return
       }
