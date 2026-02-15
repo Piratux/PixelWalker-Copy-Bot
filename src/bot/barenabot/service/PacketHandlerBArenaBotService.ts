@@ -153,8 +153,13 @@ function handleBArenaBotError(e: unknown) {
 
 function disqualifyPlayerFromRound(playerId: number) {
   if (getPlayerIdsInGame().includes(playerId)) {
-    removePlayerFromPlayersInGame(playerId)
-    sendRawMessage(`/team #${playerId} ${TEAM_NONE}`)
+    const playerData = getPlayerData(playerId)
+    if (playerData.playerIsAfk) {
+      disqualifyPlayerFromRoundBecauseAfk(playerId)
+    } else {
+      removePlayerFromPlayersInGame(playerId)
+      sendRawMessage(`/team #${playerId} ${TEAM_NONE}`)
+    }
   }
 }
 
@@ -212,10 +217,12 @@ function checkIfPlayerMoved(playerId: number, keyStates: KeyStates) {
   if (!vec2.eq(playerData.moveDirection, vec2(0, 0))) {
     playerData.lastMoveDirection = playerData.moveDirection
   }
+
+  playerData.playerIsAfk = false
 }
 
 function playerTryUseGun(playerData: BArenaPlayerBotRoundData, playerId: number) {
-  if (!playerData.playerHoldingShootKey) {
+  if (!playerData.holdingShootKey) {
     return
   }
 
@@ -239,7 +246,9 @@ function checkIfPlayerUseGun(playerId: number, keyStates: KeyStates) {
   }
 
   const playerData = getPlayerData(playerId)
-  playerData.playerHoldingShootKey = keyStates.jump.held
+  playerData.holdingShootKey = keyStates.jump.held
+
+  playerData.playerIsAfk = false
 }
 
 function playerMovedPacketReceived(data: ProtoGen.PlayerMovedPacket, states?: { keyStates: KeyStates }) {
@@ -815,7 +824,8 @@ function createTeamPlayerRoundData(teamPlayerIds: number[], team: BArenaTeam, te
       moveCooldownInTicks: 0,
       gunCooldownInTicks: 0,
       lastMoveDirection: vec2(0, team === BArenaTeam.RED ? -1 : 1), // Player shoots towards lobby by default
-      playerHoldingShootKey: false,
+      holdingShootKey: false,
+      playerIsAfk: true,
     }
     useBArenaBotRoundStore().playerBArenaBotRoundData.set(playerId, playerData)
     useBArenaBotRoundStore().startingPlayerBArenaBotRoundData.set(playerId, playerData)
@@ -951,7 +961,6 @@ function everySecondBArenaBotUpdate() {
 function disqualifyPlayerFromRoundBecauseAfk(playerId: number) {
   const afkPos = vec2(101, 97)
   sendRawMessage(`/tp #${playerId} ${afkPos.x} ${afkPos.y}`)
-  sendRawMessage(`/cleareffects #${playerId}`) // remove bArena
   makePlayerAfk(playerId)
 }
 
