@@ -217,8 +217,6 @@ function checkIfPlayerMoved(playerId: number, keyStates: KeyStates) {
   if (!vec2.eq(playerData.moveDirection, vec2(0, 0))) {
     playerData.lastMoveDirection = playerData.moveDirection
   }
-
-  playerData.playerIsAfk = false
 }
 
 function playerTryUseGun(playerData: BArenaPlayerBotRoundData, playerId: number) {
@@ -247,8 +245,6 @@ function checkIfPlayerUseGun(playerId: number, keyStates: KeyStates) {
 
   const playerData = getPlayerData(playerId)
   playerData.holdingShootKey = keyStates.jump.held
-
-  playerData.playerIsAfk = false
 }
 
 function playerMovedPacketReceived(data: ProtoGen.PlayerMovedPacket, states?: { keyStates: KeyStates }) {
@@ -265,6 +261,10 @@ function playerMovedPacketReceived(data: ProtoGen.PlayerMovedPacket, states?: { 
     checkIfPlayerUseGun(playerId, keyStates)
     if (playerData !== undefined) {
       playerTryUseGun(playerData, playerId)
+    }
+
+    if (playerData !== undefined) {
+      playerData.playerIsAfk = false
     }
   }
 }
