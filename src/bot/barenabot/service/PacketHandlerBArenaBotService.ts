@@ -35,7 +35,7 @@ import { BArenaTeam } from '@/bot/barenabot/enum/BArenaTeam.ts'
 import { BArenaPlayerBotRoundData } from '@/bot/barenabot/type/BArenaBotPlayerRoundData.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { isPosInsideArea } from '@/core/util/Geometry.ts'
-import { BlockGrid } from '@/core/class/BlockGrid.ts'
+import { BlockGrid } from '@/core/class/BlockGrid.ts' // TODO: Use UPPER_CASE for vec2 variables
 
 // TODO: Use UPPER_CASE for vec2 variables
 const mapTopLeftPos = vec2(86, 99)
@@ -87,17 +87,17 @@ const TEAM_NONE = 0
 const TEAM_RED = 1
 const TEAM_GREEN = 2
 
-const TICK_RATE = 10 // how many ticks a second
+const TICK_RATE = 16 // how many ticks a second
 const TICK_LENGTH_MS = 1000 / TICK_RATE
 
 const MAX_PLAYERS_PER_TEAM = 6
 
-const PLAYER_SPEED = 5
-const PROJECTILE_SPEED = 10
+const PLAYER_SPEED = 8
+const PROJECTILE_SPEED = 16
 const PLAYER_MOVE_COOLDOWN_TICKS = TICK_RATE / PLAYER_SPEED
 const PROJECTILE_MOVE_COOLDOWN_TICKS = TICK_RATE / PROJECTILE_SPEED
 
-const GUN_RELOAD_SPEED_SECONDS = 2
+const GUN_RELOAD_SPEED_SECONDS = 1
 const GUN_RELOAD_COOLDOWN_TICKS = TICK_RATE * GUN_RELOAD_SPEED_SECONDS
 
 const callbacks: CallbackEntry[] = [
@@ -900,7 +900,7 @@ function everySecondBArenaBotUpdate() {
     }
     case BArenaBotState.COUNTING_DOWN_FOR_ROUND_START: {
       useBArenaBotRoundStore().secondsPassedInCountingDownForRoundStartState++
-      if (useBArenaBotRoundStore().secondsPassedInCountingDownForRoundStartState > 5) {
+      if (useBArenaBotRoundStore().secondsPassedInCountingDownForRoundStartState > 3) {
         useBArenaBotRoundStore().timestampInMsWhenRoundStart = performance.now()
         sendToastMessage('Round started!', '@a[team=green]')
         setBArenaBotState(BArenaBotState.PLAYING)
