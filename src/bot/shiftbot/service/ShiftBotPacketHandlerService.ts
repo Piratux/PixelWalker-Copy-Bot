@@ -26,13 +26,12 @@ import { handleException } from '@/core/util/Exception.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
-import { useShiftBotWorldStore } from '@/bot/shiftbot/store/ShiftBotWorldStore.ts'
+import { resetShiftBotWorldStore, useShiftBotWorldStore } from '@/bot/shiftbot/store/ShiftBotWorldStore.ts'
 import { ShiftBotState } from '@/bot/shiftbot/enum/ShiftBotState.ts'
-import { useShiftBotRoundStore } from '@/bot/shiftbot/store/ShiftBotRoundStore.ts'
+import { resetShiftBotRoundStore, useShiftBotRoundStore } from '@/bot/shiftbot/store/ShiftBotRoundStore.ts'
 import { ShiftBotCommandName } from '@/bot/shiftbot/enum/ShiftBotCommandName.ts'
 import { ShiftBotMapEntry } from '@/bot/shiftbot/type/ShiftBotMapEntry.ts'
-import { userShiftBotAutomaticRestartCounterStore } from '@/bot/shiftbot/store/ShiftBotAutomaticRestartCounterStore.ts'
-import { createShiftBotWorldData, ShiftBotWorldData } from '@/bot/shiftbot/type/ShiftBotPlayerWorldData.ts'
+import { createShiftBotWorldData, ShiftBotPlayerWorldData } from '@/bot/shiftbot/type/ShiftBotPlayerWorldData.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { cloneDeep, inRange } from 'lodash-es'
 import { ShiftBotLevelDifficulty } from '@/bot/shiftbot/enum/ShiftBotLevelDifficulty.ts'
@@ -520,7 +519,7 @@ async function startShiftBot(loadWorld: boolean) {
 
   sendGlobalChatMessage('Starting ShiftBot...')
 
-  useShiftBotWorldStore().$reset()
+  resetShiftBotWorldStore()
 
   if (loadWorld) {
     await placeShiftBotWorld()
@@ -819,7 +818,7 @@ async function everySecondShiftBotUpdate() {
     case ShiftBotState.STOPPED:
       return
     case ShiftBotState.RESET_STORE:
-      useShiftBotRoundStore().$reset()
+      resetShiftBotRoundStore()
       setShiftBotState(ShiftBotState.AWAITING_PLAYERS)
       return
     case ShiftBotState.AWAITING_PLAYERS: {
@@ -1042,18 +1041,10 @@ async function autoRestartShiftBot() {
 
   sendGlobalChatMessage('Restarting ShiftBot...')
   await stopShiftBot()
-
-  const MAX_AUTOMATIC_RESTARTS = 3
-  if (userShiftBotAutomaticRestartCounterStore().totalAutomaticRestarts >= MAX_AUTOMATIC_RESTARTS) {
-    sendGlobalChatMessage(`ShiftBot has automatically restarted ${MAX_AUTOMATIC_RESTARTS} times, not restarting again`)
-    return
-  }
-  userShiftBotAutomaticRestartCounterStore().totalAutomaticRestarts++
-
   await startShiftBot(false)
 }
 
-function getPlayerShiftBotWorldData(playerId: number): ShiftBotWorldData {
+function getPlayerShiftBotWorldData(playerId: number): ShiftBotPlayerWorldData {
   return mapGetOrInsert(useShiftBotWorldStore().playerShiftBotWorldData, playerId, createShiftBotWorldData(playerId))
 }
 

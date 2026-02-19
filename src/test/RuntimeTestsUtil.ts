@@ -9,7 +9,7 @@ import { getImportedFromMidiData } from '@/webtool/midi/service/MidiImporterServ
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { vec2 } from '@basementuniverse/vec'
-import { getBotData, selectBlocks } from '@/bot/copybot/service/PacketHandlerCopyBotService.ts'
+import { getBotData, selectBlocks } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
 import { Promisable } from '@/core/util/Promise.ts'
 import { CopyBotData } from '@/bot/copybot/type/CopyBotData.ts'
 import { toRaw } from 'vue'

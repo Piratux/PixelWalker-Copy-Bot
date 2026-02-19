@@ -3,7 +3,7 @@ import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { BomBotSpecialBomb } from '@/bot/bombot/enum/BomBotSpecialBomb.ts'
 import { BomBotBombType } from '@/bot/bombot/enum/BomBotBombType.ts'
 
-export interface BomBotWorldData {
+export interface BomBotPlayerWorldData {
   username: string // Because when player leaves, we can't obtain username from id anymore in PWGameWorldHelper.getPlayer()
   wins: number
   plays: number
@@ -14,9 +14,7 @@ export interface BomBotWorldData {
   bombTypeChosen: BomBotBombType
 }
 
-export type PlayerBomBotWorldData = Map<number, BomBotWorldData>
-
-export function createBomBotWorldData(playerId: number): BomBotWorldData {
+export function createBomBotWorldData(playerId: number): BomBotPlayerWorldData {
   return {
     username: getPwGameWorldHelper().getPlayer(playerId)?.username ?? 'UNKNOWN',
     wins: 0,

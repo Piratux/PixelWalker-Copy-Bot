@@ -25,13 +25,12 @@ import { getRandomArrayElement } from '@/core/util/Random.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
-import { useCurseBotWorldStore } from '@/bot/cursebot/store/CurseBotWorldStore.ts'
+import { resetCurseBotWorldStore, useCurseBotWorldStore } from '@/bot/cursebot/store/CurseBotWorldStore.ts'
 import { CurseBotState } from '@/bot/cursebot/enum/CurseBotState.ts'
-import { useCurseBotRoundStore } from '@/bot/cursebot/store/CurseBotRoundStore.ts'
+import { resetCurseBotRoundStore, useCurseBotRoundStore } from '@/bot/cursebot/store/CurseBotRoundStore.ts'
 import { CurseBotCommandName } from '@/bot/cursebot/enum/CurseBotCommandName.ts'
 import { CurseBotMapEntry } from '@/bot/cursebot/type/CurseBotMapEntry.ts'
-import { userCurseBotAutomaticRestartCounterStore } from '@/bot/cursebot/store/CurseBotAutomaticRestartCounterStore.ts'
-import { createCurseBotWorldData, CurseBotWorldData } from '@/bot/cursebot/type/CurseBotPlayerWorldData.ts'
+import { createCurseBotWorldData, CurseBotPlayerWorldData } from '@/bot/cursebot/type/CurseBotPlayerWorldData.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 
@@ -437,7 +436,7 @@ async function startCurseBot(loadWorld: boolean) {
 
   sendGlobalChatMessage('Starting CurseBot...')
 
-  useCurseBotWorldStore().$reset()
+  resetCurseBotWorldStore()
 
   if (loadWorld) {
     await placeCurseBotWorld()
@@ -591,7 +590,7 @@ async function everySecondCurseBotUpdate() {
     case CurseBotState.STOPPED:
       return
     case CurseBotState.RESET_STORE:
-      useCurseBotRoundStore().$reset()
+      resetCurseBotRoundStore()
       setCurseBotState(CurseBotState.AWAITING_PLAYERS)
       return
     case CurseBotState.AWAITING_PLAYERS: {
@@ -740,18 +739,10 @@ async function autoRestartCurseBot() {
 
   sendGlobalChatMessage('Restarting CurseBot...')
   await stopCurseBot()
-
-  const MAX_AUTOMATIC_RESTARTS = 3
-  if (userCurseBotAutomaticRestartCounterStore().totalAutomaticRestarts >= MAX_AUTOMATIC_RESTARTS) {
-    sendGlobalChatMessage(`CurseBot has automatically restarted ${MAX_AUTOMATIC_RESTARTS} times, not restarting again`)
-    return
-  }
-  userCurseBotAutomaticRestartCounterStore().totalAutomaticRestarts++
-
   await startCurseBot(false)
 }
 
-function getPlayerCurseBotWorldData(playerId: number): CurseBotWorldData {
+function getPlayerCurseBotWorldData(playerId: number): CurseBotPlayerWorldData {
   return mapGetOrInsert(useCurseBotWorldStore().playerCurseBotWorldData, playerId, createCurseBotWorldData(playerId))
 }
 

@@ -1,50 +1,60 @@
-import { defineStore } from 'pinia'
-import { Raw, ref } from 'vue'
 import { Block } from 'pw-js-world'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { BomBotMapEntry } from '@/bot/bombot/type/BomBotMapEntry.ts'
 import { BomBotState } from '@/bot/bombot/enum/BomBotState.ts'
 import { BomBotBlockType } from '@/bot/bombot/enum/BomBotBlockType.ts'
-import { PlayerBomBotWorldData } from '@/bot/bombot/type/BomBotPlayerWorldData.ts'
+import { BomBotPlayerWorldData } from '@/bot/bombot/type/BomBotPlayerWorldData.ts'
 import { BomBotPowerUpData } from '@/bot/bombot/type/BomBotPowerUpData.ts'
 import { BomBotSpecialBombData } from '@/bot/bombot/type/BomBotSpecialBombData.ts'
 
-export const useBomBotWorldStore = defineStore('BomBotWorldStore', () => {
-  const defaultBombBlocks = ref<Raw<WorldBlock[]>>([])
-  const specialBombData = ref<Raw<BomBotSpecialBombData[]>>([])
-  const bombRemoveBlocks = ref<Raw<WorldBlock[]>>([])
-  const specialBombRemoveBlocks = ref<Raw<WorldBlock[]>>([])
-  const powerUpData = ref<Raw<BomBotPowerUpData[]>>([])
-  const bombTimerBgBlockTimeSpent = ref<Raw<Block>>(new Block(0))
-  const bombTimerBgBlockTimeLeft = ref<Raw<Block>>(new Block(0))
-  const bombTypeFgBlockIndicator = ref<Raw<Block>>(new Block(0))
-  const bomBotMaps = ref<Raw<BomBotMapEntry[]>>([])
-  const blockTypes = ref<BomBotBlockType[]>([]) // index is block id
-  const currentState = ref<BomBotState>(BomBotState.STOPPED)
-  const playedOnce = ref<boolean>(false)
-  const playerBomBotWorldData = ref<Raw<PlayerBomBotWorldData>>(new Map())
-  const everySecondUpdateIsRunning = ref<boolean>(false)
-  const randomEffectBlocks = ref<Raw<Block[]>>([])
-  const totalRoundsPassed = ref<number>(0)
-  const lastActivePlayerCount = ref<number>(0)
+interface BomBotWorldStore {
+  defaultBombBlocks: WorldBlock[]
+  specialBombData: BomBotSpecialBombData[]
+  bombRemoveBlocks: WorldBlock[]
+  specialBombRemoveBlocks: WorldBlock[]
+  powerUpData: BomBotPowerUpData[]
+  bombTimerBgBlockTimeSpent: Block
+  bombTimerBgBlockTimeLeft: Block
+  bombTypeFgBlockIndicator: Block
+  bomBotMaps: BomBotMapEntry[]
+  blockTypes: BomBotBlockType[]
+  currentState: BomBotState
+  playedOnce: boolean
+  playerBomBotWorldData: Map<number, BomBotPlayerWorldData>
+  everySecondUpdateIsRunning: boolean
+  randomEffectBlocks: Block[]
+  totalRoundsPassed: number
+  lastActivePlayerCount: number
+}
 
+const store = createBomBotWorldStore()
+
+function createBomBotWorldStore(): BomBotWorldStore {
   return {
-    defaultBombBlocks,
-    specialBombData,
-    bombRemoveBlocks,
-    specialBombRemoveBlocks,
-    powerUpData,
-    bombTimerBgBlockTimeSpent,
-    bombTimerBgBlockTimeLeft,
-    bombTypeFgBlockIndicator,
-    bomBotMaps,
-    blockTypes,
-    currentState,
-    playedOnce,
-    playerBomBotWorldData,
-    everySecondUpdateIsRunning,
-    randomEffectBlocks,
-    totalRoundsPassed,
-    lastActivePlayerCount,
+    defaultBombBlocks: [],
+    specialBombData: [],
+    bombRemoveBlocks: [],
+    specialBombRemoveBlocks: [],
+    powerUpData: [],
+    bombTimerBgBlockTimeSpent: new Block(0),
+    bombTimerBgBlockTimeLeft: new Block(0),
+    bombTypeFgBlockIndicator: new Block(0),
+    bomBotMaps: [],
+    blockTypes: [],
+    currentState: BomBotState.STOPPED,
+    playedOnce: false,
+    playerBomBotWorldData: new Map(),
+    everySecondUpdateIsRunning: false,
+    randomEffectBlocks: [],
+    totalRoundsPassed: 0,
+    lastActivePlayerCount: 0,
   }
-})
+}
+
+export function resetBomBotWorldStore() {
+  Object.assign(store, createBomBotWorldStore())
+}
+
+export function useBomBotWorldStore(): BomBotWorldStore {
+  return store
+}

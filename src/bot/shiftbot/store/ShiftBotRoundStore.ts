@@ -1,46 +1,56 @@
-import { defineStore } from 'pinia'
-import { Raw, ref } from 'vue'
 import { Player } from 'pw-js-world'
 import { ShiftBotLevelDifficulty } from '@/bot/shiftbot/enum/ShiftBotLevelDifficulty.ts'
 import { ShiftBotMapEntry } from '@/bot/shiftbot/type/ShiftBotMapEntry.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 
-export const useShiftBotRoundStore = defineStore('ShiftBotRoundStore', () => {
-  const playersInGame = ref<Player[]>([])
-  const waitingForMorePlayersMessagePrintedOnce = ref<boolean>(false)
-  const secondsPassedInCountingDownToRemoveNoSpeedState = ref<number>(0)
-  const secondsPassedInWaitingForAllPlayersToBeTeleportedToMapState = ref<number>(0)
-  const secondsPassedInPauseAfterRoundState = ref<number>(0)
-  const winnerPlayerId = ref<number | null>(0)
-  const currentLevelDifficulty = ref<ShiftBotLevelDifficulty>(ShiftBotLevelDifficulty.EASY)
-  const currentLevel = ref<number>(0)
-  const timestampInMsWhenRoundStarted = ref<number>(0)
-  const timestampInMsWhenFirstPlayerCompletedLevel = ref<number>(0)
-  const atLeastOnePlayerCompletedLevel = ref<boolean>(false)
-  const currentMapEntry = ref<Raw<ShiftBotMapEntry> | null>(null)
-  const entranceCloseBlocks = ref<Raw<WorldBlock[]>>([])
-  const secondsPassedInPlayingState = ref<number>(0)
-  const playersInformedOnceThatMinuteLeftBeforeMaxRoundLength = ref<boolean>(false)
-  const playersInformedOnceThatFiveSecondsLeftBeforeRoundEndsBecausePlayerWon = ref<boolean>(false)
-  const playersInformedOnceThatFiveSecondsLeftBeforeRoundEndsBecauseMaxRoundLengthReached = ref<boolean>(false)
+interface ShiftBotRoundStore {
+  playersInGame: Player[]
+  waitingForMorePlayersMessagePrintedOnce: boolean
+  secondsPassedInCountingDownToRemoveNoSpeedState: number
+  secondsPassedInWaitingForAllPlayersToBeTeleportedToMapState: number
+  secondsPassedInPauseAfterRoundState: number
+  winnerPlayerId: number | null
+  currentLevelDifficulty: ShiftBotLevelDifficulty
+  currentLevel: number
+  timestampInMsWhenRoundStarted: number
+  timestampInMsWhenFirstPlayerCompletedLevel: number
+  atLeastOnePlayerCompletedLevel: boolean
+  currentMapEntry: ShiftBotMapEntry | null
+  entranceCloseBlocks: WorldBlock[]
+  secondsPassedInPlayingState: number
+  playersInformedOnceThatMinuteLeftBeforeMaxRoundLength: boolean
+  playersInformedOnceThatFiveSecondsLeftBeforeRoundEndsBecausePlayerWon: boolean
+  playersInformedOnceThatFiveSecondsLeftBeforeRoundEndsBecauseMaxRoundLengthReached: boolean
+}
 
+const store = createShiftBotRoundStore()
+
+function createShiftBotRoundStore(): ShiftBotRoundStore {
   return {
-    playersInGame,
-    waitingForMorePlayersMessagePrintedOnce,
-    secondsPassedInCountingDownToRemoveNoSpeedState,
-    secondsPassedInWaitingForAllPlayersToBeTeleportedToMapState,
-    secondsPassedInPauseAfterRoundState,
-    winnerPlayerId,
-    currentLevelDifficulty,
-    currentLevel,
-    timestampInMsWhenRoundStarted,
-    timestampInMsWhenFirstPlayerCompletedLevel,
-    atLeastOnePlayerCompletedLevel,
-    currentMapEntry,
-    entranceCloseBlocks,
-    secondsPassedInPlayingState,
-    playersInformedOnceThatMinuteLeftBeforeMaxRoundLength,
-    playersInformedOnceThatFiveSecondsLeftBeforeRoundEndsBecausePlayerWon,
-    playersInformedOnceThatFiveSecondsLeftBeforeRoundEndsBecauseMaxRoundLengthReached,
+    playersInGame: [],
+    waitingForMorePlayersMessagePrintedOnce: false,
+    secondsPassedInCountingDownToRemoveNoSpeedState: 0,
+    secondsPassedInWaitingForAllPlayersToBeTeleportedToMapState: 0,
+    secondsPassedInPauseAfterRoundState: 0,
+    winnerPlayerId: 0,
+    currentLevelDifficulty: ShiftBotLevelDifficulty.EASY,
+    currentLevel: 0,
+    timestampInMsWhenRoundStarted: 0,
+    timestampInMsWhenFirstPlayerCompletedLevel: 0,
+    atLeastOnePlayerCompletedLevel: false,
+    currentMapEntry: null,
+    entranceCloseBlocks: [],
+    secondsPassedInPlayingState: 0,
+    playersInformedOnceThatMinuteLeftBeforeMaxRoundLength: false,
+    playersInformedOnceThatFiveSecondsLeftBeforeRoundEndsBecausePlayerWon: false,
+    playersInformedOnceThatFiveSecondsLeftBeforeRoundEndsBecauseMaxRoundLengthReached: false,
   }
-})
+}
+
+export function resetShiftBotRoundStore() {
+  Object.assign(store, createShiftBotRoundStore())
+}
+
+export function useShiftBotRoundStore(): ShiftBotRoundStore {
+  return store
+}

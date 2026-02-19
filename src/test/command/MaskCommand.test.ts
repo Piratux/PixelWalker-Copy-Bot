@@ -5,7 +5,7 @@ import { Block, LayerType } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { runSelectCommandTest } from '@/test/RuntimeTestsUtil.ts'
-import { commandReceived, pasteBlocks } from '@/bot/copybot/service/PacketHandlerCopyBotService.ts'
+import { commandReceived, pasteBlocks } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
 import { createUnrecognisedMaskModeError } from '@/bot/copybot/service/CopyBotErrorService.ts'
 
 describe.sequential('.mask', () => {

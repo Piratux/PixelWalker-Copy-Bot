@@ -1,13 +1,11 @@
 import { POWER_UP_COUNT, SPECIAL_BOMB_COUNT } from '@/bot/bombot/constant/General.ts'
 
-export interface BomBotRoundData {
+export interface BomBotPlayerRoundData {
   powerUpsLeft: number
   specialBombsLeft: number
 }
 
-export type PlayerBomBotRoundData = Map<number, BomBotRoundData>
-
-export function createBomBotRoundData(): BomBotRoundData {
+export function createBomBotRoundData(): BomBotPlayerRoundData {
   return {
     powerUpsLeft: POWER_UP_COUNT,
     specialBombsLeft: SPECIAL_BOMB_COUNT,

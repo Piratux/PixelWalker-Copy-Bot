@@ -2,7 +2,7 @@ import { CopyBotState } from '@/bot/copybot/enum/CopyBotState.ts'
 import { Point } from 'pw-js-world'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
-import { UndoRedoItem } from '@/bot/copybot/type/UndoRedoItem.ts'
+import { CopyBotUndoRedoItem } from '@/bot/copybot/type/CopyBotUndoRedoItem.ts'
 
 export interface CopyBotData {
   botState: CopyBotState
@@ -22,8 +22,8 @@ export interface CopyBotData {
   maskOverlayEnabled: boolean
   skipAirEnabled: boolean
   replacedByLastMoveOperationBlocks: WorldBlock[]
-  undoStack: UndoRedoItem[]
-  redoStack: UndoRedoItem[]
+  undoStack: CopyBotUndoRedoItem[]
+  redoStack: CopyBotUndoRedoItem[]
   snakeModeEnabled: boolean
   snakeModeTime: number
   snakeModeCurrentOffset: number

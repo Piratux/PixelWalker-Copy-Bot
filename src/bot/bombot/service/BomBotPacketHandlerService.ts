@@ -38,19 +38,18 @@ import {
 } from '@/core/service/WorldService.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { BotType } from '@/core/enum/BotType.ts'
-import { useBomBotWorldStore } from '@/bot/bombot/store/BomBotWorldStore.ts'
+import { resetBomBotWorldStore, useBomBotWorldStore } from '@/bot/bombot/store/BomBotWorldStore.ts'
 import { BomBotState } from '@/bot/bombot/enum/BomBotState.ts'
 import { BomBotMapEntry } from '@/bot/bombot/type/BomBotMapEntry.ts'
 import { setCustomTimeout } from '@/core/util/Sleep.ts'
 import { BomBotBlockType } from '@/bot/bombot/enum/BomBotBlockType.ts'
 import { handleException } from '@/core/util/Exception.ts'
-import { useBomBotRoundStore } from '@/bot/bombot/store/BomBotRoundStore.ts'
+import { resetBomBotRoundStore, useBomBotRoundStore } from '@/bot/bombot/store/BomBotRoundStore.ts'
 import { getRandomArrayElement, getRandomInt } from '@/core/util/Random.ts'
 import { clamp } from '@/core/util/Numbers.ts'
-import { userBomBotAutomaticRestartCounterStore } from '@/bot/bombot/store/BomBotAutomaticRestartCounterStore.ts'
-import { BomBotWorldData, createBomBotWorldData } from '@/bot/bombot/type/BomBotPlayerWorldData.ts'
+import { BomBotPlayerWorldData, createBomBotWorldData } from '@/bot/bombot/type/BomBotPlayerWorldData.ts'
 import { BomBotPowerUp } from '@/bot/bombot/enum/BomBotPowerUp.ts'
-import { BomBotRoundData, createBomBotRoundData } from '@/bot/bombot/type/BomBotPlayerRoundData.ts'
+import { BomBotPlayerRoundData, createBomBotRoundData } from '@/bot/bombot/type/BomBotPlayerRoundData.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { BomBotPowerUpData } from '@/bot/bombot/type/BomBotPowerUpData.ts'
 import { BomBotSpecialBombData } from '@/bot/bombot/type/BomBotSpecialBombData.ts'
@@ -827,7 +826,7 @@ async function startBomBot(loadWorld: boolean) {
 
   sendGlobalChatMessage('Starting BomBot...')
 
-  useBomBotWorldStore().$reset()
+  resetBomBotWorldStore()
 
   if (loadWorld) {
     await placeBomBotWorld()
@@ -991,7 +990,7 @@ async function everySecondBomBotUpdate() {
     case BomBotState.STOPPED:
       return
     case BomBotState.RESET_STORE:
-      useBomBotRoundStore().$reset()
+      resetBomBotRoundStore()
       setBomBotState(BomBotState.AWAITING_PLAYERS)
       return
     case BomBotState.AWAITING_PLAYERS: {
@@ -1356,14 +1355,6 @@ async function autoRestartBomBot() {
 
   sendGlobalChatMessage('Restarting BomBot...')
   await stopBomBot()
-
-  const MAX_AUTOMATIC_RESTARTS = 3
-  if (userBomBotAutomaticRestartCounterStore().totalAutomaticRestarts >= MAX_AUTOMATIC_RESTARTS) {
-    sendGlobalChatMessage(`BomBot has automatically restarted ${MAX_AUTOMATIC_RESTARTS} times, not restarting again`)
-    return
-  }
-  userBomBotAutomaticRestartCounterStore().totalAutomaticRestarts++
-
   await startBomBot(false)
 }
 
@@ -1417,11 +1408,11 @@ function isBomBotMapValid(
   return true
 }
 
-function getPlayerBomBotWorldData(playerId: number): BomBotWorldData {
+function getPlayerBomBotWorldData(playerId: number): BomBotPlayerWorldData {
   return mapGetOrInsert(useBomBotWorldStore().playerBomBotWorldData, playerId, createBomBotWorldData(playerId))
 }
 
-function getPlayerBomBotRoundData(playerId: number): BomBotRoundData {
+function getPlayerBomBotRoundData(playerId: number): BomBotPlayerRoundData {
   return mapGetOrInsert(useBomBotRoundStore().playerBomBotRoundData, playerId, createBomBotRoundData())
 }
 

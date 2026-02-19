@@ -1,53 +1,58 @@
-import { defineStore } from 'pinia'
-import { Raw, ref } from 'vue'
 import { Player } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
-import { PlayerBomBotRoundData } from '@/bot/bombot/type/BomBotPlayerRoundData.ts'
+import { BomBotPlayerRoundData } from '@/bot/bombot/type/BomBotPlayerRoundData.ts'
 import { BomBotSpecialBomb } from '@/bot/bombot/enum/BomBotSpecialBomb.ts'
 
-export const useBomBotRoundStore = defineStore('BomBotRoundStore', () => {
-  const availablePlayerSpawnPositions = ref<vec2[]>([])
-  const playersInGame = ref<Player[]>([])
-  const lastPlayerSelectedArrayIndex = ref<number>(0)
-  const totalPlayersTeleportedToMap = ref<number>(0)
-  const totalPlayersTeleportedToMapLastSeenValue = ref<number>(0)
-  const totalPlayersTeleportedToMapSecondsPassedSinceValuesMatch = ref<number>(0)
-  const playersThatWereSelectedForRoundStart = ref<Player[]>([])
-  const playerIdsBomberQueueOriginal = ref<number[]>([]) // couldn't think of better name for this
-  const playerIdsBomberQueueRemainder = ref<number[]>([])
-  const bomberPlayerId = ref<number>(0)
-  // TODO: allow bomber to consecutively place bombs, once death packet contains position of player death
-  // const totalTimesBomberKilledSomeoneInARow = ref<number>(0)
-  // const playerWasKilledByLastBomb = ref<boolean>(false)
-  const secondsSpentByBomber = ref<number>(0)
-  const secondsLeftBeforeBombMustBeRemoved = ref<number>(0)
-  const secondsLeftBeforeBomberCanBomb = ref<number>(0) // prevent bomber from being to immediately place bombs
-  const lastBombPos = ref<vec2>(vec2(0, 0))
-  const lastBombType = ref<BomBotSpecialBomb | null>(null) // null indicates normal bomb type
-  const bombAvailable = ref<boolean>(false) // prevent placing multiple bombs per bomber
-  const waitingForMorePlayersMessagePrintedOnce = ref<boolean>(false)
-  const playerBomBotRoundData = ref<Raw<PlayerBomBotRoundData>>(new Map())
+interface BomBotRoundStore {
+  availablePlayerSpawnPositions: vec2[]
+  playersInGame: Player[]
+  lastPlayerSelectedArrayIndex: number
+  totalPlayersTeleportedToMap: number
+  totalPlayersTeleportedToMapLastSeenValue: number
+  totalPlayersTeleportedToMapSecondsPassedSinceValuesMatch: number
+  playersThatWereSelectedForRoundStart: Player[]
+  playerIdsBomberQueueOriginal: number[]
+  playerIdsBomberQueueRemainder: number[]
+  bomberPlayerId: number
+  secondsSpentByBomber: number
+  secondsLeftBeforeBombMustBeRemoved: number
+  secondsLeftBeforeBomberCanBomb: number
+  lastBombPos: vec2
+  lastBombType: BomBotSpecialBomb | null
+  bombAvailable: boolean
+  waitingForMorePlayersMessagePrintedOnce: boolean
+  playerBomBotRoundData: Map<number, BomBotPlayerRoundData>
+}
 
+const store = createBomBotRoundStore()
+
+function createBomBotRoundStore(): BomBotRoundStore {
   return {
-    availablePlayerSpawnPositions,
-    playersInGame,
-    lastPlayerSelectedArrayIndex,
-    totalPlayersTeleportedToMap,
-    totalPlayersTeleportedToMapLastSeenValue,
-    totalPlayersTeleportedToMapSecondsPassedSinceValuesMatch,
-    playersThatWereSelectedForRoundStart,
-    playerIdsBomberQueueOriginal,
-    playerIdsBomberQueueRemainder,
-    bomberPlayerId,
-    // totalTimesBomberKilledSomeoneInARow,
-    // playerWasKilledByLastBomb,
-    secondsSpentByBomber,
-    secondsLeftBeforeBombMustBeRemoved,
-    secondsLeftBeforeBomberCanBomb,
-    lastBombPos,
-    lastBombType,
-    bombAvailable,
-    waitingForMorePlayersMessagePrintedOnce,
-    playerBomBotRoundData,
+    availablePlayerSpawnPositions: [],
+    playersInGame: [],
+    lastPlayerSelectedArrayIndex: 0,
+    totalPlayersTeleportedToMap: 0,
+    totalPlayersTeleportedToMapLastSeenValue: 0,
+    totalPlayersTeleportedToMapSecondsPassedSinceValuesMatch: 0,
+    playersThatWereSelectedForRoundStart: [],
+    playerIdsBomberQueueOriginal: [],
+    playerIdsBomberQueueRemainder: [],
+    bomberPlayerId: 0,
+    secondsSpentByBomber: 0,
+    secondsLeftBeforeBombMustBeRemoved: 0,
+    secondsLeftBeforeBomberCanBomb: 0,
+    lastBombPos: vec2(0, 0),
+    lastBombType: null,
+    bombAvailable: false,
+    waitingForMorePlayersMessagePrintedOnce: false,
+    playerBomBotRoundData: new Map(),
   }
-})
+}
+
+export function resetBomBotRoundStore() {
+  Object.assign(store, createBomBotRoundStore())
+}
+
+export function useBomBotRoundStore(): BomBotRoundStore {
+  return store
+}

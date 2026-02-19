@@ -31,7 +31,7 @@ import {
   portalIdToNumberAndStringArray,
   replaceAllLabels,
 } from '@/core/service/WorldService.ts'
-import { addUndoItemWorldBlock, performRedo, performUndo } from '@/bot/copybot/service/UndoRedoService.ts'
+import { addUndoItemWorldBlock, performRedo, performUndo } from '@/bot/copybot/service/CopyBotUndoRedoService.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { AnyBlockField, ProtoGen } from 'pw-js-api'
 import {
