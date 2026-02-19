@@ -14,7 +14,6 @@ export const useBArenaBotWorldStore = defineStore('BArenaBotWorldStore', () => {
   const teamRedPlayerFgBlocks = ref<Raw<Block[]>>([])
   const teamBlueProjectileFgBlock = ref<Raw<Block>>(new Block(0))
   const teamRedProjectileFgBlock = ref<Raw<Block>>(new Block(0))
-  const mapEmptyFgBlock = ref<Raw<Block>>(new Block(0))
   const playerIdQueue = ref<number[]>([])
 
   return {
@@ -27,7 +26,6 @@ export const useBArenaBotWorldStore = defineStore('BArenaBotWorldStore', () => {
     teamRedPlayerFgBlocks,
     teamBlueProjectileFgBlock,
     teamRedProjectileFgBlock,
-    mapEmptyFgBlock,
     playerIdQueue,
   }
 })

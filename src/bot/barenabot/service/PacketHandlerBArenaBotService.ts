@@ -461,8 +461,6 @@ async function loadBArenaBotData() {
 
   useBArenaBotWorldStore().teamBlueProjectileFgBlock = bArenaBotBlocks.blocks[LayerType.Foreground][19][86]
   useBArenaBotWorldStore().teamRedProjectileFgBlock = bArenaBotBlocks.blocks[LayerType.Foreground][25][86]
-
-  useBArenaBotWorldStore().mapEmptyFgBlock = bArenaBotBlocks.blocks[LayerType.Foreground][11][80]
 }
 
 async function stopCommandReceived(_args: string[], playerId: number) {
