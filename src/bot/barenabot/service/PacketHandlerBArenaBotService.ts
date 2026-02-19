@@ -289,18 +289,13 @@ function playerMovedPacketReceived(data: ProtoGen.PlayerMovedPacket, states?: { 
   const keyStates = states!.keyStates
   const playerData = useBArenaBotRoundStore().playerBArenaBotRoundData.get(playerId)
 
+  checkIfPlayerMoved(playerId, keyStates)
+  checkIfPlayerUseGun(playerId, keyStates)
+
   if (useBArenaBotWorldStore().currentState === BArenaBotState.PLAYING) {
-    checkIfPlayerMoved(playerId, keyStates)
     if (playerData !== undefined) {
       playerTryMove(playerData)
-    }
-
-    checkIfPlayerUseGun(playerId, keyStates)
-    if (playerData !== undefined) {
       playerTryUseGun(playerData, playerId)
-    }
-
-    if (playerData !== undefined) {
       playerData.playerIsAfk = false
     }
   }
