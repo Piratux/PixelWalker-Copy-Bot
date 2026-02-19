@@ -24,12 +24,11 @@ import { handleException } from '@/core/util/Exception.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
-import { useBArenaBotWorldStore } from '@/bot/barenabot/store/BArenaBotWorldStore.ts'
+import { resetBArenaBotWorldStore, useBArenaBotWorldStore } from '@/bot/barenabot/store/BArenaBotWorldStore.ts'
 import { BArenaBotState } from '@/bot/barenabot/enum/BArenaBotState.ts'
-import { useBArenaBotRoundStore } from '@/bot/barenabot/store/BArenaBotRoundStore.ts'
+import { resetBArenaBotRoundStore, useBArenaBotRoundStore } from '@/bot/barenabot/store/BArenaBotRoundStore.ts'
 import { BArenaBotCommandName } from '@/bot/barenabot/enum/BArenaBotCommandName.ts'
-import { userBArenaBotAutomaticRestartCounterStore } from '@/bot/barenabot/store/BArenaBotAutomaticRestartCounterStore.ts'
-import { BArenaBotWorldData, createBArenaBotWorldData } from '@/bot/barenabot/type/BArenaBotPlayerWorldData.ts'
+import { BArenaBotPlayerWorldData, createBArenaBotWorldData } from '@/bot/barenabot/type/BArenaBotPlayerWorldData.ts'
 import { shuffle } from 'lodash-es'
 import { BArenaTeam } from '@/bot/barenabot/enum/BArenaTeam.ts'
 import { BArenaPlayerBotRoundData } from '@/bot/barenabot/type/BArenaBotPlayerRoundData.ts'
@@ -39,7 +38,7 @@ import { BlockGrid } from '@/core/class/BlockGrid.ts'
 import { placeLabels, removeAllLabels } from '@/core/service/LabelService.ts'
 import { eventToLabelDataArray } from '@/bot/barenabot/type/BArenaEvent.ts'
 import { getRandomArrayElement } from '@/core/util/Random.ts'
-import { BArenaKillMessages } from '@/bot/barenabot/constant/BArenaKillMessages.ts' // TODO: Use UPPER_CASE for vec2 variables
+import { BArenaKillMessages } from '@/bot/barenabot/constant/BArenaKillMessages.ts'
 
 // TODO: Use UPPER_CASE for vec2 variables
 const mapTopLeftPos = vec2(86, 99)
@@ -190,8 +189,8 @@ function playerDiedFromProjectile(victimPlayerId: number, killingPlayerId: numbe
   sendToastMessage(`You were shot by ${killingPlayerName}!`, victimPlayerId, 'skull')
   sendRawMessage(`/kill #${victimPlayerId}`)
 
-  const victimPlayerData = getPlayerData(victimPlayerId)
-  const killingPlayerData = getPlayerData(killingPlayerId)
+  const victimPlayerData = getStartingPlayerData(victimPlayerId)
+  const killingPlayerData = getStartingPlayerData(killingPlayerId)
 
   useBArenaBotRoundStore().roundEvents.push({
     kind: 'kill',
@@ -508,7 +507,7 @@ async function startBArenaBot(loadWorld: boolean) {
 
   sendGlobalChatMessage('Starting BArenaBot...')
 
-  useBArenaBotWorldStore().$reset()
+  resetBArenaBotWorldStore()
 
   useBArenaBotWorldStore().playerIdQueue = getPwGameWorldHelper()
     .getPlayers()
@@ -880,7 +879,7 @@ function everySecondBArenaBotUpdate() {
     case BArenaBotState.STOPPED:
       return
     case BArenaBotState.RESET_STORE:
-      useBArenaBotRoundStore().$reset()
+      resetBArenaBotRoundStore()
 
       // Clear map
       renderMap()
@@ -1026,18 +1025,10 @@ async function autoRestartBArenaBot() {
 
   sendGlobalChatMessage('Restarting BArenaBot...')
   await stopBArenaBot()
-
-  const MAX_AUTOMATIC_RESTARTS = 300
-  if (userBArenaBotAutomaticRestartCounterStore().totalAutomaticRestarts >= MAX_AUTOMATIC_RESTARTS) {
-    sendGlobalChatMessage(`BArenaBot has automatically restarted ${MAX_AUTOMATIC_RESTARTS} times, not restarting again`)
-    return
-  }
-  userBArenaBotAutomaticRestartCounterStore().totalAutomaticRestarts++
-
   await startBArenaBot(false)
 }
 
-function getPlayerBArenaBotWorldData(playerId: number): BArenaBotWorldData {
+function getPlayerBArenaBotWorldData(playerId: number): BArenaBotPlayerWorldData {
   return mapGetOrInsert(useBArenaBotWorldStore().playerBArenaBotWorldData, playerId, createBArenaBotWorldData(playerId))
 }
 
@@ -1051,4 +1042,8 @@ function setBArenaBotState(newState: BArenaBotState) {
 
 function getPlayerData(playerId: number) {
   return useBArenaBotRoundStore().playerBArenaBotRoundData.get(playerId)!
+}
+
+function getStartingPlayerData(playerId: number) {
+  return useBArenaBotRoundStore().startingPlayerBArenaBotRoundData.get(playerId)!
 }

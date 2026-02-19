@@ -1,31 +1,41 @@
-import { defineStore } from 'pinia'
-import { Raw, ref } from 'vue'
 import { BArenaBotState } from '@/bot/barenabot/enum/BArenaBotState.ts'
-import { PlayerBArenaBotWorldData } from '@/bot/barenabot/type/BArenaBotPlayerWorldData.ts'
+import { BArenaBotPlayerWorldData } from '@/bot/barenabot/type/BArenaBotPlayerWorldData.ts'
 import { Block } from 'pw-js-world'
 
-export const useBArenaBotWorldStore = defineStore('BArenaBotWorldStore', () => {
-  const currentState = ref<BArenaBotState>(BArenaBotState.STOPPED)
-  const playerBArenaBotWorldData = ref<Raw<PlayerBArenaBotWorldData>>(new Map())
-  const everyTickUpdateIsRunning = ref<boolean>(false)
-  const ticksPassed = ref<number>(0)
-  const lastActivePlayerCount = ref<number>(0)
-  const teamBluePlayerFgBlocks = ref<Raw<Block[]>>([])
-  const teamRedPlayerFgBlocks = ref<Raw<Block[]>>([])
-  const teamBlueProjectileFgBlock = ref<Raw<Block>>(new Block(0))
-  const teamRedProjectileFgBlock = ref<Raw<Block>>(new Block(0))
-  const playerIdQueue = ref<number[]>([])
+interface BArenaBotWorldStore {
+  currentState: BArenaBotState
+  playerBArenaBotWorldData: Map<number, BArenaBotPlayerWorldData>
+  everyTickUpdateIsRunning: boolean
+  ticksPassed: number
+  lastActivePlayerCount: number
+  teamBluePlayerFgBlocks: Block[]
+  teamRedPlayerFgBlocks: Block[]
+  teamBlueProjectileFgBlock: Block
+  teamRedProjectileFgBlock: Block
+  playerIdQueue: number[]
+}
 
+const store = createBArenaBotWorldStore()
+
+function createBArenaBotWorldStore(): BArenaBotWorldStore {
   return {
-    currentState,
-    playerBArenaBotWorldData,
-    everyTickUpdateIsRunning,
-    ticksPassed,
-    lastActivePlayerCount,
-    teamBluePlayerFgBlocks,
-    teamRedPlayerFgBlocks,
-    teamBlueProjectileFgBlock,
-    teamRedProjectileFgBlock,
-    playerIdQueue,
+    currentState: BArenaBotState.STOPPED,
+    playerBArenaBotWorldData: new Map(),
+    everyTickUpdateIsRunning: false,
+    ticksPassed: 0,
+    lastActivePlayerCount: 0,
+    teamBluePlayerFgBlocks: [],
+    teamRedPlayerFgBlocks: [],
+    teamBlueProjectileFgBlock: new Block(0),
+    teamRedProjectileFgBlock: new Block(0),
+    playerIdQueue: [],
   }
-})
+}
+
+export function resetBArenaBotWorldStore() {
+  Object.assign(store, createBArenaBotWorldStore())
+}
+
+export function useBArenaBotWorldStore(): BArenaBotWorldStore {
+  return store
+}
