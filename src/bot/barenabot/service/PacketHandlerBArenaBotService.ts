@@ -35,7 +35,11 @@ import { BArenaTeam } from '@/bot/barenabot/enum/BArenaTeam.ts'
 import { BArenaPlayerBotRoundData } from '@/bot/barenabot/type/BArenaBotPlayerRoundData.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { isPosInsideArea } from '@/core/util/Geometry.ts'
-import { BlockGrid } from '@/core/class/BlockGrid.ts' // TODO: Use UPPER_CASE for vec2 variables
+import { BlockGrid } from '@/core/class/BlockGrid.ts'
+import { placeLabels, removeAllLabels } from '@/core/service/LabelService.ts'
+import { eventToLabelDataArray } from '@/bot/barenabot/type/BArenaEvent.ts'
+import { getRandomArrayElement } from '@/core/util/Random.ts'
+import { BArenaKillMessages } from '@/bot/barenabot/constant/BArenaKillMessages.ts' // TODO: Use UPPER_CASE for vec2 variables
 
 // TODO: Use UPPER_CASE for vec2 variables
 const mapTopLeftPos = vec2(86, 99)
@@ -43,6 +47,9 @@ const mapSize = vec2(25, 25)
 const lobbyTopLeftPos = vec2(91, 109)
 const lobbySize = vec2(15, 5)
 const winPos = vec2(98, 112)
+
+const firstEventLabelPos = vec2(1384, 2008)
+const eventLabelSpacing = vec2(0, 26)
 
 const BLUE_TEAM_PLAYER_START_POSITIONS = [
   vec2(92, 110),
@@ -163,13 +170,40 @@ function disqualifyPlayerFromRound(playerId: number) {
   }
 }
 
-function playerDiedFromProjectile(playerId: number, killingPlayerId: number) {
-  const playerName = getPwGameWorldHelper().getPlayer(playerId)?.username ?? 'Unknown'
+function redrawEventFeed() {
+  removeAllLabels()
+
+  const MAX_EVENTS_TO_DISPLAY = 3
+  const recentEvents = useBArenaBotRoundStore().roundEvents.slice(-MAX_EVENTS_TO_DISPLAY).reverse()
+  for (let i = 0; i < recentEvents.length; i++) {
+    const event = recentEvents[i]
+    const labelDataArray = eventToLabelDataArray(event)
+    const pos = vec2.add(firstEventLabelPos, vec2.mul(eventLabelSpacing, vec2(0, i)))
+    placeLabels(pos, labelDataArray)
+  }
+}
+
+function playerDiedFromProjectile(victimPlayerId: number, killingPlayerId: number) {
+  const victimPlayerName = getPwGameWorldHelper().getPlayer(victimPlayerId)?.username ?? 'Unknown'
   const killingPlayerName = getPwGameWorldHelper().getPlayer(killingPlayerId)?.username ?? 'Unknown'
-  sendToastMessage(`You shot ${playerName}!`, killingPlayerId, 'arrow-trend-up')
-  sendToastMessage(`You were shot by ${killingPlayerName}!`, playerId, 'skull')
-  sendRawMessage(`/kill #${playerId}`)
-  disqualifyPlayerFromRound(playerId)
+  sendToastMessage(`You shot ${victimPlayerName}!`, killingPlayerId, 'arrow-trend-up')
+  sendToastMessage(`You were shot by ${killingPlayerName}!`, victimPlayerId, 'skull')
+  sendRawMessage(`/kill #${victimPlayerId}`)
+
+  const victimPlayerData = getPlayerData(victimPlayerId)
+  const killingPlayerData = getPlayerData(killingPlayerId)
+
+  useBArenaBotRoundStore().roundEvents.push({
+    kind: 'kill',
+    killerName: killingPlayerName,
+    victimName: victimPlayerName,
+    killerTeam: killingPlayerData.team,
+    victimTeam: victimPlayerData.team,
+    killText: getRandomArrayElement(BArenaKillMessages),
+  })
+  redrawEventFeed()
+
+  disqualifyPlayerFromRound(victimPlayerId)
 }
 
 function playerGodModePacketReceived(data: ProtoGen.PlayerGodModePacket) {
@@ -526,7 +560,7 @@ function mapAddProjectileBlocks(mapGrid: BlockGrid) {
 
 function renderMap() {
   const mapGrid = new BlockGrid(mapSize, LayerType.Foreground, mapTopLeftPos)
-  mapGrid.setAllBlock(useBArenaBotWorldStore().mapEmptyFgBlock)
+  mapGrid.setAllBlock(new Block(0))
   mapAddProjectileBlocks(mapGrid)
   mapAddPlayerTankBlocks(mapGrid)
 
@@ -857,6 +891,8 @@ function everySecondBArenaBotUpdate() {
 
       // Clear map
       renderMap()
+
+      removeAllLabels()
 
       setBArenaBotState(BArenaBotState.AWAITING_PLAYERS)
       return
