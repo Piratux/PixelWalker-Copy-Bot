@@ -87,7 +87,7 @@ const RED_TEAM_TANK_START_POSITIONS = [
   vec2(100, 120),
 ]
 
-const MAX_ROUND_LENGTH_MS = 180_000
+const MAX_ROUND_LENGTH_MS = 300_000
 
 // NOTE: it's not a good idea to rely on these being constant, but it will do for now
 const TEAM_NONE = 0
