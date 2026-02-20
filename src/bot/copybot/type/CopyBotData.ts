@@ -30,8 +30,6 @@ export interface CopyBotData {
   snakeModeHideClock: boolean
 }
 
-export type PlayerCopyBotData = Map<number, CopyBotData>
-
 export function createBotData(): CopyBotData {
   return {
     botState: CopyBotState.NONE,

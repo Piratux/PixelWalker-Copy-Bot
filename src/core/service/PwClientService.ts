@@ -2,7 +2,13 @@ import { ListBlockResult, ProtoGen, PWApiClient, PWGameClient } from 'pw-js-api'
 import { GENERIC_CHAT_ERROR, TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { Block, DeserialisedStructure, Point, PWGameWorldHelper } from 'pw-js-world'
 import { placeWorldDataBlocks } from '@/core/service/WorldService.ts'
-import { getPwApiClient, getPwGameClient, getPwGameWorldHelper, usePwClientStore } from '@/core/store/PwClientStore.ts'
+import {
+  getPwApiClient,
+  getPwGameClient,
+  getPwGameWorldHelper,
+  resetPwClientStore,
+  usePwClientStore,
+} from '@/core/store/PwClientStore.ts'
 import { sendGlobalChatMessage, sendRawMessage } from '@/core/service/ChatMessageService.ts'
 import { registerCopyBotCallbacks } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
 import ManyKeysMap from 'many-keys-map'
@@ -21,6 +27,7 @@ import { registerCurseBotCallbacks } from '@/bot/cursebot/service/CurseBotPacket
 import { toRaw } from 'vue'
 import { registerShiftBotCallbacks } from '@/bot/shiftbot/service/ShiftBotPacketHandlerService.ts'
 import { registerBArenaBotCallbacks } from '@/bot/barenabot/service/BArenaBotPacketHandlerService.ts'
+import { resetCopyBotStore } from '@/bot/copybot/store/CopyBotStore.ts'
 
 export async function authenticate(pwApiClient: PWApiClient): Promise<void> {
   const authenticationResult = await pwApiClient.authenticate()
@@ -93,6 +100,8 @@ export async function initPwClasses(
   secretEditKey: string,
   botType: BotType,
 ) {
+  resetPwClientStore()
+
   usePwClientStore().worldId = worldId
   usePwClientStore().email = email
   usePwClientStore().password = password
@@ -113,6 +122,7 @@ export async function initPwClasses(
   usePwClientStore().pwGameWorldHelper = new PWGameWorldHelper()
 
   if (botType === BotType.COPY_BOT) {
+    resetCopyBotStore()
     registerCopyBotCallbacks()
   } else if (botType === BotType.BOM_BOT) {
     registerBomBotCallbacks()

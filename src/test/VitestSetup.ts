@@ -3,7 +3,7 @@ import { initPwClasses } from '@/core/service/PwClientService.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { afterEach } from 'vitest'
-import { getPlayerCopyBotData } from '@/bot/copybot/store/CopyBotStore.ts'
+import { useCopyBotStore } from '@/bot/copybot/store/CopyBotStore.ts'
 
 if (getActivePinia() === undefined) {
   console.log('No active Pinia found, creating a new one.')
@@ -24,5 +24,5 @@ if (getActivePinia() === undefined) {
 
 afterEach(() => {
   const playerId = getPwGameWorldHelper().botPlayerId
-  getPlayerCopyBotData().delete(playerId)
+  useCopyBotStore().playerCopyBotData.delete(playerId)
 })

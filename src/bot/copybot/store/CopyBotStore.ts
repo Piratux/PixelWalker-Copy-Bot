@@ -1,16 +1,22 @@
-import { defineStore } from 'pinia'
-import { PlayerCopyBotData } from '@/bot/copybot/type/CopyBotData.ts'
-import { Raw, ref } from 'vue'
+import { CopyBotData } from '@/bot/copybot/type/CopyBotData.ts'
 
-export const useCopyBotStore = defineStore('CopyBotStore', () => {
-  // TODO: periodically remove entries for players who left world (though it takes little data)
-  const playerCopyBotData = ref<Raw<PlayerCopyBotData>>(new Map())
+interface CopyBotStore {
+  playerCopyBotData: Map<number, CopyBotData>
+}
 
+const store = createCopyBotStore()
+
+function createCopyBotStore(): CopyBotStore {
   return {
-    playerCopyBotData,
+    // TODO: periodically remove entries for players who left world (though it takes little data)
+    playerCopyBotData: new Map(),
   }
-})
+}
 
-export function getPlayerCopyBotData(): PlayerCopyBotData {
-  return useCopyBotStore().playerCopyBotData
+export function resetCopyBotStore() {
+  Object.assign(store, createCopyBotStore())
+}
+
+export function useCopyBotStore(): CopyBotStore {
+  return store
 }

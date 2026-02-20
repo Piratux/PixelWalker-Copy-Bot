@@ -1,73 +1,83 @@
-import { defineStore } from 'pinia'
 import { ListBlockResult, PWApiClient, PWGameClient } from 'pw-js-api'
 import { PWGameWorldHelper, SendableBlockPacket } from 'pw-js-world'
-import { Raw, ref } from 'vue'
 import { BotType } from '@/core/enum/BotType.ts'
 
-export const usePwClientStore = defineStore('PwClientStore', () => {
-  const pwGameClient = ref<Raw<PWGameClient> | undefined>(undefined)
-  const pwApiClient = ref<Raw<PWApiClient> | undefined>(undefined)
-  const pwGameWorldHelper = ref<Raw<PWGameWorldHelper> | undefined>(undefined)
-  const worldId = ref<string>('')
-  const email = ref<string>('')
-  const password = ref<string>('')
-  const secretEditKey = ref<string>('')
-  const botType = ref<BotType>(BotType.COPY_BOT)
-  const totalBlocksLeftToReceiveFromWorldBlockPlacedPacket = ref<number>(0)
-  const unsuccessfullyPlacedBlockPackets = ref<Map<string, SendableBlockPacket>>(new Map())
-  const blocks = ref<ListBlockResult[]>([]) // sorted and uppercased blocks
-  const blocksByPwId = ref<Raw<Map<number, ListBlockResult>>>(new Map())
-  const blocksByPwName = ref<Raw<Map<string, ListBlockResult>>>(new Map())
-  const isConnected = ref<boolean>(false)
-  const roomType = ref<string>('')
-  const isAdminModeOn = ref<boolean>(false)
+interface PwClientStore {
+  pwGameClient?: PWGameClient
+  pwApiClient?: PWApiClient
+  pwGameWorldHelper?: PWGameWorldHelper
+  worldId: string
+  email: string
+  password: string
+  secretEditKey: string
+  botType: BotType
+  totalBlocksLeftToReceiveFromWorldBlockPlacedPacket: number
+  unsuccessfullyPlacedBlockPackets: Map<string, SendableBlockPacket>
+  blocks: ListBlockResult[]
+  blocksByPwId: Map<number, ListBlockResult>
+  blocksByPwName: Map<string, ListBlockResult>
+  isConnected: boolean
+  roomType: string
+  isAdminModeOn: boolean
+}
 
+const store = createPwClientStore()
+
+function createPwClientStore(): PwClientStore {
   return {
-    pwGameClient,
-    pwApiClient,
-    pwGameWorldHelper,
-    worldId,
-    email,
-    password,
-    secretEditKey,
-    botType,
-    totalBlocksLeftToReceiveFromWorldBlockPlacedPacket,
-    unsuccessfullyPlacedBlockPackets,
-    blocks,
-    blocksByPwId,
-    blocksByPwName,
-    isConnected,
-    roomType,
-    isAdminModeOn,
+    pwGameClient: undefined,
+    pwApiClient: undefined,
+    pwGameWorldHelper: undefined,
+    worldId: '',
+    email: '',
+    password: '',
+    secretEditKey: '',
+    botType: BotType.COPY_BOT,
+    totalBlocksLeftToReceiveFromWorldBlockPlacedPacket: 0,
+    unsuccessfullyPlacedBlockPackets: new Map(),
+    blocks: [],
+    blocksByPwId: new Map(),
+    blocksByPwName: new Map(),
+    isConnected: false,
+    roomType: '',
+    isAdminModeOn: false,
   }
-})
+}
+
+export function resetPwClientStore() {
+  Object.assign(store, createPwClientStore())
+}
+
+export function usePwClientStore(): PwClientStore {
+  return store
+}
 
 export function getPwGameClient(): PWGameClient {
-  return usePwClientStore().pwGameClient!
+  return store.pwGameClient!
 }
 
 export function getPwApiClient(): PWApiClient {
-  return usePwClientStore().pwApiClient!
+  return store.pwApiClient!
 }
 
 export function getPwGameWorldHelper(): PWGameWorldHelper {
-  return usePwClientStore().pwGameWorldHelper!
+  return store.pwGameWorldHelper!
 }
 
 export function getPwBlocks(): ListBlockResult[] {
-  return usePwClientStore().blocks
+  return store.blocks
 }
 
 // TODO: Think what to do about blockid = 0 as there is more than 1 entry
 export function getPwBlocksByPwId(): Map<number, ListBlockResult> {
-  return usePwClientStore().blocksByPwId
+  return store.blocksByPwId
 }
 
 // TODO: Think what to do about blockname = EMPTY as there is more than 1 entry
 export function getPwBlocksByPwName(): Map<string, ListBlockResult> {
-  return usePwClientStore().blocksByPwName
+  return store.blocksByPwName
 }
 
 export function getPwBotType(): BotType {
-  return usePwClientStore().botType
+  return store.botType
 }

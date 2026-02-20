@@ -9,7 +9,7 @@ import {
 import { Block, IPlayer, LayerType, Point } from 'pw-js-world'
 import { cloneDeep, isEqual } from 'lodash-es'
 import { CopyBotData, createBotData } from '@/bot/copybot/type/CopyBotData.ts'
-import { getPlayerCopyBotData } from '@/bot/copybot/store/CopyBotStore.ts'
+import { useCopyBotStore } from '@/bot/copybot/store/CopyBotStore.ts'
 import { CopyBotState } from '@/bot/copybot/enum/CopyBotState.ts'
 import { sendGlobalChatMessage, sendPrivateChatMessage } from '@/core/service/ChatMessageService.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
@@ -1281,7 +1281,7 @@ function worldBlockPlacedPacketReceived(
 }
 
 export function getBotData(playerId: number): CopyBotData {
-  return mapGetOrInsert(getPlayerCopyBotData(), playerId, createBotData())
+  return mapGetOrInsert(useCopyBotStore().playerCopyBotData, playerId, createBotData())
 }
 
 function createOldWorldBlocks(positions: vec2[], oldBlocks: Block[]) {
