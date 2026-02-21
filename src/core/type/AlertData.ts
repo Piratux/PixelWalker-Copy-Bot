@@ -8,13 +8,4 @@ export enum AlertType {
 export interface AlertData {
   text: string
   type: AlertType
-  closable: boolean
-}
-
-export function createAlert(text: string, type: AlertType, closable = true): AlertData {
-  return {
-    text,
-    type,
-    closable,
-  }
 }

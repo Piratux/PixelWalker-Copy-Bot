@@ -15,7 +15,7 @@ import { RouteName } from '@/router/RouteName.ts'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { PWApiClient } from 'pw-js-api'
 import { LAST_TESTED_PW_VERSION } from '@/core/constant/General.ts'
-import { AlertService } from '@/core/service/AlertService.ts'
+import { useAlertStore } from '@/core/store/AlertStore.ts'
 
 const loadingOverlay = ref(false)
 const email = ref('')
@@ -59,7 +59,9 @@ onMounted(() => {
 async function showWarningAlertIfCurrentPWVersionIsUntested() {
   const version = await PWApiClient.getVersion()
   if (version !== LAST_TESTED_PW_VERSION) {
-    AlertService.warning('Bot was not tested with latest PixelWalker version, so it may not work or work incorrectly')
+    useAlertStore().warning(
+      'Bot was not tested with latest PixelWalker version, so it may not work or work incorrectly',
+    )
   }
 }
 

@@ -1,8 +1,8 @@
-import { AlertService } from '@/core/service/AlertService.ts'
 import { sendGlobalChatMessage, sendPrivateChatMessage } from '@/core/service/ChatMessageService.ts'
 import { GENERIC_CHAT_ERROR, GENERIC_WEBSITE_ERROR } from '@/core/constant/General.ts'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { GameError } from '@/core/class/GameError.ts'
+import { useAlertStore } from '@/core/store/AlertStore.ts'
 
 interface PwJsApiErrorObject {
   type: string
@@ -60,9 +60,9 @@ export function handleException(exception: unknown): void {
     console.error(errorFromPwPacket)
   } else if (exception instanceof Error) {
     console.error(exception)
-    AlertService.error(exception.message)
+    useAlertStore().error(exception.message)
   } else {
     console.error(exception)
-    AlertService.error(GENERIC_WEBSITE_ERROR)
+    useAlertStore().error(GENERIC_WEBSITE_ERROR)
   }
 }

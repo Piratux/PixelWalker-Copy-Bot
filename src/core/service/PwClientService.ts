@@ -15,7 +15,7 @@ import { EER_MAPPINGS, EerListBlockResult } from '@/webtool/eer/block/EerMapping
 import { BotType } from '@/core/enum/BotType.ts'
 import { registerBomBotCallbacks } from '@/bot/bombot/service/BomBotPacketHandlerService.ts'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
-import { AlertService } from '@/core/service/AlertService.ts'
+import { useAlertStore } from '@/core/store/AlertStore.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { resetEelvlClientStore, useEelvlClientStore } from '@/webtool/eelvl/store/EelvlClientStore.ts'
 import { resetEerClientStore, useEerClientStore } from '@/webtool/eer/store/EerClientStore.ts'
@@ -275,7 +275,7 @@ export function handlePlaceBlocksResult(success: boolean): void {
   if (success) {
     message = 'Successfully finished placing all blocks.'
     sendGlobalChatMessage(message)
-    AlertService.success(message)
+    useAlertStore().success(message)
   } else {
     throw new GameError('Failed to place all blocks.')
   }

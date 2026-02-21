@@ -2,7 +2,7 @@ import type { RouteLocationNormalizedGeneric } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
 import { Routes } from './Routes.ts'
 import { RouteName } from './RouteName.ts'
-import { AlertService } from '@/core/service/AlertService.ts'
+import { useAlertStore } from '@/core/store/AlertStore.ts'
 
 function buildRouter() {
   const router = createRouter({
@@ -11,7 +11,7 @@ function buildRouter() {
   })
 
   router.beforeEach((to: RouteLocationNormalizedGeneric) => {
-    AlertService.clear()
+    useAlertStore().clear()
     if (to.name === RouteName.NOT_FOUND) {
       return { name: RouteName.HOME }
     }
