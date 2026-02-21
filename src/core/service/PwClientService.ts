@@ -11,20 +11,18 @@ import {
 } from '@/core/store/PwClientStore.ts'
 import { sendGlobalChatMessage, sendRawMessage } from '@/core/service/ChatMessageService.ts'
 import { registerCopyBotCallbacks } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
-import ManyKeysMap from 'many-keys-map'
 import { EER_MAPPINGS, EerListBlockResult } from '@/webtool/eer/block/EerMappings.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { registerBomBotCallbacks } from '@/bot/bombot/service/BomBotPacketHandlerService.ts'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import { AlertService } from '@/core/service/AlertService.ts'
 import { GameError } from '@/core/class/GameError.ts'
-import { useEelvlClientStore } from '@/webtool/eelvl/store/EelvlClientStore.ts'
-import { useEerClientStore } from '@/webtool/eer/store/EerClientStore.ts'
+import { resetEelvlClientStore, useEelvlClientStore } from '@/webtool/eelvl/store/EelvlClientStore.ts'
+import { resetEerClientStore, useEerClientStore } from '@/webtool/eer/store/EerClientStore.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { TimeoutError, workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { createFailedToJoinWorldErrorString } from '@/bot/copybot/service/CopyBotErrorService.ts'
 import { registerCurseBotCallbacks } from '@/bot/cursebot/service/CurseBotPacketHandlerService.ts'
-import { toRaw } from 'vue'
 import { registerShiftBotCallbacks } from '@/bot/shiftbot/service/ShiftBotPacketHandlerService.ts'
 import { registerBArenaBotCallbacks } from '@/bot/barenabot/service/BArenaBotPacketHandlerService.ts'
 import { resetCopyBotStore } from '@/bot/copybot/store/CopyBotStore.ts'
@@ -64,7 +62,7 @@ function initPwBlocks(blocks: ListBlockResult[]) {
 }
 
 function initEelvlBlocks(blocks: ListBlockResult[]) {
-  useEelvlClientStore().blocksByParameters = new ManyKeysMap()
+  resetEelvlClientStore()
 
   blocks.forEach((block) => {
     Object.entries(block.LegacyMorphs).forEach(([legacyId, morphs]) => {
@@ -80,6 +78,8 @@ function initEelvlBlocks(blocks: ListBlockResult[]) {
 }
 
 function initEerBlocks(eerBlocks: EerListBlockResult[]) {
+  resetEerClientStore()
+
   eerBlocks.forEach((block) => {
     if (block.LegacyId !== undefined) {
       if (block.LegacyMorph !== undefined) {
@@ -140,8 +140,6 @@ export async function initPwClasses(
   initPwBlocks(pwBlocks)
   initEelvlBlocks(pwBlocks)
   initEerBlocks(EER_MAPPINGS)
-
-  usePwClientStore().roomType = (await getPwApiClient().getRoomTypes())[0] ?? ''
 
   await workerWaitUntil(() => usePwClientStore().isConnected, {
     timeout: 5000,
@@ -246,7 +244,7 @@ export function requireBotAsWorldOwner(): void {
 }
 
 export function getAllWorldBlocks(pwGameWorldHelper: PWGameWorldHelper): DeserialisedStructure {
-  return toRaw(pwGameWorldHelper).sectionArea(0, 0, pwGameWorldHelper.width - 1, pwGameWorldHelper.height - 1)
+  return pwGameWorldHelper.sectionArea(0, 0, pwGameWorldHelper.width - 1, pwGameWorldHelper.height - 1)
 }
 
 export function hotReloadCallbacks(callbacks: CallbackEntry[]) {

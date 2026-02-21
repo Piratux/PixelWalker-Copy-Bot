@@ -59,7 +59,6 @@ import { SPECIAL_BOMB_COUNT } from '@/bot/bombot/constant/General.ts'
 import { BomBotCommandName } from '@/bot/bombot/enum/BomBotCommandName.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
-import { toRaw } from 'vue'
 import { isPosInsideArea } from '@/core/util/Geometry.ts'
 
 const blockTypeDataStartPos = vec2(20, 361) // inclusive x
@@ -1293,7 +1292,7 @@ function getAvailableSpawnPositions(blocks: DeserialisedStructure) {
 }
 
 function updateAvailablePlayerSpawnPositions() {
-  const blocks = toRaw(getPwGameWorldHelper()).sectionArea(
+  const blocks = getPwGameWorldHelper().sectionArea(
     mapTopLeftPos.x,
     mapTopLeftPos.y,
     mapTopLeftPos.x + mapSize.x - 1,

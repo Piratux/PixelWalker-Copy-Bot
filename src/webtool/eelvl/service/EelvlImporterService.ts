@@ -16,7 +16,7 @@ import {
   isEelvlNpc,
 } from '@/webtool/eelvl/service/EelvlUtilService.ts'
 import { EelvlLayer } from '@/webtool/eelvl/enum/EelvlLayer.ts'
-import { getPwBlocksByEelvlParameters } from '@/webtool/eelvl/store/EelvlClientStore.ts'
+import { useEelvlClientStore } from '@/webtool/eelvl/store/EelvlClientStore.ts'
 import { EelvlImportResult } from '@/webtool/eelvl/type/EelvlImportResult.ts'
 import { MissingBlockInfo } from '@/webtool/eelvl/type/MissingBlockInfo.ts'
 import { colourToUint32, hexStringToColour } from '@/core/util/Colours.ts'
@@ -328,7 +328,7 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
         return `Unknown Block ID: ${eelvlBlock.blockId}`
       }
 
-      const pwBlock = getPwBlocksByEelvlParameters().get(
+      const pwBlock = useEelvlClientStore().blocksByParameters.get(
         eelvlBlock.intParameter === undefined ? [eelvlBlock.blockId] : [eelvlBlock.blockId, eelvlBlock.intParameter],
       )
 
@@ -370,7 +370,7 @@ function mapBlockIdEelvlToPw(eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): Bl
         }
       }
 
-      const pwBlockMorph0 = getPwBlocksByEelvlParameters().get(
+      const pwBlockMorph0 = useEelvlClientStore().blocksByParameters.get(
         eelvlBlock.intParameter === undefined ? [eelvlBlock.blockId] : [eelvlBlock.blockId, 0],
       )
 

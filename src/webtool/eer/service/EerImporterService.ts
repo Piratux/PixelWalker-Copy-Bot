@@ -17,7 +17,7 @@ import { placeMultipleBlocks } from '@/core/service/WorldService.ts'
 import { getPwBlocksByPwName } from '@/core/store/PwClientStore.ts'
 import { uint32ToInt32 } from '@/core/util/Numbers.ts'
 import { bufferToArrayBuffer } from '@/core/util/Buffers.ts'
-import { getPwBlocksByEerParameters } from '@/webtool/eer/store/EerClientStore.ts'
+import { useEerClientStore } from '@/webtool/eer/store/EerClientStore.ts'
 
 interface EerBlock {
   type: number
@@ -231,7 +231,7 @@ function tryConvertEerBlockToPwBlock(eerBlock: EerBlock): Block[] | null {
       return [new Block(PwBlockName.CUSTOM_SOLID_BG, [0x7f0056])]
     // END SOLID BACKGROUND CODE
     default:
-      const pwBlock = getPwBlocksByEerParameters().get(
+      const pwBlock = useEerClientStore().blocksByParameters.get(
         eerBlockIntParameter === undefined ? [eerBlockId] : [eerBlockId, eerBlockIntParameter],
       )
 
@@ -239,7 +239,7 @@ function tryConvertEerBlockToPwBlock(eerBlock: EerBlock): Block[] | null {
         return [new Block(pwBlock.PaletteId.toUpperCase())]
       }
 
-      const pwBlockMorph0 = getPwBlocksByEerParameters().get(
+      const pwBlockMorph0 = useEerClientStore().blocksByParameters.get(
         eerBlockIntParameter === undefined ? [eerBlockId] : [eerBlockId, 0],
       )
 

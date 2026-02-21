@@ -28,7 +28,6 @@ import { authenticate, getAllWorldBlocks, joinWorld } from '@/core/service/PwCli
 import { handleException } from '@/core/util/Exception.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
-import { toRaw } from 'vue'
 import { BotType } from '@/core/enum/BotType.ts'
 import { WorldData } from '@/core/type/WorldData.ts'
 
@@ -189,7 +188,7 @@ async function placePackets(packets: SendableBlockPacket[], blockCount: number):
 
   if (getPwBotType() === BotType.COPY_BOT) {
     console.error('Failed to place all blocks. Printing packets that could not be placed:')
-    console.error(toRaw(usePwClientStore().unsuccessfullyPlacedBlockPackets))
+    console.error(usePwClientStore().unsuccessfullyPlacedBlockPackets)
   }
 
   return false
@@ -402,7 +401,7 @@ export function getDeserialisedStructureSectionVec2(
 
 export function applyPosOffsetForBlocks(offsetPos: Point, worldBlocks: WorldBlock[]) {
   return worldBlocks.map((worldBlock) => {
-    const clonedBlock = cloneDeep(toRaw(worldBlock))
+    const clonedBlock = cloneDeep(worldBlock)
     clonedBlock.pos = vec2.add(clonedBlock.pos, offsetPos)
     return clonedBlock
   })

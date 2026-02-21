@@ -12,7 +12,6 @@ import { vec2 } from '@basementuniverse/vec'
 import { getBotData, selectBlocks } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
 import { Promisable } from '@/core/util/Promise.ts'
 import { CopyBotData } from '@/bot/copybot/type/CopyBotData.ts'
-import { toRaw } from 'vue'
 import { expect } from 'vitest'
 import { EelvlImportResult } from '@/webtool/eelvl/type/EelvlImportResult.ts'
 
@@ -84,7 +83,7 @@ export async function getDataFromMidiFile(fileUrl: string): Promise<Deserialised
 }
 
 export function verifyExpectedBlocks(expectedOutputBlocks: WorldBlock[], areaSize = vec2(10, 10)) {
-  const currentBlocks = toRaw(getPwGameWorldHelper()).sectionArea(0, 0, areaSize.x - 1, areaSize.y - 1)
+  const currentBlocks = getPwGameWorldHelper().sectionArea(0, 0, areaSize.x - 1, areaSize.y - 1)
   const expectedBlocks = createEmptyBlocks(areaSize)
   for (const worldBlock of expectedOutputBlocks) {
     expectedBlocks.blocks[worldBlock.layer][worldBlock.pos.x][worldBlock.pos.y] = worldBlock.block

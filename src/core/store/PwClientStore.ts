@@ -17,7 +17,6 @@ interface PwClientStore {
   blocksByPwId: Map<number, ListBlockResult>
   blocksByPwName: Map<string, ListBlockResult>
   isConnected: boolean
-  roomType: string
   isAdminModeOn: boolean
 }
 
@@ -39,7 +38,6 @@ function createPwClientStore(): PwClientStore {
     blocksByPwId: new Map(),
     blocksByPwName: new Map(),
     isConnected: false,
-    roomType: '',
     isAdminModeOn: false,
   }
 }

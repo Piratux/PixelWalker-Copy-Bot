@@ -12,7 +12,7 @@ import { EelvlLayer } from '@/webtool/eelvl/enum/EelvlLayer.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { EelvlBlockEntry } from '@/webtool/eelvl/type/EelvlBlockEntry.ts'
 import { getAllWorldBlocks } from '@/core/service/PwClientService.ts'
-import { getEelvlBlocksById } from '@/webtool/eelvl/store/EelvlClientStore.ts'
+import { useEelvlClientStore } from '@/webtool/eelvl/store/EelvlClientStore.ts'
 import {
   getPwToEelvlDrumTypeMap,
   hasEelvlBlockOneIntParameter,
@@ -125,7 +125,7 @@ export function exportToEelvl(): MissingBlockInfo[] {
 }
 
 function getEelvlLayer(eelvlBlockId: number): EelvlLayer {
-  return getEelvlBlocksById().get(eelvlBlockId)!.layer
+  return useEelvlClientStore().blocksById.get(eelvlBlockId)!.layer
 }
 
 function getBlockEntryKey(eelvlBlockId: number, eelvlBlock: EelvlBlock, eelvlLayer: EelvlLayer): EelvlBlockEntry {
