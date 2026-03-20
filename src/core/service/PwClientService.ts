@@ -103,7 +103,7 @@ export async function initPwClasses(
   resetPwClientStore()
 
   usePwClientStore().worldId = worldId
-  usePwClientStore().email = email
+  usePwClientStore().email = email.toLowerCase() // Login page in PW lowercases email before sending to server
   usePwClientStore().password = password
   usePwClientStore().secretEditKey = secretEditKey
   usePwClientStore().botType = botType

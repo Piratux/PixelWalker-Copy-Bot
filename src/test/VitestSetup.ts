@@ -11,7 +11,7 @@ if (getActivePinia() === undefined) {
 
   await initPwClasses(
     import.meta.env.VITE_TEST_RUN_PW_WORLD_ID!,
-    import.meta.env.VITE_TEST_RUN_PW_ACCOUNT_EMAIL!,
+    import.meta.env.VITE_TEST_RUN_PW_ACCOUNT_EMAIL!.toLowerCase(), // Login page in PW lowercases email before sending to server
     import.meta.env.VITE_TEST_RUN_PW_ACCOUNT_PASSWORD!,
     '',
     BotType.COPY_BOT,
