@@ -1,5 +1,12 @@
 PixelWalker copy bot changelog
 
+2026-03-25 Version 1.22.0
+- Website: Add an option to select entertainmnet bot in login page, so that it can be hosted by anyone. Newly added bots:
+  - Bom Bot
+  - Curse Bot
+  - Shift Bot
+  - BArena Bot
+
 2026-03-20 Version 1.21.1
 - Website: In login page, when authenticating with server, turn email to lower case to match PixelWalker login page behavior.
 

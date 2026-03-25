@@ -12,7 +12,6 @@ import PiOverlay from '@/component/PiOverlay.vue'
 import { getEnvDefaultWorldId } from '@/core/util/Environment.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { RouteName } from '@/router/RouteName.ts'
-import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { PWApiClient } from 'pw-js-api'
 import { LAST_TESTED_PW_VERSION } from '@/core/constant/General.ts'
 import { useAlertStore } from '@/core/store/AlertStore.ts'
@@ -25,9 +24,9 @@ const secretEditKey = ref('')
 const botType = ref(BotType.COPY_BOT)
 const botTypeItems = [
   { title: 'Copy Bot', value: BotType.COPY_BOT },
-  { title: 'BomBot', value: BotType.BOM_BOT },
-  { title: 'CurseBot', value: BotType.CURSE_BOT },
-  { title: 'ShiftBot', value: BotType.SHIFT_BOT },
+  { title: 'Bom Bot', value: BotType.BOM_BOT },
+  { title: 'Curse Bot', value: BotType.CURSE_BOT },
+  { title: 'Shift Bot', value: BotType.SHIFT_BOT },
   { title: 'BArena Bot', value: BotType.BARENA_BOT },
 ]
 const form = ref<VForm>()
@@ -35,7 +34,8 @@ const form = ref<VForm>()
 const router = useRouter()
 
 const devViewEnabled = computed(() => import.meta.env.VITE_DEV_VIEW === 'TRUE')
-const adminViewEnabled = computed(() => devViewEnabled.value || usePwClientStore().isAdminModeOn)
+// const adminViewEnabled = computed(() => devViewEnabled.value || usePwClientStore().isAdminModeOn)
+const adminViewEnabled = true
 
 watch(worldId, () => {
   worldId.value = getWorldIdIfUrl(worldId.value)
