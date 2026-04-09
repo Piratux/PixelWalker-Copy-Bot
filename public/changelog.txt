@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2026-04-09 Version 1.22.1
+- Website: EELVL/EER Import now handles labels that have 1-6 hex colour length (such as #f, #ff, #fff, #ffff, #fffff, #ffffff).
+
 2026-03-25 Version 1.22.0
 - Website: Add an option to select entertainmnet bot in login page, so that it can be hosted by anyone. Newly added bots:
   - Bom Bot
