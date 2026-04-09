@@ -26,49 +26,26 @@ export function colourToUint32(colour: Colour): number {
 }
 
 export function hexStringToColour(colour: string): Colour {
+  if (
+    ![
+      /^#([0-9A-Fa-f]{6})$/.test(colour),
+      /^#([0-9A-Fa-f]{5})$/.test(colour),
+      /^#([0-9A-Fa-f]{4})$/.test(colour),
+      /^#([0-9A-Fa-f]{3})$/.test(colour),
+      /^#([0-9A-Fa-f]{2})$/.test(colour),
+      /^#([0-9A-Fa-f])$/.test(colour),
+    ].includes(true)
+  ) {
+    throw new Error(`Invalid colour format: ${colour}. Expected formats: #RRGGBB, #RGGBB, #GGBB, #GBB, #BB, #B.`)
+  }
+
+  const processedColourString: string = [colour]
+    .map((colour) => colour.slice(1))
+    .map((colour) => colour.padStart(6, '0'))[0]
+
+  const r = parseInt(processedColourString.slice(0, 2), 16)
+  const g = parseInt(processedColourString.slice(2, 4), 16)
+  const b = parseInt(processedColourString.slice(4, 6), 16)
   const a = 0
-
-  // Parse "#RRGGBB" as "#RRGGBB"
-  if (/^#([0-9A-Fa-f]{6})$/.test(colour)) {
-    const r = parseInt(colour.slice(1, 3), 16)
-    const g = parseInt(colour.slice(3, 5), 16)
-    const b = parseInt(colour.slice(5, 7), 16)
-    return { r, g, b, a }
-  }
-
-  // Parse "#RGGBB" as "#0RRGGBB"
-  if (/^#([0-9A-Fa-f]{5})$/.test(colour)) {
-    const r = parseInt(colour.slice(1, 2), 16)
-    const g = parseInt(colour.slice(2, 4), 16)
-    const b = parseInt(colour.slice(4, 6), 16)
-    return { r, g, b, a }
-  }
-
-  // Parse "#GGBB" as "#00GGBB"
-  if (/^#([0-9A-Fa-f]{4})$/.test(colour)) {
-    const g = parseInt(colour.slice(1, 3), 16)
-    const b = parseInt(colour.slice(3, 5), 16)
-    return { r: 0, g, b, a }
-  }
-
-  // Parse "#GBB" as "#000GBB"
-  if (/^#([0-9A-Fa-f]{3})$/.test(colour)) {
-    const g = parseInt(colour.slice(1, 2), 16)
-    const b = parseInt(colour.slice(2, 4), 16)
-    return { r: 0, g, b, a }
-  }
-
-  // Parse "#BB" as "#0000BB"
-  if (/^#([0-9A-Fa-f]{2})$/.test(colour)) {
-    const b = parseInt(colour.slice(1, 3), 16)
-    return { r: 0, g: 0, b, a }
-  }
-
-  // Parse "#B" as "#00000B"
-  if (/^#([0-9A-Fa-f])$/.test(colour)) {
-    const b = parseInt(colour.slice(1, 2), 16)
-    return { r: 0, g: 0, b, a }
-  }
-
-  return { r: 255, g: 255, b: 255, a }
+  return { r, g, b, a }
 }
