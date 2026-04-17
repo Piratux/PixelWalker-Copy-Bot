@@ -29,7 +29,7 @@
     "pinia": "^3.0.4",
     "playerioclient": "^1.0.7",
     "pngjs": "^7.0.0",
-    "pw-js-api": "^0.3.18",
+    "pw-js-api": "github:doomestee/pw-js-api#48180798c8c265ac3bf7391d8b8dc9a9cdf91c07",
     "pw-js-world": "github:Piratux/pw-js-world#issue-43",
     "vue": "^3.5.28",
     "vue-router": "^5.0.3",
