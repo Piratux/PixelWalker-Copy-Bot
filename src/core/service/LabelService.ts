@@ -30,7 +30,6 @@ export function placeLabels(pos: vec2, labelData: (string | LabelData)[]) {
     }
 
     getPwGameClient().send('worldLabelUpsertRequestPacket', {
-      // @ts-expect-error TODO: remove this as id should be optional
       label: {
         position: placePos,
         text: text,

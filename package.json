@@ -68,7 +68,7 @@
     "vue-tsc": "^3.2.5"
   },
   "simple-git-hooks": {
-    "pre-commit": "npx lint-staged && npm run ts-check"
+    "pre-push": "npx lint-staged && npm run ts-check"
   },
   "lint-staged": {
     "*": [
