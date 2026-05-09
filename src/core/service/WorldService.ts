@@ -431,8 +431,6 @@ export function replaceAllLabels(labels: ILabel[]) {
   }
 
   for (const label of labels) {
-    // @ts-expect-error Waiting for fix as it should be optional
-    label.id = undefined
     getPwGameClient().send('worldLabelUpsertRequestPacket', {
       label: label,
     })
