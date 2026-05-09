@@ -7,7 +7,7 @@ import {
   getPwGameWorldHelper,
 } from '@/core/store/PwClientStore.ts'
 import { Block, IPlayer, LayerType, Point } from 'pw-js-world'
-import { cloneDeep, isEqual } from 'lodash-es'
+import { cloneDeep, isEmpty, isEqual } from 'lodash-es'
 import { CopyBotData, createBotData } from '@/bot/copybot/type/CopyBotData.ts'
 import { useCopyBotStore } from '@/bot/copybot/store/CopyBotStore.ts'
 import { CopyBotState } from '@/bot/copybot/enum/CopyBotState.ts'
@@ -1249,13 +1249,14 @@ function worldBlockPlacedPacketReceived(
   data: ProtoGen.WorldBlockPlacedPacket,
   states?: { player: IPlayer | undefined; oldBlocks: Block[]; newBlocks: Block[] },
 ) {
-  updateAwaitedWorldBlockPlacedPackets(data)
-
-  if (data.playerId === getPwGameWorldHelper().botPlayerId) {
+  // If 'worldBlockPlacedPacket' is received/processed before 'playerInitPacket', then 'states' will be empty
+  if (isEmpty(states)) {
     return
   }
 
-  if (states === undefined) {
+  updateAwaitedWorldBlockPlacedPackets(data)
+
+  if (data.playerId === getPwGameWorldHelper().botPlayerId) {
     return
   }
 
