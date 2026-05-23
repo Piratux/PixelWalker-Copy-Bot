@@ -249,16 +249,38 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
 
         return
       }
+
       const singleBlock = sortedListBlocks[idx]
       const pos = vec2(x, y)
       let worldBlock: WorldBlock
-      if (singleBlock.Fields.some((f) => f.Required)) {
+      if (
+        [PwBlockName.HAZARD_DEATH_DOOR, PwBlockName.HAZARD_DEATH_GATE].includes(singleBlock.PaletteId as PwBlockName)
+      ) {
+        // Fix PW bug where placing these blocks with no args places it with deaths = 0 which is invalid for these blocks
+        worldBlock = {
+          block: new Block(singleBlock.PaletteId, {
+            deaths: 1,
+          }),
+          layer: singleBlock.Layer,
+          pos,
+        }
+      } else if ((singleBlock.PaletteId as PwBlockName) === PwBlockName.PORTAL_WORLD) {
+        worldBlock = {
+          block: new Block(PwBlockName.PORTAL_WORLD, {
+            target: '0',
+            spawn_id: '', // Avoiding error: "INFO: Invalid block: You do not have permission to specify a spawn ID for worlds you don't own."
+          }),
+          layer: singleBlock.Layer,
+          pos,
+        }
+      } else if (singleBlock.Fields.some((f) => f.Required)) {
         // TODO: required field may not always be a string
         const args = Object.fromEntries(singleBlock.Fields.map((f) => [f.Name, '0']))
         worldBlock = { block: new Block(singleBlock.Id, args), layer: singleBlock.Layer, pos }
       } else {
         worldBlock = { block: new Block(singleBlock.Id), layer: singleBlock.Layer, pos }
       }
+
       worldBlocks.push(worldBlock)
       for (let layer = 0; layer < TOTAL_PW_LAYERS; layer++) {
         if (layer !== singleBlock.Layer) {

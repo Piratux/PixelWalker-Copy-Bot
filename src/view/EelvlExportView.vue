@@ -101,6 +101,8 @@ async function onExportEelvlButtonClick() {
           <li>Configurable fireworks</li>
           <li>Arrow signs</li>
           <li>Highly customizable labels</li>
+          <li>Weak boosts</li>
+          <li>Curse/poison door/gates</li>
         </ul>
       </v-row>
       <v-row
