@@ -59,7 +59,7 @@ const worldName = ref<string>(getPwGameWorldHelper()?.meta?.title ?? '') // TODO
         <ul>
           <li>Export PixelWalker world to .eelvl file</li>
           <li>Import PixelWalker world from .eelvl file</li>
-          <li>Import PixelWalker world from .midi file (piano notes only for now)</li>
+          <li>Import PixelWalker world from .midi file</li>
           <li>Import PixelWalker world from .png file</li>
           <li>Import PixelWalker world from EER (Everybody Edits Rewritten) world</li>
         </ul>
