@@ -160,6 +160,12 @@ export async function commandReceived(message: string, playerId: number) {
     case CopyBotCommandName.IMPORT:
       await importCommandReceived(commandArgs, playerId)
       break
+    case CopyBotCommandName.OFF:
+      offCommandReceived(commandArgs, playerId)
+      break
+    case CopyBotCommandName.ON:
+      onCommandReceived(commandArgs, playerId)
+      break
     // DEV commands
     case CopyBotCommandName.PLACE_ALL:
       await placeallCommandReceived(commandArgs, playerId)
@@ -419,12 +425,34 @@ async function importCommandReceived(args: string[], playerId: number) {
   handlePlaceBlocksResult(success)
 }
 
+function offCommandReceived(_args: string[], playerId: number) {
+  const botData = getBotData(playerId)
+
+  if (botData.isEnabled) {
+    sendPrivateChatMessage('Bot is now turned off. Coins will now be ignored by bot.', playerId)
+    botData.isEnabled = false
+  } else {
+    sendPrivateChatMessage('Bot is already turned off.', playerId)
+  }
+}
+
+function onCommandReceived(_args: string[], playerId: number) {
+  const botData = getBotData(playerId)
+
+  if (!botData.isEnabled) {
+    sendPrivateChatMessage('Bot is now turned on. Coins can be used to copy/paste again.', playerId)
+    botData.isEnabled = true
+  } else {
+    sendPrivateChatMessage('Bot is already turned on.', playerId)
+  }
+}
+
 function helpCommandReceived(args: string[], playerId: number) {
   if (args.length == 0) {
     sendPrivateChatMessage('Gold coin - select blocks', playerId)
     sendPrivateChatMessage('Blue coin - paste blocks', playerId)
     sendPrivateChatMessage(
-      'Commands: .help .ping .paste .smartpaste .undo .redo .import .edit .move .mask .flip .snake',
+      'Commands: .help .ping .paste .smartpaste .undo .redo .import .edit .move .mask .flip .snake .off .on',
       playerId,
     )
     sendPrivateChatMessage('See more info about each command via .help [command]', playerId)
@@ -535,6 +563,15 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage('dest_to_(x/y) - top left corner position to paste to', playerId)
       sendPrivateChatMessage(`Example usage 1: .import https://pixelwalker.net/world/9gf53f4qf5z1f42`, playerId)
       sendPrivateChatMessage(`Example usage 2: .import legacy:PW4gnKMssUb0I 2 4 25 16 2 4`, playerId)
+      break
+    case CopyBotCommandName.OFF:
+      sendPrivateChatMessage(
+        '.off - Makes the bot ignore the coins. Bot can be turned back on with .on command',
+        playerId,
+      )
+      break
+    case CopyBotCommandName.ON:
+      sendPrivateChatMessage('.on - Turns the bot back on after it was turned off with .off command', playerId)
       break
     case CopyBotCommandName.SNAKE:
       sendPrivateChatMessage('Correct usage is .snake [off | on time offset hideclock]', playerId)
@@ -1289,6 +1326,13 @@ function worldBlockPlacedPacketReceived(
 
   if (data.positions.length !== states.oldBlocks.length || states.oldBlocks.length !== states.newBlocks.length) {
     handleException(new GameError('Packet block count and old/new block count mismatch detected'))
+    return
+  }
+
+  const botData = getBotData(playerId)
+
+  // Allows placing gold/blue coins, without removing edit from bot, or disconnecting it completely
+  if (!botData.isEnabled) {
     return
   }
 

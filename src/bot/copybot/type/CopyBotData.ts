@@ -28,6 +28,7 @@ export interface CopyBotData {
   snakeModeTime: number
   snakeModeCurrentOffset: number
   snakeModeHideClock: boolean
+  isEnabled: boolean
 }
 
 export function createBotData(): CopyBotData {
@@ -55,5 +56,6 @@ export function createBotData(): CopyBotData {
     snakeModeTime: 0,
     snakeModeCurrentOffset: 0,
     snakeModeHideClock: false,
+    isEnabled: true,
   }
 }
