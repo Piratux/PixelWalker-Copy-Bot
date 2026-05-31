@@ -9,7 +9,9 @@ import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'
 import { createAsyncCallback } from '@/core/util/Promise.ts'
 import PiOverlay from '@/component/PiOverlay.vue'
+import PiMarkdown from '@/component/PiMarkdown.vue'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
+import devViewMarkdown from '@/view/md/DevView.md?raw'
 
 const loadingOverlay = ref(false)
 
@@ -77,20 +79,7 @@ async function onPwlvlFileChange(event: Event) {
   </PiCardContainer>
   <PiCardContainer>
     <v-col>
-      <v-row><h3>PWLVL Import/Export info</h3></v-row>
-      <v-row>
-        I'm not a fan of PWLVL format, because it's inefficient and I haven't checked how it would handle backwards
-        compatibility.
-        <br />
-        There exists .import command, and this is only needed for automated runtime tests.
-      </v-row>
+      <PiMarkdown :markdown-raw="devViewMarkdown" />
     </v-col>
   </PiCardContainer>
 </template>
-
-<style scoped>
-/*Waiting for fix: https://github.com/vuetifyjs/vuetify/issues/17633*/
-ul {
-  padding-left: 2rem;
-}
-</style>

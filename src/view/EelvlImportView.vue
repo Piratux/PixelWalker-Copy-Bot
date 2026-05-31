@@ -10,6 +10,8 @@ import PiOverlay from '@/component/PiOverlay.vue'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 import MissingBlockInfoTextArea from '@/component/MissingBlockInfoTextArea.vue'
 import { MissingBlockInfo } from '@/webtool/eelvl/type/MissingBlockInfo.ts'
+import PiMarkdown from '@/component/PiMarkdown.vue'
+import eelvlImportViewMarkdown from '@/view/md/EelvlImportView.md?raw'
 
 const loadingOverlay = ref(false)
 const missingBlocks = ref<MissingBlockInfo[]>([])
@@ -61,33 +63,7 @@ async function onEelvlFileChange(event: Event) {
   </PiCardContainer>
   <PiCardContainer>
     <v-col>
-      <v-row><h3>Import info</h3></v-row>
-      <v-row> EELVL is a file format that was used by Everybody Edits (EE). </v-row>
-      <v-row> Here you can import EE worlds from .eelvl file to PixelWalker. </v-row>
-    </v-col>
-  </PiCardContainer>
-  <PiCardContainer>
-    <v-col>
-      <v-row>
-        Compared to EELVL, PixelWalker doesn't have:
-        <ul>
-          <li>Block for picked up gold/blue coin [110, 111].</li>
-          <li>Trophy [478 - 480, 484 - 486, 1540 - 1542].</li>
-          <li>Gold gate/door [200, 201].</li>
-          <li>Golden easter egg decoration [1591].</li>
-          <li>Green space decoration [1603].</li>
-          <li>NPC [1550 - 1559, 1569 - 1579].</li>
-        </ul>
-      </v-row>
-      <v-row>All missing blocks are replaced with signs of block name.</v-row>
-      <v-row>Note: Numbers in [] brackets represent EELVL block ids.</v-row>
+      <PiMarkdown :markdown-raw="eelvlImportViewMarkdown" />
     </v-col>
   </PiCardContainer>
 </template>
-
-<style scoped>
-/*Waiting for fix: https://github.com/vuetifyjs/vuetify/issues/17633*/
-ul {
-  padding-left: 2rem;
-}
-</style>

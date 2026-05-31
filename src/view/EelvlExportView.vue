@@ -9,6 +9,8 @@ import PiOverlay from '@/component/PiOverlay.vue'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { MissingBlockInfo } from '@/webtool/eelvl/type/MissingBlockInfo.ts'
 import MissingBlockInfoTextArea from '@/component/MissingBlockInfoTextArea.vue'
+import PiMarkdown from '@/component/PiMarkdown.vue'
+import eelvlExportViewMarkdown from '@/view/md/EelvlExportView.md?raw'
 
 const loadingOverlay = ref(false)
 const missingBlocks = ref<MissingBlockInfo[]>([])
@@ -45,82 +47,7 @@ async function onExportEelvlButtonClick() {
   </PiCardContainer>
   <PiCardContainer>
     <v-col>
-      <v-row><h3>Export info</h3></v-row>
-      <v-row> EELVL is a file format that was used by Everybody Edits (EE).</v-row>
-      <v-row>
-        Here you can export EE worlds from PixelWalker to .eelvl file and open it up in Everybody Edits: Offline (EEO)
-        client.
-      </v-row>
-    </v-col>
-  </PiCardContainer>
-  <PiCardContainer>
-    <v-col>
-      <v-row>
-        Compared with PixelWalker, EELVL doesn't have:
-        <ul>
-          <li>Climbable horizontal chains and rope.</li>
-          <li>
-            Local/global switch activator block. EELVL has limited version of this, that is equivalent to switch
-            activator, that always sets switch state to off. If switch activator is set to off, it'll be replaced with
-            EELVL equivalent. If switch activator is set to on, it'll be replaced with normal sign that contains switch
-            id and on/off value.
-          </li>
-          <li>Local/global switch resetter block.</li>
-          <li>
-            Multiple notes per music block - in EELVL it's limited to 1. If there is 1 note, it's replaced with note.
-            Otherwise, replaced with text sign containing notes.
-          </li>
-          <li>Cyan and magenta spikes.</li>
-          <li>Generic yellow face smile/frown block.</li>
-          <li>
-            All 4 rotation variants of corner decorations. Usually it has just 2 rotation variants (like snow, web,
-            beach sand, etc.).
-          </li>
-          <li>Green sign.</li>
-          <li>Purple mineral block.</li>
-          <li>Plate with cake chocolate and pie cherry.</li>
-          <li>
-            A use for world portal. There is no way to enter PixelWalker world id and then open browser to join it. So
-            it's always replaced with world id pointing to "Current" with id 1.
-          </li>
-          <li>A use for world portal spawn. Same as world portal, so id always replaced with 1.</li>
-          <li>Hex Backgrounds.</li>
-          <li>Counter blocks.</li>
-          <li>Orange, yellow, cyan and purple canvas foreground blocks.</li>
-          <li>Bronze and silver colours of gilded block pack</li>
-          <li>
-            Multiple layers: water, fog and some decorations are placed on overlay layer. If there are blocks in overlay
-            and foreground layer, blocks in overlay layer are not exported
-          </li>
-          <li>Strings in portal ID and portal target ID</li>
-          <li>Strings in world portal spawn point ID and world portal spawn point target ID</li>
-          <li>White and black crystal</li>
-          <li>1px and 2px outlines</li>
-          <li>Red, blue and black outerspace decorations that also act as signs</li>
-          <li>Configurable time doors</li>
-          <li>Configurable fireworks</li>
-          <li>Arrow signs</li>
-          <li>Highly customizable labels</li>
-          <li>Weak boosts</li>
-          <li>Curse/poison door/gates</li>
-        </ul>
-      </v-row>
-      <v-row
-        >All missing blocks are replaced with sign (except for backgrounds). Labels aren't exported as they can be
-        placed off-grid in PixelWalker.</v-row
-      >
-      <v-row>
-        <br />
-        Fun fact: Signs only let you enter 140 characters in EEO. But it will happily accept EELVL file which has sign
-        with more than 140 characters and will correctly show in game.
-      </v-row>
+      <PiMarkdown :markdown-raw="eelvlExportViewMarkdown" />
     </v-col>
   </PiCardContainer>
 </template>
-
-<style scoped>
-/*Waiting for fix: https://github.com/vuetifyjs/vuetify/issues/17633*/
-ul {
-  padding-left: 2rem;
-}
-</style>

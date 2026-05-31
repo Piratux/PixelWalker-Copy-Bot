@@ -7,8 +7,10 @@ import { withLoading } from '@/core/util/LoaderProxy.ts'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'
 import PiOverlay from '@/component/PiOverlay.vue'
+import PiMarkdown from '@/component/PiMarkdown.vue'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { isEnvDevViewEnabled } from '@/core/util/Environment.ts'
+import midiImportViewMarkdown from '@/view/md/MidiImportView.md?raw'
 
 const loadingOverlay = ref(false)
 
@@ -73,40 +75,7 @@ async function onMidiFileChange(event: Event) {
   </PiCardContainer>
   <PiCardContainer>
     <v-col>
-      <v-row><h3>MIDI info</h3></v-row>
-      <v-row> MIDI is a file format that stores music note data. </v-row>
-      <v-row> Here you can import a MIDI file's tracks to PixelWalker.</v-row>
-    </v-col>
-  </PiCardContainer>
-  <PiCardContainer>
-    <v-col>
-      <v-row><h3>Supported MIDI families</h3></v-row>
-      <v-row>An attempt has been made to map similar sounding instruments to closest PW representation.</v-row>
-      <v-row>Some MIDI families are explicitly checked. Unknown MIDI families are mapped to piano.</v-row>
-      <v-row>
-        <ul>
-          <li>PW Guitar - MIDI family: [guitar, bass]</li>
-          <li>PW Drums - MIDI family: [drums]</li>
-          <li>PW Piano - MIDI family: the rest off families</li>
-        </ul>
-      </v-row>
-    </v-col>
-  </PiCardContainer>
-  <PiCardContainer>
-    <v-col>
-      <v-row><h3>PixelWalker limitations</h3></v-row>
-      <v-row> PW does not support varying note length and volume for each note. </v-row>
-      <v-row>
-        For best results, try songs that have short notes and all instruments have similar volume throughout the
-        song.</v-row
-      >
+      <PiMarkdown :markdown-raw="midiImportViewMarkdown" />
     </v-col>
   </PiCardContainer>
 </template>
-
-<style scoped>
-/*Waiting for fix: https://github.com/vuetifyjs/vuetify/issues/17633*/
-ul {
-  padding-left: 2rem;
-}
-</style>

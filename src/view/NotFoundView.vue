@@ -1,5 +1,8 @@
-<template>
-  <h1>Not Found 404</h1>
-</template>
+<script setup lang="ts">
+import PiMarkdown from '@/component/PiMarkdown.vue'
+import notFoundViewMarkdown from '@/view/md/NotFoundView.md?raw'
+</script>
 
-<script setup lang="ts"></script>
+<template>
+  <PiMarkdown :markdown-raw="notFoundViewMarkdown" />
+</template>

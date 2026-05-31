@@ -11,6 +11,12 @@ export default defineConfigWithVueTs(
   vueTsConfigs.stylisticTypeChecked,
   {
     rules: {
+      // Enable back if this issue gets sorted: https://github.com/typescript-eslint/typescript-eslint/issues/122717
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+
+      // We want to render .md files
+      'vue/no-v-html': 'off',
+
       '@typescript-eslint/naming-convention': [
         'error',
         {

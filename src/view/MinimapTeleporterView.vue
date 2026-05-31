@@ -4,7 +4,9 @@ import { vec2 } from '@basementuniverse/vec'
 import { teleportPlayer } from '@/core/service/PwClientService.ts'
 import { getPwGameWorldHelper, usePwClientStore } from '@/core/store/PwClientStore.ts'
 import PiButton from '@/component/PiButton.vue'
+import PiMarkdown from '@/component/PiMarkdown.vue'
 import { onMounted, ref } from 'vue'
+import minimapTeleporterViewMarkdown from '@/view/md/MinimapTeleporterView.md?raw'
 
 const worldId = ref<string>('')
 const minimapUrl = ref<string>('')
@@ -33,8 +35,7 @@ onMounted(() => {
 
 <template>
   <PiCardContainer>
-    <h2>Minimap teleporter</h2>
-    <p>Click anywhere on minimap to teleport.</p>
+    <PiMarkdown :markdown-raw="minimapTeleporterViewMarkdown" />
 
     <v-tooltip :disabled="usePwClientStore().isConnected" location="bottom" text="Requires connecting the bot">
       <template #activator="{ props }">
@@ -54,10 +55,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/*Waiting for fix: https://github.com/vuetifyjs/vuetify/issues/17633*/
-ul {
-  padding-left: 2rem;
-}
 /*For some reason scrollbars randomly appear and disappear on v-data-table when expanding items.*/
 :deep(.v-table__wrapper) {
   overflow: hidden;

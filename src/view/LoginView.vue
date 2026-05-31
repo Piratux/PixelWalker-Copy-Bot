@@ -15,6 +15,8 @@ import { RouteName } from '@/router/RouteName.ts'
 import { PWApiClient } from 'pw-js-api'
 import { LAST_TESTED_PW_VERSION } from '@/core/constant/General.ts'
 import { useAlertStore } from '@/core/store/AlertStore.ts'
+import PiMarkdown from '@/component/PiMarkdown.vue'
+import loginViewMarkdown from '@/view/md/LoginView.md?raw'
 
 const loadingOverlay = ref(false)
 const email = ref('')
@@ -90,10 +92,8 @@ function setDefaultWorldIdButtonClicked() {
         <v-row v-if="adminViewEnabled">
           <v-select v-model="botType" :items="botTypeItems" label="Bot type"></v-select>
         </v-row>
-        <v-row> To use this bot, you need to use PixelWalker login credentials.</v-row>
         <v-row>
-          Although this site does not collect login credential information, to feel safer, you can create second
-          PixelWalker account just for the bot.
+          <PiMarkdown :markdown-raw="loginViewMarkdown" />
         </v-row>
         <v-row>
           <PiButton color="green" type="submit">Connect</PiButton>

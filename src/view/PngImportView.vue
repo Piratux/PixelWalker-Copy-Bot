@@ -7,7 +7,9 @@ import { withLoading } from '@/core/util/LoaderProxy.ts'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiButton from '@/component/PiButton.vue'
 import PiOverlay from '@/component/PiOverlay.vue'
+import PiMarkdown from '@/component/PiMarkdown.vue'
 import { usePwClientStore } from '@/core/store/PwClientStore.ts'
+import pngImportViewMarkdown from '@/view/md/PngImportView.md?raw'
 
 const loadingOverlay = ref(false)
 
@@ -56,17 +58,7 @@ async function onPngFileChange(event: Event) {
   </PiCardContainer>
   <PiCardContainer>
     <v-col>
-      <v-row><h3>Import info</h3></v-row>
-      <v-row> PNG is a file format for images. </v-row>
-      <v-row> Here you can import a PNG to PixelWalker. </v-row>
-      <v-row> A single block will represent single pixel. </v-row>
+      <PiMarkdown :markdown-raw="pngImportViewMarkdown" />
     </v-col>
   </PiCardContainer>
 </template>
-
-<style scoped>
-/*Waiting for fix: https://github.com/vuetifyjs/vuetify/issues/17633*/
-ul {
-  padding-left: 2rem;
-}
-</style>

@@ -6,6 +6,8 @@ import { createApp } from 'vue'
 import { handleException } from '@/core/util/Exception.ts'
 import { resetStorePlugin } from '@/plugin/ResetStore.ts'
 
+import '@/Global.css'
+
 const vuetify = createVuetify()
 const pinia = createPinia()
 pinia.use(resetStorePlugin)

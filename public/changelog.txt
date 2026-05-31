@@ -1,5 +1,8 @@
 PixelWalker copy bot changelog
 
+2026-05-31 Version 1.24.0
+- Website: Change website style and layout a bit.
+
 2026-05-28 Version 1.23.0
 - Bot: Add .off and .on commands:
   - .off command turns off the bot. When bot is turned off, coins are ignored by bot.
