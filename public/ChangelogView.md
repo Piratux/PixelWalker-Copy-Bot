@@ -3,6 +3,7 @@
 ### 2026-05-31 Version 1.24.0
 
 - Website: Change website style and layout a bit.
+- Website: Changelog is now shown in website instead of in .txt file in new tab.
 
 ### 2026-05-28 Version 1.23.0
 
