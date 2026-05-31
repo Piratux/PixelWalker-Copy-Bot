@@ -1,256 +1,329 @@
-PixelWalker copy bot changelog
+## Changelog
 
-2026-05-31 Version 1.24.0
+### 2026-05-31 Version 1.24.0
+
 - Website: Change website style and layout a bit.
 
-2026-05-28 Version 1.23.0
+### 2026-05-28 Version 1.23.0
+
 - Bot: Add .off and .on commands:
   - .off command turns off the bot. When bot is turned off, coins are ignored by bot.
   - .on command turns on the bot again after it was turned off.
 
-2026-04-17 Version 1.22.2
+### 2026-04-17 Version 1.22.2
+
 - Bot: Updated to work with PixelWalker version 2026.4.0
 
-2026-04-09 Version 1.22.1
+### 2026-04-09 Version 1.22.1
+
 - Website: EELVL/EER Import now handles labels that have 1-6 hex colour length (such as #f, #ff, #fff, #ffff, #fffff, #ffffff).
 
-2026-03-25 Version 1.22.0
+### 2026-03-25 Version 1.22.0
+
 - Website: Add an option to select entertainmnet bot in login page, so that it can be hosted by anyone. Newly added bots:
   - Bom Bot
   - Curse Bot
   - Shift Bot
   - BArena Bot
 
-2026-03-20 Version 1.21.1
+### 2026-03-20 Version 1.21.1
+
 - Website: In login page, when authenticating with server, turn email to lower case to match PixelWalker login page behavior.
 
-2026-02-05 Version 1.21.0
+### 2026-02-05 Version 1.21.0
+
 - Bot: Updated to work with PixelWalker version 2026.3.0
 - Bot: .import now also imports labels from another world.
 - Website: EELVL/EER Import now also imports labels from EELVL/EER worlds.
 
-2026-01-26 Version 1.20.0
+### 2026-01-26 Version 1.20.0
+
 - Bot: Updated to work with PixelWalker version 2026.2.3
 
-2026-01-23 Version 1.19.0
+### 2026-01-23 Version 1.19.0
+
 - Website: Added Block Finder page that allows searching for blocks in the world by block name and their attributes.
 - Website: Removed List Portals page.
 
-2026-01-22 Version 1.18.1
+### 2026-01-22 Version 1.18.1
+
 - Bot: Updated to work with PixelWalker version 2026.1.0
 
-2026-01-19 Version 1.18.0
+### 2026-01-19 Version 1.18.0
+
 - Bot: Added command ".snake [off | on time offset hideclock]" - placing blue coins automatically increments time door offset".
 - Bot: Add .smartpaste support for portal_world and tool_portal_world_spawn block spawn_id arguments.
 - Website: Add minimap teleporter tool.
 
-2026-01-17 Version 1.17.4
+### 2026-01-17 Version 1.17.4
+
 - Bot: Reduced amount of time it takes to place large quantities of blocks.
 
-2026-01-03 Version 1.17.3
+### 2026-01-03 Version 1.17.3
+
 - Website: Fix portal id and target id not showing properly in portal list page.
 - Bot: Wrap offset argument for time door blocks when using .smartpaste command.
 
-2025-12-29 Version 1.17.2
+### 2025-12-29 Version 1.17.2
+
 - Website: Update PW <-> EELVL differences.
 
-2025-12-25 Version 1.17.1
+### 2025-12-25 Version 1.17.1
+
 - Website: When importing EELVL/EER worlds, Label and NPC text is now put into signs.
 
-2025-12-25 Version 1.17.0
+### 2025-12-25 Version 1.17.0
+
 - Bot: Updated to work with PixelWalker version 2025.12.1
 
-2025-12-19 Version 1.16.2
+### 2025-12-19 Version 1.16.2
+
 - Website: Fixed an issue with EELVL/EER import where saving such imported world, that had world background, would cause PW server crash.
 
-2025-12-15 Version 1.16.1
+### 2025-12-15 Version 1.16.1
+
 - Website: Fixed an issue where importing untitled (unsaved) EER world was giving unexpected errors.
 
-2025-11-28 Version 1.16.0
+### 2025-11-28 Version 1.16.0
+
 - Bot: .smartpaste now applies colour wise smart pasting logic for hex colour background blocks.
   - For ex.: { r: 0x2, g: 0x0f, b: 0xb5 }, { r: 0x4, g: 0x1f, b: 0xb4 } -> { r: 0x6, g: 0x2f, b: 0xb3 }.
 
-2025-11-26 Version 1.15.0
+### 2025-11-26 Version 1.15.0
+
 - Website: Add portal list page.
 
-2025-11-16 Version 1.14.1
+### 2025-11-16 Version 1.14.1
+
 - Bot: Removed .mask command 'nonair' parameter.
 - Bot: Added .skipair command as replacement for .mask 'nonair' mode.
 
-2025-11-14 Version 1.14.0
+### 2025-11-14 Version 1.14.0
+
 - Website: MIDI Import now supports guitar notes.
 - Website: MIDI Import now maps unknown MIDI family instruments to piano notes.
 
-2025-11-13 Version 1.13.0
+### 2025-11-13 Version 1.13.0
+
 - Website: MIDI Import now supports drum notes.
 
-2025-11-10 Version 1.12.3
+### 2025-11-10 Version 1.12.3
+
 - Website: Fix bad drum note mapping for EELVL Import/Export.
 
-2025-11-09 Version 1.12.2
+### 2025-11-09 Version 1.12.2
+
 - Website: Remove "Optimize colors for faster placement" option from PNG Import.
 
-2025-11-08 Version 1.12.1
+### 2025-11-08 Version 1.12.1
+
 - Bot: When bot or player joins the world, "[BOT] Copy Bot is here! Type .help to show usage!" is now only sent to world owner.
 
-2025-11-07 Version 1.12.0
+### 2025-11-07 Version 1.12.0
+
 - Bot: .smartpaste now applies smart pasting logic for portal ids that have numbers and letters. For ex.: a1, a2 -> a3.
 - Bot: Improved .mask command error messages when using invalid mask modes.
 
-2025-10-25 Version 1.11.0
+### 2025-10-25 Version 1.11.0
+
 - Website: Added "Blocks that couldn't be converted" section for EELVL import/export. This section appears after import/export if there were blocks that couldn't be converted 1 to 1 between EEO and PW.
 
-2025-10-25 Version 1.10.0
+### 2025-10-25 Version 1.10.0
+
 - Bot: Added .mask command 'nonair' parameter.
 - Bot: Renamed .mask command 'all' parameter to 'default'.
 
-2025-10-19 Version 1.9.0
+### 2025-10-19 Version 1.9.0
+
 - Bot: Added command ".flip [h | v]" - flips selected blocks horizontally or vertically.
 
-2025-10-19 Version 1.8.4
+### 2025-10-19 Version 1.8.4
+
 - Website: Fix "error loading dynamically imported module" errors.
 - Website: Make navigation between tabs and disconnect instant.
 
-2025-10-18 Version 1.8.3
+### 2025-10-18 Version 1.8.3
+
 - Bot: Improve error messages for .import command.
 - Website: Fix in game errors (such as bad command usage) being shown in website as error alerts.
 
-2025-10-11 Version 1.8.2
+### 2025-10-11 Version 1.8.2
+
 - Bot: Updated to work with PixelWalker version 0.26.1-alpha
 
-2025-10-01 Version 1.8.1
+### 2025-10-01 Version 1.8.1
+
 - Bot: Fixed .edit command in some cases not pasting edited blocks at correct location.
 
-2025-09-12 Version 1.8.0
+### 2025-09-12 Version 1.8.0
+
 - Bot: Improved .paste and .smartpaste commands, by immediately pasting repeated blocks.
 - Bot: When doing partial import with .import, allow specifying any 2 corner positions (just like when selecting area with gold coins).
 
-2025-09-07 Version 1.7.3
+### 2025-09-07 Version 1.7.3
+
 - Bot: Fix .import command pasting just empty blocks.
 
-2025-08-21 Version 1.7.2
+### 2025-08-21 Version 1.7.2
+
 - Bot: Allow .edit id to replace blocks to air (empty).
 
-2025-08-16 Version 1.7.1
+### 2025-08-16 Version 1.7.1
+
 - Bot: Updated to work with PixelWalker version 0.24.0-alpha
 
-2025-08-12 Version 1.7.0
+### 2025-08-12 Version 1.7.0
+
 - Bot: Improved .edit command, by immediately pasting changed blocks.
 
-2025-08-12 Version 1.6.5
+### 2025-08-12 Version 1.6.5
+
 - Bot: Fixed an issue where destination arguments would get ignored in .import command.
 
-2025-08-01 Version 1.6.4
+### 2025-08-01 Version 1.6.4
+
 - Website: Fixed an issue where EER/EELVL import sometimes didn't work, when world had piano notes or switch resetters.
 - Website: Fixed an issue where EER/EELVL import would place black background even when world didn't have world background set.
 
-2025-07-31 Version 1.6.3
+### 2025-07-31 Version 1.6.3
+
 - Website: Improved EER/EELVL import, by placing PW hex backgrounds from world background color setting.
 
-2025-07-30 Version 1.6.2
+### 2025-07-30 Version 1.6.2
+
 - Website: Fixed an issue where world portal wasn't importing properly in EER import.
 - Website: Improved EER import, by placing additional PW blocks that exist in EER. Thanks John!
 
-2025-07-29 Version 1.6.1
+### 2025-07-29 Version 1.6.1
+
 - Website: Fixed an issue, where some positions of blocks would be ignored when importing EER worlds. Thanks John!
 
-2025-07-28 Version 1.6.0
+### 2025-07-28 Version 1.6.0
+
 - Website: Added an option to import Everybody Edits Rewritten (EER) worlds.
 
-2025-07-24 Version 1.5.2
+### 2025-07-24 Version 1.5.2
+
 - Website: Midi files with two identical notes at the same time no longer try to play both notes. Thanks Bluecloud!
 
-2025-07-23 Version 1.5.1
+### 2025-07-23 Version 1.5.1
+
 - Bot: Updated to work with PixelWalker version 0.23.1-alpha
 
-2025-07-19 Version 1.5.0
+### 2025-07-19 Version 1.5.0
+
 - Bot: Added command ".edit id find_id replace_id" - edits selected block ids from "find_id" to "replace_id".
 - Bot: .move mode now does not get disabled anymore when new area is selected.
 - Bot: Improved .move mode block placement speed a little.
 - Bot: Fixed an issue where bot would not place blocks when they were pasted not within bounds of world.
 
-2025-07-09 Version 1.4.0
+### 2025-07-09 Version 1.4.0
+
 - Bot: Added command ".edit name find replace" - edits selected block name substrings from "find" to "replace". Thanks Bluecloud!
 - Bot: Added command ".edit math_op number [name_find]" - edits selected block number arguments. Thanks Bluecloud!
 - Bot: Made .smartpaste command work with portals again. It only works if portal IDs are integers.
 - Website: Added loading overlay when navigating between menu pages.
 
-2025-07-06 Version 1.3.2
+### 2025-07-06 Version 1.3.2
+
 - Bot: Fixed an issue where move operation was not performed correctly in some cases
 - Bot: Fixed an issue where move operation would take a long time for large selected area
 
-2025-07-03 Version 1.3.1
+### 2025-07-03 Version 1.3.1
+
 - Bot: Updated to work with PixelWalker version 0.22.0-alpha
 
-2025-06-23 Version 1.3.0
+### 2025-06-23 Version 1.3.0
+
 - Website: Added an option to import PNGs into the world as hex-backgrounds. Thanks Bluecloud!
 - Website: Added an option to import MIDI files into the world. Currently only accepts piano midis. Thanks Bluecloud!
 
-2025-06-22 Version 1.2.2
+### 2025-06-22 Version 1.2.2
+
 - Website: Dev mode tools are properly hidden when dev mode is disabled
 
-2025-06-20 Version 1.2.1
+### 2025-06-20 Version 1.2.1
+
 - Bot: .import now works with .mask
 - Bot: .import is now undoable
 
-2025-06-20 Version 1.2.0
+### 2025-06-20 Version 1.2.0
+
 - Website: Remade website layout
 
-2025-05-28 Version 1.1.0
+### 2025-05-28 Version 1.1.0
+
 - Bot: Improved .move command, allowing it to continuously move selected blocks non-destructively
 - Bot: Added .mask command, that allows to filter which layer blocks get pasted
 
-2025-05-27 Version 1.0.16
+### 2025-05-27 Version 1.0.16
+
 - Bot: Fix .move command not shown in .help list
 
-2025-05-22 Version 1.0.15
+### 2025-05-22 Version 1.0.15
+
 - Bot: Added .move command that moves blocks when pasting
 
-2025-05-19 Version 1.0.14
+### 2025-05-19 Version 1.0.14
+
 - Bot: Updated to work with PixelWalker version 0.21.0-alpha
 
-2025-05-18 Version 1.0.13
+### 2025-05-18 Version 1.0.13
+
 - Bot: Blocks now can only be pasted, when area is selected (prevents accidents, when first corner select is "to" and second corner select is "from")
 - Bot: Fixed an issue where no confirmation message would be shown when using partial world import
 
-2025-04-27 Version 1.0.12
+### 2025-04-27 Version 1.0.12
+
 - Bot: Added protection against accidental fill tool or brush tool usage when using gold/blue coins to select/paste blocks.
 
-2025-04-22 Version 1.0.11
+### 2025-04-22 Version 1.0.11
+
 - Bot: Bot gets throttled far less now, if the tab becomes unfocused/inactive. This should result in bot placing blocks up to 2 times faster.
 
-2025-04-14 Version 1.0.10
+### 2025-04-14 Version 1.0.10
+
 - Bot: Added support for secret edit keys
 
-2025-04-13 Version 1.0.9
+### 2025-04-13 Version 1.0.9
+
 - Bot: Made export to EELVL only convert blocks that are identical in PixelWalker and EE: Offline. Other blocks that don't have corresponding blocks in EE: Offline are placed as sign.
 
-2025-04-11 Version 1.0.8
+### 2025-04-11 Version 1.0.8
+
 - Bot: Updated to work with PixelWalker version 0.20.0-alpha
 
-2025-03-29 Version 1.0.7
+### 2025-03-29 Version 1.0.7
+
 - Bot: Added .import command, that allows to import any world via world id. It also allows to import part of world and paste it in specified location. Command is exclusive to world owners
 
-2025-03-24 Version 1.0.6
+### 2025-03-24 Version 1.0.6
+
 - Bot: Updated to work with PixelWalker version 0.19.0-alpha
 
-2025-03-19 Version 1.0.5
+### 2025-03-19 Version 1.0.5
+
 - Website: Fixed worldID field in Login form not extracting world ID of unsaved world URL
 
-2025-03-15 Version 1.0.4
+### 2025-03-15 Version 1.0.4
+
 - Bot: Fixed an issue where quickly selecting/pasting blocks would not work correctly
 - Website: Added loading overlay for all button actions to prevent accidental double clicks
 
-2025-03-10 Version 1.0.3
+### 2025-03-10 Version 1.0.3
+
 - Allow pasting world URL in world ID during login
 
-2025-03-10 Version 1.0.2
+### 2025-03-10 Version 1.0.2
+
 - Updated usage info section
 - World name and game URL is shown, when bot is connected
 
-2025-03-09 Version 1.0.1
+### 2025-03-09 Version 1.0.1
+
 - Bot prints error message, when user or bot tries to use command/action that requires edit permissions, but user or bot does not have edit permissions
 
-2025-03-09 Version 1.0.0
+### 2025-03-09 Version 1.0.0
+
 - Initial versioned release
 - Added changelog

@@ -12,6 +12,7 @@ import NotFoundView from '@/view/NotFoundView.vue'
 import { RouteName } from './RouteName.ts'
 import AdminLoginView from '@/view/AdminLoginView.vue'
 import MinimapTeleporterView from '@/view/MinimapTeleporterView.vue'
+import ChangelogView from '@/view/ChangelogView.vue'
 
 const basePath = '/PixelWalker-Copy-Bot'
 
@@ -60,6 +61,10 @@ export const Routes: RouteRecordRaw[] = [
     {
       name: RouteName.MINIMAP_TELEPORTER,
       component: MinimapTeleporterView,
+    },
+    {
+      name: RouteName.CHANGELOG,
+      component: ChangelogView,
     },
   ].map((route) => ({ ...route, path: `${basePath}/${route.name}` })),
   {

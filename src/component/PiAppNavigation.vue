@@ -22,9 +22,6 @@
       <v-list-item v-if="devViewEnabled" link @click="handleRouting(RouteName.DEV)">
         <v-list-item-title>Developer tools</v-list-item-title>
       </v-list-item>
-      <v-list-item link @click="openChangelog">
-        <v-list-item-title>Changelog</v-list-item-title>
-      </v-list-item>
     </v-list>
     <template #append>
       <div class="text-center">{{ changelogLatestVersionLine }}</div>
@@ -45,7 +42,7 @@ import { RouteName } from '@/router/RouteName.ts'
 const router = useRouter()
 const route = useRoute()
 
-const changelogLocation = '/PixelWalker-Copy-Bot/changelog.txt'
+const changelogLocation = '/PixelWalker-Copy-Bot/ChangelogView.md'
 const changelogLatestVersionLine = ref('')
 
 const devViewEnabled = isEnvDevViewEnabled()
@@ -62,7 +59,7 @@ onMounted(() => {
 onMounted(async () => {
   const response = await fetch(changelogLocation)
   const text = await response.text()
-  changelogLatestVersionLine.value = text.split('\n')[2]
+  changelogLatestVersionLine.value = text.split('\n')[2].replace(/^#+\s*/, '')
 })
 
 async function handleRouting(routeName: string) {
@@ -76,10 +73,6 @@ const showDrawer = computed(() => {
 })
 
 const drawer = showDrawer.value ? ref(true) : ref(false)
-
-function openChangelog() {
-  window.open(changelogLocation)
-}
 
 async function onConnectButtonClick() {
   await handleRouting(adminModeEnabled() ? RouteName.ADMIN_LOGIN : RouteName.LOGIN)

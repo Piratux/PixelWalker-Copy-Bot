@@ -38,4 +38,8 @@ export const MENU_ITEMS: MenuItem[] = [
     text: 'Minimap teleporter',
     routeName: RouteName.MINIMAP_TELEPORTER,
   },
+  {
+    text: 'Changelog',
+    routeName: RouteName.CHANGELOG,
+  },
 ]
