@@ -34,7 +34,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: 24.16.0
           cache: 'npm'
       - name: Print npm version
         run: npm --version
