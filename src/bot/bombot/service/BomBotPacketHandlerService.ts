@@ -41,7 +41,7 @@ import { BotType } from '@/core/enum/BotType.ts'
 import { resetBomBotWorldStore, useBomBotWorldStore } from '@/bot/bombot/store/BomBotWorldStore.ts'
 import { BomBotState } from '@/bot/bombot/enum/BomBotState.ts'
 import { BomBotMapEntry } from '@/bot/bombot/type/BomBotMapEntry.ts'
-import { setCustomTimeout } from '@/core/util/Sleep.ts'
+import { setCustomTimeout, sleep } from '@/core/util/Sleep.ts'
 import { BomBotBlockType } from '@/bot/bombot/enum/BomBotBlockType.ts'
 import { handleException } from '@/core/util/Exception.ts'
 import { resetBomBotRoundStore, useBomBotRoundStore } from '@/bot/bombot/store/BomBotRoundStore.ts'
@@ -109,7 +109,7 @@ if (import.meta.hot) {
   })
 }
 
-function playerInitPacketReceived() {
+async function playerInitPacketReceived() {
   commonPlayerInitPacketReceived()
 
   getPwGameClient().send('playerGodModePacket', {
@@ -117,6 +117,11 @@ function playerInitPacketReceived() {
   })
 
   sendRawMessage(`/team #${getPwGameWorldHelper().botPlayerId} ${TEAM_RED}`)
+
+  const playerId = getPwGameWorldHelper().botPlayerId
+
+  await sleep(5000) // TODO: figure out why sleep is needed.
+  await startCommandReceived([], playerId, true)
 }
 
 function removePlayerFromPlayersInGame(playerId: number) {
@@ -488,6 +493,9 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
     case BomBotCommandName.PLACE_ALL_BOMBOT:
       await placeallbombotCommandReceived(commandArgs, playerId)
       break
+    case BomBotCommandName.EDIT:
+      editCommandReceived(commandArgs, playerId)
+      break
     default:
       throw new GameError('Unrecognised command. Type .help to see all commands', playerId)
   }
@@ -598,6 +606,11 @@ async function placeallbombotCommandReceived(_args: string[], playerId: number) 
 
   const success = await placeMultipleBlocks(worldBlocks)
   handlePlaceBlocksResult(success)
+}
+
+function editCommandReceived(_args: string[], playerId: number) {
+  requireDeveloper(playerId)
+  sendRawMessage(`/giveedit #${playerId}`)
 }
 
 async function placeBomBotWorld() {

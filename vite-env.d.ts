@@ -10,6 +10,9 @@ interface ImportMetaEnv {
   readonly VITE_TEST_RUN_PW_ACCOUNT_EMAIL?: string
   readonly VITE_TEST_RUN_PW_ACCOUNT_PASSWORD?: string
   readonly VITE_TEST_RUN_PW_WORLD_ID?: string
+  readonly VITE_BAL_ACCOUNT_EMAIL?: string
+  readonly VITE_BAL_ACCOUNT_PASSWORD?: string
+  readonly VITE_BAL_WORLD_ID?: string
 }
 
 interface ImportMeta {

@@ -1,0 +1,10 @@
+services:
+  bombot:
+    container_name: bombot
+    build: .
+    restart: on-failure
+
+    environment:
+      VITE_BAL_ACCOUNT_EMAIL: your@email.com
+      VITE_BAL_ACCOUNT_PASSWORD: yourpassword
+      VITE_BAL_WORLD_ID: yourworldid

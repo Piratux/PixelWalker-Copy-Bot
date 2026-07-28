@@ -13,7 +13,12 @@
  * Provides utility functions for waiting asynchronously until a specified condition is met.
  */
 
-import { clearTimeout as workerClearTimeout, setTimeout as workerSetTimeout } from 'worker-timers'
+import { clearTimeout as _workerClearTimeout, setTimeout as _workerSetTimeout } from 'worker-timers'
+
+// In Node.js environment (no window), use native timers to avoid browser-only Worker API issues
+const _isNodeEnv = typeof window === 'undefined'
+const workerSetTimeout = _isNodeEnv ? (cb, ms) => +setTimeout(cb, ms) : _workerSetTimeout
+const workerClearTimeout = _isNodeEnv ? (id) => clearTimeout(id) : _workerClearTimeout
 
 /**
  * Error thrown when a timeout occurs while waiting for a condition.

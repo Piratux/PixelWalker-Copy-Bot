@@ -6,4 +6,5 @@ export enum BomBotCommandName {
   STOP = 'stop',
   AFK = 'afk',
   PLACE_ALL_BOMBOT = 'placeallbombot',
+  EDIT = 'edit',
 }

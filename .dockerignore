@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.git/
+.github/
+.idea/
+.vscode/
+coverage/
+*.log
+
+# Local env files that may contain credentials
+.env.local
+.env.docker
+

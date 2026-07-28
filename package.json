@@ -16,7 +16,8 @@
     "update-dependencies-all": "npx npm-check-updates -u && npm install",
     "update-dependencies-interactive": "npx npm-check-updates -i",
     "gen-files": "npx tsx src/script/GenerateBlockEnumFiles.ts",
-    "gen-tests": "npx tsx src/script/GenerateTests.ts"
+    "gen-tests": "npx tsx src/script/GenerateTests.ts",
+    "bombot": "vite-node --config vite.config.cli.ts src/cli/BomBotCli.ts"
   },
   "dependencies": {
     "@basementuniverse/vec": "^2.5.1",
@@ -62,6 +63,7 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.60.0",
     "vite": "^8.0.14",
+    "vite-node": "^6.0.0",
     "vite-plugin-checker": "^0.14.1",
     "vite-plugin-eslint2": "^5.1.0",
     "vite-plugin-node-polyfills": "^0.28.0",
