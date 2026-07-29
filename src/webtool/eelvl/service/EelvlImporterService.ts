@@ -527,5 +527,8 @@ function getEelvlToPwLabel(eelvlBlock: EelvlBlock): ILabel {
     shadowColor: colourToUint32({ r: 0, g: 0, b: 0, a: 50 }),
     shadowOffsetX: 1,
     shadowOffsetY: 1,
+    outline: false,
+    outlineColor: colourToUint32({ r: 0, g: 0, b: 0, a: 255 }),
+    outlineWidth: 1,
   }
 }

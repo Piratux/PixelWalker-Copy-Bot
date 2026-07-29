@@ -30,7 +30,6 @@ import { GameError } from '@/core/class/GameError.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { WorldData } from '@/core/type/WorldData.ts'
-import { colourToUint32 } from '@/core/util/Colours.ts'
 
 export function getBlockAt(pos: Point, layer: number): Block {
   try {
@@ -427,19 +426,13 @@ export function mergeWorldBlocks(blocksBottom: WorldBlock[], blocksTop: WorldBlo
 export function replaceAllLabels(labels: ILabel[]) {
   for (const label of getPwGameWorldHelper().labels.values()) {
     getPwGameClient().send('worldLabelDeleteRequestPacket', {
-      id: label.id,
+      id: label.id!,
     })
   }
 
   for (const label of labels) {
     getPwGameClient().send('worldLabelUpsertRequestPacket', {
-      // TODO: Fix when this is resolved: https://github.com/doomestee/pw-js-world/issues/45
-      label: {
-        ...label,
-        outline: false,
-        outlineColor: colourToUint32({ r: 0, g: 0, b: 0, a: 255 }),
-        outlineWidth: 1,
-      },
+      label,
     })
   }
 }
