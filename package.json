@@ -33,7 +33,7 @@
     "playerioclient": "^1.0.7",
     "pngjs": "^7.0.0",
     "pw-js-api": "github:doomestee/pw-js-api#48180798c8c265ac3bf7391d8b8dc9a9cdf91c07",
-    "pw-js-world": "github:Piratux/pw-js-world#issue-43",
+    "pw-js-world": "github:doomestee/pw-js-world#eb9e0750c5cb4fd03fd3f3c9ee682feac6ee308a",
     "vue": "^3.5.35",
     "vue-router": "^5.1.0",
     "vuetify": "^4.0.7",
