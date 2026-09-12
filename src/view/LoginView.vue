@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import PiCardContainer from '@/component/PiCardContainer.vue'
 import PiTextField from '@/component/PiTextField.vue'
 import PiButton from '@/component/PiButton.vue'
@@ -12,9 +12,6 @@ import PiOverlay from '@/component/PiOverlay.vue'
 import { getEnvDefaultWorldId } from '@/core/util/Environment.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { RouteName } from '@/router/RouteName.ts'
-import { PWApiClient } from 'pw-js-api'
-import { LAST_TESTED_PW_VERSION } from '@/core/constant/General.ts'
-import { useAlertStore } from '@/core/store/AlertStore.ts'
 import PiMarkdown from '@/component/PiMarkdown.vue'
 import loginViewMarkdown from '@/view/md/LoginView.md?raw'
 
@@ -54,18 +51,19 @@ async function onConnectButtonClick() {
   })
 }
 
-onMounted(() => {
-  void showWarningAlertIfCurrentPWVersionIsUntested()
-})
-
-async function showWarningAlertIfCurrentPWVersionIsUntested() {
-  const version = await PWApiClient.getVersion()
-  if (version !== LAST_TESTED_PW_VERSION) {
-    useAlertStore().warning(
-      'Bot was not tested with latest PixelWalker version, so it may not work or work incorrectly',
-    )
-  }
-}
+// TODO: Uncomment this when there is an API for latest version again.
+// onMounted(() => {
+//   void showWarningAlertIfCurrentPWVersionIsUntested()
+// })
+//
+// async function showWarningAlertIfCurrentPWVersionIsUntested() {
+//   const version = await PWApiClient.getVersion()
+//   if (version !== LAST_TESTED_PW_VERSION) {
+//     useAlertStore().warning(
+//       'Bot was not tested with latest PixelWalker version, so it may not work or work incorrectly',
+//     )
+//   }
+// }
 
 function setDefaultWorldIdButtonClicked() {
   worldId.value = getEnvDefaultWorldId()
