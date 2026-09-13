@@ -3,12 +3,14 @@ import { Point } from 'pw-js-world'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { CopyBotUndoRedoItem } from '@/bot/copybot/type/CopyBotUndoRedoItem.ts'
+import { WorldZone } from '@/core/type/WorldZone.ts'
 
 export interface CopyBotData {
   botState: CopyBotState
   selectedFromPos: Point
   selectedToPos: Point
   selectedBlocks: WorldBlock[]
+  selectedZones: WorldZone[]
   selectionSize: Point
   selectionLocalTopLeftPos: Point
   selectionLocalBottomRightPos: Point
@@ -37,6 +39,7 @@ export function createBotData(): CopyBotData {
     selectedFromPos: vec2(0, 0),
     selectedToPos: vec2(0, 0),
     selectedBlocks: [],
+    selectedZones: [],
     selectionSize: vec2(1, 1),
     selectionLocalTopLeftPos: vec2(0, 0),
     selectionLocalBottomRightPos: vec2(1, 1),

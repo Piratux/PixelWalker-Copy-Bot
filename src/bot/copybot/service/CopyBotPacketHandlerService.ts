@@ -6,7 +6,7 @@ import {
   getPwGameClient,
   getPwGameWorldHelper,
 } from '@/core/store/PwClientStore.ts'
-import { Block, IPlayer, LayerType, Point } from 'pw-js-world'
+import { Block, IPlayer, LayerType, Point, ZoneMembership } from 'pw-js-world'
 import { cloneDeep, isEmpty, isEqual } from 'lodash-es'
 import { CopyBotData, createBotData } from '@/bot/copybot/type/CopyBotData.ts'
 import { useCopyBotStore } from '@/bot/copybot/store/CopyBotStore.ts'
@@ -49,6 +49,7 @@ import { GameError } from '@/core/class/GameError.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import { BotType } from '@/core/enum/BotType.ts'
+import { WorldZone } from '@/core/type/WorldZone.ts'
 import { CopyBotCommandName } from '@/bot/copybot/enum/CopyBotCommandName.ts'
 import { CopyBotMaskCommandMode } from '@/bot/copybot/enum/CopyBotMaskCommandMode.ts'
 import {
@@ -70,6 +71,7 @@ const callbacks: CallbackEntry[] = [
   { name: 'worldBlockPlacedPacket', fn: worldBlockPlacedPacketReceived },
   { name: 'playerChatPacket', fn: playerChatPacketReceived },
   { name: 'playerJoinedPacket', fn: playerJoinedPacketReceived },
+  { name: 'worldZoneUpsertPacket', fn: worldZoneUpsertPacketReceived },
 ]
 
 export function registerCopyBotCallbacks() {
@@ -104,6 +106,25 @@ function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
   // Joey from PW mentioned players complained when they all got pings on private messages when bot joins
   if (getPwGameWorldHelper().meta?.owner !== 'JOEY') {
     sendPrivateChatMessage('Copy Bot is here! Type .help to show usage!', playerId)
+  }
+}
+
+function worldZoneUpsertPacketReceived(data: ProtoGen.WorldZoneUpsertPacket) {
+  for (const [zoneName, worldZone] of useCopyBotStore().zonePasteQueue.entries()) {
+    if (zoneName == data.zone?.name) {
+      for (const pos of worldZone.zone.membershipRle.toPositions()) {
+        getPwGameClient().send('worldZoneAreaEditRequestPacket', {
+          zoneId: data.zone.id,
+          x: pos.x,
+          y: pos.y,
+          width: 1,
+          height: 1,
+          add: true,
+        })
+      }
+      useCopyBotStore().zonePasteQueue.delete(zoneName)
+      return
+    }
   }
 }
 
@@ -1297,6 +1318,7 @@ export function selectBlocks(botData: CopyBotData, blockPos: Point, playerId: nu
     }
 
     botData.selectedBlocks = getBlocksInArea(botData.selectedFromPos, botData.selectedToPos)
+    botData.selectedZones = getZonesInArea(botData.selectedFromPos, botData.selectedToPos)
 
     resetMoveModeData(botData)
   }
@@ -1437,6 +1459,7 @@ function blueCoinBlockPlaced(
     // This is not ideal, but good enough
     for (const blockPos of data.positions) {
       void pasteBlocks(botData, blockPos)
+      void pasteZones(botData, blockPos)
     }
   }
 }
@@ -1451,6 +1474,38 @@ function getMinMaxPos(pos1: Point, pos2: Point) {
     ;[minPos.y, maxPos.y] = [maxPos.y, minPos.y]
   }
   return [minPos, maxPos]
+}
+
+function pasteZones(botData: CopyBotData, blockPos: Point) {
+  if (botData.selectedZones.length === 0) {
+    return
+  }
+
+  const helper = getPwGameWorldHelper()
+  const offsetPos = vec2.sub(blockPos, botData.selectedFromPos)
+
+  for (const selectedZone of botData.selectedZones) {
+    const newZone = cloneDeep(selectedZone)
+    newZone.zone.membershipRle = ZoneMembership.fromPositions(
+      newZone.zone.membershipRle
+        .toPositions()
+        .map((pos) => vec2.add(pos, offsetPos))
+        .filter((pos) => pos.x >= 0 && pos.x < helper.width && pos.y >= 0 && pos.y < helper.height),
+    )
+
+    useCopyBotStore().globalZoneCounter += 1
+
+    newZone.zone.name = `Zone copy ${useCopyBotStore().globalZoneCounter}`
+
+    useCopyBotStore().zonePasteQueue.set(newZone.zone.name, newZone)
+
+    // @ts-expect-error TODO: fix this when protocol is updated and marked as optional
+    newZone.zone.id = undefined
+
+    getPwGameClient().send('worldZoneUpsertRequestPacket', {
+      zone: newZone.zone.toJSON(),
+    })
+  }
 }
 
 function getBlocksInArea(fromPos: Point, toPos: Point): WorldBlock[] {
@@ -1470,4 +1525,26 @@ function getBlocksInArea(fromPos: Point, toPos: Point): WorldBlock[] {
     }
   }
   return data
+}
+
+function getZonesInArea(fromPos: Point, toPos: Point): WorldZone[] {
+  const [minPos, maxPos] = getMinMaxPos(fromPos, toPos)
+  const helper = getPwGameWorldHelper()
+  const data: WorldZone[] = []
+
+  for (const zone of helper.zones.values()) {
+    const zonePositions = zone.membershipRle.toPositions()
+
+    if (zonePositions.length === 0) {
+      continue
+    }
+
+    if (
+      zonePositions.every((pos) => pos.x >= minPos.x && pos.x <= maxPos.x && pos.y >= minPos.y && pos.y <= maxPos.y)
+    ) {
+      data.push({ zone })
+    }
+  }
+
+  return cloneDeep(data)
 }
