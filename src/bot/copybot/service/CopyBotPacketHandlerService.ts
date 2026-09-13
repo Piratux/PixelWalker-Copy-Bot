@@ -698,6 +698,7 @@ async function pasteCommandReceived(args: string[], playerId: number, smartPaste
 
   try {
     await pasteBlocks(botData, botData.selectedFromPos)
+    void pasteZones(botData, botData.selectedFromPos)
     sendPrivateChatMessage(
       `Selection repeated ${repeatX}x${repeatY} times` +
         (spacingX !== 0 && spacingY !== 0 ? ` with spacing ${spacingX}x${spacingY}` : ''),
@@ -709,6 +710,8 @@ async function pasteCommandReceived(args: string[], playerId: number, smartPaste
       throw new GameError(e.message, playerId)
     }
     throw e
+  } finally {
+    botData.repeatVec = vec2(1, 1)
   }
 }
 
@@ -1224,65 +1227,61 @@ function filterBySkipAir(allBlocks: WorldBlock[], botData: CopyBotData) {
 }
 
 export async function pasteBlocks(botData: CopyBotData, blockPos: Point) {
-  try {
-    let allBlocks: WorldBlock[] = []
+  let allBlocks: WorldBlock[] = []
 
-    const mapWidth = getPwGameWorldHelper().width
-    const mapHeight = getPwGameWorldHelper().height
+  const mapWidth = getPwGameWorldHelper().width
+  const mapHeight = getPwGameWorldHelper().height
 
-    const repeatDir = vec2(botData.repeatVec.x < 0 ? -1 : 1, botData.repeatVec.y < 0 ? -1 : 1)
-    const offsetSize = vec2.mul(repeatDir, vec2.add(botData.selectionSize, botData.spacingVec))
+  const repeatDir = vec2(botData.repeatVec.x < 0 ? -1 : 1, botData.repeatVec.y < 0 ? -1 : 1)
+  const offsetSize = vec2.mul(repeatDir, vec2.add(botData.selectionSize, botData.spacingVec))
 
-    const pastePosBlocksFromPos = vec2.add(blockPos, botData.selectionLocalTopLeftPos)
-    const pastePosBlocksToPos = vec2.add(blockPos, botData.selectionLocalBottomRightPos)
-    const pastePosBlocks = getBlocksInArea(pastePosBlocksFromPos, pastePosBlocksToPos)
+  const pastePosBlocksFromPos = vec2.add(blockPos, botData.selectionLocalTopLeftPos)
+  const pastePosBlocksToPos = vec2.add(blockPos, botData.selectionLocalBottomRightPos)
+  const pastePosBlocks = getBlocksInArea(pastePosBlocksFromPos, pastePosBlocksToPos)
 
-    const nextBlocksXFromPos = vec2.add(pastePosBlocksFromPos, vec2(offsetSize.x, 0))
-    const nextBlocksXToPos = vec2.add(pastePosBlocksToPos, vec2(offsetSize.x, 0))
-    const nextBlocksX = getBlocksInArea(nextBlocksXFromPos, nextBlocksXToPos)
+  const nextBlocksXFromPos = vec2.add(pastePosBlocksFromPos, vec2(offsetSize.x, 0))
+  const nextBlocksXToPos = vec2.add(pastePosBlocksToPos, vec2(offsetSize.x, 0))
+  const nextBlocksX = getBlocksInArea(nextBlocksXFromPos, nextBlocksXToPos)
 
-    const nextBlocksYFromPos = vec2.add(pastePosBlocksFromPos, vec2(0, offsetSize.y))
-    const nextBlocksYToPos = vec2.add(pastePosBlocksToPos, vec2(0, offsetSize.y))
-    const nextBlocksY = getBlocksInArea(nextBlocksYFromPos, nextBlocksYToPos)
+  const nextBlocksYFromPos = vec2.add(pastePosBlocksFromPos, vec2(0, offsetSize.y))
+  const nextBlocksYToPos = vec2.add(pastePosBlocksToPos, vec2(0, offsetSize.y))
+  const nextBlocksY = getBlocksInArea(nextBlocksYFromPos, nextBlocksYToPos)
 
-    for (let x = 0; x < Math.abs(botData.repeatVec.x); x++) {
-      const pastePosBlocksFromPosOffsetX = pastePosBlocksFromPos.x + x * offsetSize.x
-      const pastePosBlocksToPosOffsetX = pastePosBlocksToPos.x + x * offsetSize.x
+  for (let x = 0; x < Math.abs(botData.repeatVec.x); x++) {
+    const pastePosBlocksFromPosOffsetX = pastePosBlocksFromPos.x + x * offsetSize.x
+    const pastePosBlocksToPosOffsetX = pastePosBlocksToPos.x + x * offsetSize.x
+    if (
+      (pastePosBlocksFromPosOffsetX >= mapWidth || pastePosBlocksFromPosOffsetX < 0) &&
+      (pastePosBlocksToPosOffsetX >= mapWidth || pastePosBlocksToPosOffsetX < 0)
+    ) {
+      break
+    }
+    for (let y = 0; y < Math.abs(botData.repeatVec.y); y++) {
+      const pastePosBlocksFromPosOffsetY = pastePosBlocksFromPos.y + y * offsetSize.y
+      const pastePosBlocksToPosOffsetY = pastePosBlocksToPos.y + y * offsetSize.y
       if (
-        (pastePosBlocksFromPosOffsetX >= mapWidth || pastePosBlocksFromPosOffsetX < 0) &&
-        (pastePosBlocksToPosOffsetX >= mapWidth || pastePosBlocksToPosOffsetX < 0)
+        (pastePosBlocksFromPosOffsetY >= mapHeight || pastePosBlocksFromPosOffsetY < 0) &&
+        (pastePosBlocksToPosOffsetY >= mapHeight || pastePosBlocksToPosOffsetY < 0)
       ) {
         break
       }
-      for (let y = 0; y < Math.abs(botData.repeatVec.y); y++) {
-        const pastePosBlocksFromPosOffsetY = pastePosBlocksFromPos.y + y * offsetSize.y
-        const pastePosBlocksToPosOffsetY = pastePosBlocksToPos.y + y * offsetSize.y
-        if (
-          (pastePosBlocksFromPosOffsetY >= mapHeight || pastePosBlocksFromPosOffsetY < 0) &&
-          (pastePosBlocksToPosOffsetY >= mapHeight || pastePosBlocksToPosOffsetY < 0)
-        ) {
-          break
-        }
 
-        const offsetPos = vec2(pastePosBlocksFromPosOffsetX, pastePosBlocksFromPosOffsetY)
+      const offsetPos = vec2(pastePosBlocksFromPosOffsetX, pastePosBlocksFromPosOffsetY)
 
-        let finalBlocks = applyPosOffsetForBlocks(offsetPos, botData.selectedBlocks)
-        if (botData.smartRepeatEnabled) {
-          finalBlocks = applySmartTransformForBlocks(finalBlocks, pastePosBlocks, nextBlocksX, nextBlocksY, x, y)
-        }
-        allBlocks.push(...finalBlocks)
+      let finalBlocks = applyPosOffsetForBlocks(offsetPos, botData.selectedBlocks)
+      if (botData.smartRepeatEnabled) {
+        finalBlocks = applySmartTransformForBlocks(finalBlocks, pastePosBlocks, nextBlocksX, nextBlocksY, x, y)
       }
+      allBlocks.push(...finalBlocks)
     }
-
-    allBlocks = filterByLayerMasks(allBlocks, botData)
-    allBlocks = filterBySkipAir(allBlocks, botData)
-    allBlocks = applyMoveMode(botData, allBlocks)
-
-    addUndoItemWorldBlock(botData, allBlocks)
-    await placeMultipleBlocks(allBlocks)
-  } finally {
-    botData.repeatVec = vec2(1, 1)
   }
+
+  allBlocks = filterByLayerMasks(allBlocks, botData)
+  allBlocks = filterBySkipAir(allBlocks, botData)
+  allBlocks = applyMoveMode(botData, allBlocks)
+
+  addUndoItemWorldBlock(botData, allBlocks)
+  await placeMultipleBlocks(allBlocks)
 }
 
 function resetMoveModeData(botData: CopyBotData) {
@@ -1492,30 +1491,68 @@ function pasteZones(botData: CopyBotData, blockPos: Point) {
     return
   }
 
-  const helper = getPwGameWorldHelper()
-  const offsetPos = vec2.sub(blockPos, botData.selectedFromPos)
+  const mapWidth = getPwGameWorldHelper().width
+  const mapHeight = getPwGameWorldHelper().height
 
-  for (const selectedZone of botData.selectedZones) {
-    const newZone = cloneDeep(selectedZone)
-    newZone.zone.membershipRle = ZoneMembership.fromPositions(
-      newZone.zone.membershipRle
-        .toPositions()
-        .map((pos) => vec2.add(pos, offsetPos))
-        .filter((pos) => pos.x >= 0 && pos.x < helper.width && pos.y >= 0 && pos.y < helper.height),
-    )
+  const repeatDir = vec2(botData.repeatVec.x < 0 ? -1 : 1, botData.repeatVec.y < 0 ? -1 : 1)
+  const offsetSize = vec2.mul(repeatDir, vec2.add(botData.selectionSize, botData.spacingVec))
 
-    useCopyBotStore().globalZoneCounter += 1
+  const pastePosBlocksFromPos = vec2.add(blockPos, botData.selectionLocalTopLeftPos)
+  const pastePosBlocksToPos = vec2.add(blockPos, botData.selectionLocalBottomRightPos)
 
-    newZone.zone.name = `Zone copy ${useCopyBotStore().globalZoneCounter}`
+  for (let x = 0; x < Math.abs(botData.repeatVec.x); x++) {
+    const pastePosBlocksFromPosOffsetX = pastePosBlocksFromPos.x + x * offsetSize.x
+    const pastePosBlocksToPosOffsetX = pastePosBlocksToPos.x + x * offsetSize.x
+    if (
+      (pastePosBlocksFromPosOffsetX >= mapWidth || pastePosBlocksFromPosOffsetX < 0) &&
+      (pastePosBlocksToPosOffsetX >= mapWidth || pastePosBlocksToPosOffsetX < 0)
+    ) {
+      break
+    }
+    for (let y = 0; y < Math.abs(botData.repeatVec.y); y++) {
+      const pastePosBlocksFromPosOffsetY = pastePosBlocksFromPos.y + y * offsetSize.y
+      const pastePosBlocksToPosOffsetY = pastePosBlocksToPos.y + y * offsetSize.y
+      if (
+        (pastePosBlocksFromPosOffsetY >= mapHeight || pastePosBlocksFromPosOffsetY < 0) &&
+        (pastePosBlocksToPosOffsetY >= mapHeight || pastePosBlocksToPosOffsetY < 0)
+      ) {
+        break
+      }
 
-    useCopyBotStore().zonePasteQueue.set(newZone.zone.name, newZone)
+      if (x === 0 && y === 0 && (Math.abs(botData.repeatVec.x) > 1 || Math.abs(botData.repeatVec.y) > 1)) {
+        continue
+      }
 
-    // @ts-expect-error TODO: fix this when protocol is updated and marked as optional
-    newZone.zone.id = undefined
+      const repeatVecOffsetPos = vec2(pastePosBlocksFromPosOffsetX, pastePosBlocksFromPosOffsetY)
 
-    getPwGameClient().send('worldZoneUpsertRequestPacket', {
-      zone: newZone.zone.toJSON(),
-    })
+      const offsetPos = vec2.sub(
+        repeatVecOffsetPos,
+        vec2.add(botData.selectedFromPos, botData.selectionLocalTopLeftPos),
+      )
+
+      for (const selectedZone of botData.selectedZones) {
+        const newZone = cloneDeep(selectedZone)
+        newZone.zone.membershipRle = ZoneMembership.fromPositions(
+          newZone.zone.membershipRle
+            .toPositions()
+            .map((pos) => vec2.add(pos, offsetPos))
+            .filter((pos) => pos.x >= 0 && pos.x < mapWidth && pos.y >= 0 && pos.y < mapHeight),
+        )
+
+        useCopyBotStore().globalZoneCounter += 1
+
+        newZone.zone.name = `Zone copy ${useCopyBotStore().globalZoneCounter}`
+
+        useCopyBotStore().zonePasteQueue.set(newZone.zone.name, newZone)
+
+        // @ts-expect-error TODO: fix this when protocol is updated and marked as optional
+        newZone.zone.id = undefined
+
+        getPwGameClient().send('worldZoneUpsertRequestPacket', {
+          zone: newZone.zone.toJSON(),
+        })
+      }
+    }
   }
 }
 
