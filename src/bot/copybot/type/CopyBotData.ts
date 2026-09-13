@@ -22,6 +22,7 @@ export interface CopyBotData {
   maskForegroundEnabled: boolean
   maskBackgroundEnabled: boolean
   maskOverlayEnabled: boolean
+  maskZoneEnabled: boolean
   skipAirEnabled: boolean
   replacedByLastMoveOperationBlocks: WorldBlock[]
   undoStack: CopyBotUndoRedoItem[]
@@ -51,6 +52,7 @@ export function createBotData(): CopyBotData {
     maskForegroundEnabled: true,
     maskBackgroundEnabled: true,
     maskOverlayEnabled: true,
+    maskZoneEnabled: true,
     skipAirEnabled: false,
     replacedByLastMoveOperationBlocks: [],
     undoStack: [],

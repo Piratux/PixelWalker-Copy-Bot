@@ -215,7 +215,7 @@ function maskCommandReceived(args: string[], playerId: number) {
   }
 
   if (args.length === 0) {
-    throw new GameError(`Correct usage is .mask [default | background | foreground | overlay]`, playerId)
+    throw new GameError(`Correct usage is .mask [default | background | foreground | overlay | zone]`, playerId)
   }
 
   const botData = getBotData(playerId)
@@ -223,11 +223,13 @@ function maskCommandReceived(args: string[], playerId: number) {
   botData.maskBackgroundEnabled = false
   botData.maskForegroundEnabled = false
   botData.maskOverlayEnabled = false
+  botData.maskZoneEnabled = false
 
   if (args.includes(CopyBotMaskCommandMode.DEFAULT)) {
     botData.maskBackgroundEnabled = true
     botData.maskForegroundEnabled = true
     botData.maskOverlayEnabled = true
+    botData.maskZoneEnabled = true
     sendPrivateChatMessage(`Mask default enabled`, playerId)
   }
 
@@ -244,6 +246,11 @@ function maskCommandReceived(args: string[], playerId: number) {
   if (args.includes(CopyBotMaskCommandMode.OVERLAY)) {
     botData.maskOverlayEnabled = true
     sendPrivateChatMessage(`Mask overlay enabled`, playerId)
+  }
+
+  if (args.includes(CopyBotMaskCommandMode.ZONE)) {
+    botData.maskZoneEnabled = true
+    sendPrivateChatMessage(`Mask zone enabled`, playerId)
   }
 }
 
@@ -1477,6 +1484,10 @@ function getMinMaxPos(pos1: Point, pos2: Point) {
 }
 
 function pasteZones(botData: CopyBotData, blockPos: Point) {
+  if (!botData.maskZoneEnabled) {
+    return
+  }
+
   if (botData.selectedZones.length === 0) {
     return
   }
