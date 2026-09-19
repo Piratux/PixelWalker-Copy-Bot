@@ -3,6 +3,7 @@ import { Point } from 'pw-js-world'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { CopyBotUndoRedoItem } from '@/bot/copybot/type/CopyBotUndoRedoItem.ts'
+import { CopyBotUndoRedoZoneItem } from '@/bot/copybot/type/CopyBotUndoRedoZoneItem.ts'
 import { WorldZone } from '@/core/type/WorldZone.ts'
 
 export interface CopyBotData {
@@ -27,6 +28,8 @@ export interface CopyBotData {
   replacedByLastMoveOperationBlocks: WorldBlock[]
   undoStack: CopyBotUndoRedoItem[]
   redoStack: CopyBotUndoRedoItem[]
+  undoZoneStack: CopyBotUndoRedoZoneItem[]
+  redoZoneStack: CopyBotUndoRedoZoneItem[]
   snakeModeEnabled: boolean
   snakeModeTime: number
   snakeModeCurrentOffset: number
@@ -57,6 +60,8 @@ export function createBotData(): CopyBotData {
     replacedByLastMoveOperationBlocks: [],
     undoStack: [],
     redoStack: [],
+    undoZoneStack: [],
+    redoZoneStack: [],
     snakeModeEnabled: false,
     snakeModeTime: 0,
     snakeModeCurrentOffset: 0,

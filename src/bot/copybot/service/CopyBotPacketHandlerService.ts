@@ -16,6 +16,7 @@ import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import {
   applyPosOffsetForBlocks,
+  commonWorldZoneUpsertPacketReceived,
   convertDeserializedStructureToWorldBlocks,
   getAnotherWorldBlocks,
   getAnotherWorldData,
@@ -28,10 +29,16 @@ import {
   numberAndStringArrayTypesMatch,
   placeMultipleBlocks,
   placeWorldDataBlocks,
+  placeZones,
   portalIdToNumberAndStringArray,
   replaceAllLabels,
 } from '@/core/service/WorldService.ts'
-import { addUndoItemWorldBlock, performRedo, performUndo } from '@/bot/copybot/service/CopyBotUndoRedoService.ts'
+import {
+  addUndoItemBlock,
+  addUndoItemZone,
+  performRedo,
+  performUndo,
+} from '@/bot/copybot/service/CopyBotUndoRedoService.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { AnyBlockField, ProtoGen } from 'pw-js-api'
 import {
@@ -71,7 +78,7 @@ const callbacks: CallbackEntry[] = [
   { name: 'worldBlockPlacedPacket', fn: worldBlockPlacedPacketReceived },
   { name: 'playerChatPacket', fn: playerChatPacketReceived },
   { name: 'playerJoinedPacket', fn: playerJoinedPacketReceived },
-  { name: 'worldZoneUpsertPacket', fn: worldZoneUpsertPacketReceived },
+  { name: 'worldZoneUpsertPacket', fn: commonWorldZoneUpsertPacketReceived },
 ]
 
 export function registerCopyBotCallbacks() {
@@ -106,25 +113,6 @@ function playerJoinedPacketReceived(data: ProtoGen.PlayerJoinedPacket) {
   // Joey from PW mentioned players complained when they all got pings on private messages when bot joins
   if (getPwGameWorldHelper().meta?.owner !== 'JOEY') {
     sendPrivateChatMessage('Copy Bot is here! Type .help to show usage!', playerId)
-  }
-}
-
-function worldZoneUpsertPacketReceived(data: ProtoGen.WorldZoneUpsertPacket) {
-  for (const [zoneName, worldZone] of useCopyBotStore().zonePasteQueue.entries()) {
-    if (zoneName == data.zone?.name) {
-      for (const pos of worldZone.zone.membershipRle.toPositions()) {
-        getPwGameClient().send('worldZoneAreaEditRequestPacket', {
-          zoneId: data.zone.id,
-          x: pos.x,
-          y: pos.y,
-          width: 1,
-          height: 1,
-          add: true,
-        })
-      }
-      useCopyBotStore().zonePasteQueue.delete(zoneName)
-      return
-    }
   }
 }
 
@@ -446,8 +434,7 @@ async function importCommandReceived(args: string[], playerId: number) {
   const botData = getBotData(playerId)
   allBlocks = filterByLayerMasks(allBlocks, botData)
   allBlocks = filterBySkipAir(allBlocks, botData)
-  // TODO: Maybe .undo should also reset labels?
-  addUndoItemWorldBlock(botData, allBlocks)
+  addUndoItemBlock(botData, allBlocks)
 
   const success = await placeMultipleBlocks(allBlocks)
   handlePlaceBlocksResult(success)
@@ -697,8 +684,8 @@ async function pasteCommandReceived(args: string[], playerId: number, smartPaste
   botData.smartRepeatEnabled = smartPaste
 
   try {
+    pasteZones(botData, botData.selectedFromPos)
     await pasteBlocks(botData, botData.selectedFromPos)
-    void pasteZones(botData, botData.selectedFromPos)
     sendPrivateChatMessage(
       `Selection repeated ${repeatX}x${repeatY} times` +
         (spacingX !== 0 && spacingY !== 0 ? ` with spacing ${spacingX}x${spacingY}` : ''),
@@ -769,7 +756,7 @@ function placeEditedBlocks(playerId: number, editedBlocks: WorldBlock[]) {
   const botData = getBotData(playerId)
   const offsetPos = vec2.add(botData.selectedFromPos, botData.selectionLocalTopLeftPos)
   editedBlocks = applyPosOffsetForBlocks(offsetPos, editedBlocks)
-  addUndoItemWorldBlock(botData, editedBlocks)
+  addUndoItemBlock(botData, editedBlocks)
   void placeMultipleBlocks(editedBlocks)
 }
 
@@ -1280,7 +1267,7 @@ export async function pasteBlocks(botData: CopyBotData, blockPos: Point) {
   allBlocks = filterBySkipAir(allBlocks, botData)
   allBlocks = applyMoveMode(botData, allBlocks)
 
-  addUndoItemWorldBlock(botData, allBlocks)
+  addUndoItemBlock(botData, allBlocks)
   await placeMultipleBlocks(allBlocks)
 }
 
@@ -1465,7 +1452,7 @@ function blueCoinBlockPlaced(
     // This is not ideal, but good enough
     for (const blockPos of data.positions) {
       void pasteBlocks(botData, blockPos)
-      void pasteZones(botData, blockPos)
+      pasteZones(botData, blockPos)
     }
   }
 }
@@ -1499,6 +1486,8 @@ function pasteZones(botData: CopyBotData, blockPos: Point) {
 
   const pastePosBlocksFromPos = vec2.add(blockPos, botData.selectionLocalTopLeftPos)
   const pastePosBlocksToPos = vec2.add(blockPos, botData.selectionLocalBottomRightPos)
+
+  const zones: WorldZone[] = []
 
   for (let x = 0; x < Math.abs(botData.repeatVec.x); x++) {
     const pastePosBlocksFromPosOffsetX = pastePosBlocksFromPos.x + x * offsetSize.x
@@ -1539,21 +1528,13 @@ function pasteZones(botData: CopyBotData, blockPos: Point) {
             .filter((pos) => pos.x >= 0 && pos.x < mapWidth && pos.y >= 0 && pos.y < mapHeight),
         )
 
-        useCopyBotStore().globalZoneCounter += 1
-
-        newZone.zone.name = `Zone copy ${useCopyBotStore().globalZoneCounter}`
-
-        useCopyBotStore().zonePasteQueue.set(newZone.zone.name, newZone)
-
-        // @ts-expect-error TODO: fix this when protocol is updated and marked as optional
-        newZone.zone.id = undefined
-
-        getPwGameClient().send('worldZoneUpsertRequestPacket', {
-          zone: newZone.zone.toJSON(),
-        })
+        zones.push(newZone)
       }
     }
   }
+
+  const newZones = placeZones(zones)
+  addUndoItemZone(botData, newZones)
 }
 
 function getBlocksInArea(fromPos: Point, toPos: Point): WorldBlock[] {

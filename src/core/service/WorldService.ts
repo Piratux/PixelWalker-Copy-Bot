@@ -23,13 +23,15 @@ import { sleep } from '@/core/util/Sleep.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { cloneDeep, shuffle } from 'lodash-es'
-import { PWApiClient, PWGameClient } from 'pw-js-api'
+import { ProtoGen, PWApiClient, PWGameClient } from 'pw-js-api'
 import { authenticate, getAllWorldBlocks, joinWorld } from '@/core/service/PwClientService.ts'
 import { handleException } from '@/core/util/Exception.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { WorldData } from '@/core/type/WorldData.ts'
+import { WorldZone } from '@/core/type/WorldZone.ts'
+import { useZoneStore } from '@/core/store/ZoneStore.ts'
 
 export function getBlockAt(pos: Point, layer: number): Block {
   try {
@@ -434,5 +436,47 @@ export function replaceAllLabels(labels: ILabel[]) {
     getPwGameClient().send('worldLabelUpsertRequestPacket', {
       label,
     })
+  }
+}
+
+export function placeZones(worldZones: WorldZone[]) {
+  const newZones: WorldZone[] = []
+  for (const worldZone of worldZones) {
+    useZoneStore().zonePasteQueue.set(worldZone.zone.name, cloneDeep(worldZone))
+
+    const newZone = cloneDeep(worldZone)
+
+    // @ts-expect-error TODO: fix this when protocol is updated and marked as optional
+    newZone.zone.id = undefined
+
+    useZoneStore().globalZoneCounter += 1
+
+    // We can only identify the zone by name after it has been placed
+    newZone.zone.name = `Zone copy ${useZoneStore().globalZoneCounter}`
+
+    getPwGameClient().send('worldZoneUpsertRequestPacket', {
+      zone: newZone.zone.toJSON(),
+    })
+    newZones.push(newZone)
+  }
+  return newZones
+}
+
+export function commonWorldZoneUpsertPacketReceived(data: ProtoGen.WorldZoneUpsertPacket) {
+  for (const [zoneName, worldZone] of useZoneStore().zonePasteQueue.entries()) {
+    if (zoneName == data.zone?.name) {
+      for (const pos of worldZone.zone.membershipRle.toPositions()) {
+        getPwGameClient().send('worldZoneAreaEditRequestPacket', {
+          zoneId: data.zone.id,
+          x: pos.x,
+          y: pos.y,
+          width: 1,
+          height: 1,
+          add: true,
+        })
+      }
+      useZoneStore().zonePasteQueue.delete(zoneName)
+      return
+    }
   }
 }

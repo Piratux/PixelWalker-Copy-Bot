@@ -26,6 +26,7 @@ import { registerCurseBotCallbacks } from '@/bot/cursebot/service/CurseBotPacket
 import { registerShiftBotCallbacks } from '@/bot/shiftbot/service/ShiftBotPacketHandlerService.ts'
 import { registerBArenaBotCallbacks } from '@/bot/barenabot/service/BArenaBotPacketHandlerService.ts'
 import { resetCopyBotStore } from '@/bot/copybot/store/CopyBotStore.ts'
+import { resetZoneStore } from '@/core/store/ZoneStore.ts'
 
 export async function authenticate(pwApiClient: PWApiClient): Promise<void> {
   const authenticationResult = await pwApiClient.authenticate()
@@ -101,6 +102,7 @@ export async function initPwClasses(
   botType: BotType,
 ) {
   resetPwClientStore()
+  resetZoneStore()
 
   usePwClientStore().worldId = worldId
   usePwClientStore().email = email.toLowerCase() // Login page in PW lowercases email before sending to server
