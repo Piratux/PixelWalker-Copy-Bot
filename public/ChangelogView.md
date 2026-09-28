@@ -1,6 +1,6 @@
 ## Changelog
 
-### 2026-06-11 Version 1.25.0
+### 2026-09-28 Version 1.25.0
 
 - Bot: Updated to work with PixelWalker version 2026.12.0
 
