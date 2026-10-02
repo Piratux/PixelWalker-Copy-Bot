@@ -26,6 +26,7 @@ export interface CopyBotData {
   maskZoneEnabled: boolean
   skipAirEnabled: boolean
   replacedByLastMoveOperationBlocks: WorldBlock[]
+  lastMovedZones: WorldZone[] | null
   undoStack: CopyBotUndoRedoItem[]
   redoStack: CopyBotUndoRedoItem[]
   undoZoneStack: CopyBotUndoRedoZoneItem[]
@@ -58,6 +59,7 @@ export function createBotData(): CopyBotData {
     maskZoneEnabled: true,
     skipAirEnabled: false,
     replacedByLastMoveOperationBlocks: [],
+    lastMovedZones: null,
     undoStack: [],
     redoStack: [],
     undoZoneStack: [],

@@ -18,6 +18,7 @@ import {
   applyPosOffsetForBlocks,
   commonWorldZoneUpsertPacketReceived,
   convertDeserializedStructureToWorldBlocks,
+  deleteZones,
   getAnotherWorldBlocks,
   getAnotherWorldData,
   getBlockAt,
@@ -548,7 +549,7 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage(`Example usage 2: .redo 3`, playerId)
       break
     case CopyBotCommandName.MOVE:
-      sendPrivateChatMessage('.move - enables move mode, which deletes blocks in last selected area', playerId)
+      sendPrivateChatMessage('.move - enables move mode, which moves selected blocks and zones', playerId)
       sendPrivateChatMessage('Use this command again to disable this mode', playerId)
       break
     case CopyBotCommandName.MASK:
@@ -1277,6 +1278,7 @@ export async function pasteBlocks(botData: CopyBotData, blockPos: Point) {
 function resetMoveModeData(botData: CopyBotData) {
   botData.moveOperationPerformedOnce = false
   botData.replacedByLastMoveOperationBlocks = []
+  botData.lastMovedZones = null
 }
 
 export function selectBlocks(botData: CopyBotData, blockPos: Point, playerId: number) {
@@ -1449,6 +1451,7 @@ function blueCoinBlockPlaced(
   } else if (botData.moveEnabled) {
     const blockPos = data.positions[data.positions.length - 1]
     void pasteBlocks(botData, blockPos)
+    pasteZones(botData, blockPos)
   } else {
     // We want to prevent paste happening when player accidentally uses fill or brush tool
     // But simultaneously, if player drags blue coin across the map, there could be multiple blue coins in single packet
@@ -1511,7 +1514,12 @@ function pasteZones(botData: CopyBotData, blockPos: Point) {
         break
       }
 
-      if (x === 0 && y === 0 && (Math.abs(botData.repeatVec.x) > 1 || Math.abs(botData.repeatVec.y) > 1)) {
+      if (
+        !botData.moveEnabled &&
+        x === 0 &&
+        y === 0 &&
+        (Math.abs(botData.repeatVec.x) > 1 || Math.abs(botData.repeatVec.y) > 1)
+      ) {
         continue
       }
 
@@ -1536,8 +1544,13 @@ function pasteZones(botData: CopyBotData, blockPos: Point) {
     }
   }
 
+  const oldZones = botData.moveEnabled ? (botData.lastMovedZones ?? botData.selectedZones) : []
+  deleteZones(oldZones)
   const newZones = placeZones(zones)
-  addUndoItemZone(botData, newZones)
+  addUndoItemZone(botData, newZones, oldZones)
+  if (botData.moveEnabled) {
+    botData.lastMovedZones = newZones
+  }
 }
 
 function getBlocksInArea(fromPos: Point, toPos: Point): WorldBlock[] {

@@ -17,14 +17,14 @@ export function addUndoItemBlock(botData: CopyBotData, newBlocks: WorldBlock[]) 
   })
 }
 
-export function addUndoItemZone(botData: CopyBotData, newZones: WorldZone[]) {
+export function addUndoItemZone(botData: CopyBotData, newZones: WorldZone[], oldZones: WorldZone[] = []) {
   botData.redoZoneStack = []
   if (botData.undoZoneStack.length >= MAX_UNDO_REDO_STACK_LENGTH) {
     botData.undoZoneStack.shift()
   }
   botData.undoZoneStack.push({
     newZones,
-    oldZones: [],
+    oldZones,
   })
 }
 
@@ -64,6 +64,9 @@ export function performUndoZones(botData: CopyBotData, count: number) {
       break
     }
     applyUndoRedoZones(undoRedoItem.oldZones, undoRedoItem.newZones)
+    if (botData.lastMovedZones === undoRedoItem.newZones) {
+      botData.lastMovedZones = undoRedoItem.oldZones
+    }
     botData.redoZoneStack.push(undoRedoItem)
   }
   return i
@@ -77,6 +80,9 @@ export function performRedoZones(botData: CopyBotData, count: number) {
       break
     }
     applyUndoRedoZones(undoRedoItem.newZones, undoRedoItem.oldZones)
+    if (botData.lastMovedZones === undoRedoItem.oldZones) {
+      botData.lastMovedZones = undoRedoItem.newZones
+    }
     botData.undoZoneStack.push(undoRedoItem)
   }
   return i
@@ -93,7 +99,11 @@ function getOldBlocks(newBlocks: WorldBlock[]): WorldBlock[] {
 function applyUndoRedoZones(oldZones: WorldZone[], newZones: WorldZone[]) {
   deleteZones(newZones)
 
-  placeZones(oldZones)
+  const restoredZones = placeZones(oldZones)
+  // Move history entries share zone references, so keep their generated names current after restoration.
+  for (let i = 0; i < oldZones.length; i++) {
+    oldZones[i].zone = restoredZones[i].zone
+  }
 }
 
 export function performUndo(botData: CopyBotData, playerId: number, count: number) {
