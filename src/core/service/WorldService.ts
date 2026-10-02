@@ -442,8 +442,6 @@ export function replaceAllLabels(labels: ILabel[]) {
 export function placeZones(worldZones: WorldZone[]) {
   const newZones: WorldZone[] = []
   for (const worldZone of worldZones) {
-    useZoneStore().zonePasteQueue.set(worldZone.zone.name, cloneDeep(worldZone))
-
     const newZone = cloneDeep(worldZone)
 
     // @ts-expect-error TODO: fix this when protocol is updated and marked as optional
@@ -453,6 +451,8 @@ export function placeZones(worldZones: WorldZone[]) {
 
     // We can only identify the zone by name after it has been placed
     newZone.zone.name = `Zone copy ${useZoneStore().globalZoneCounter}`
+
+    useZoneStore().zonePasteQueue.set(newZone.zone.name, newZone)
 
     getPwGameClient().send('worldZoneUpsertRequestPacket', {
       zone: newZone.zone.toJSON(),
