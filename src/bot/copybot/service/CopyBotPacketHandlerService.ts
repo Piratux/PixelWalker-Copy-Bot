@@ -32,6 +32,7 @@ import {
   placeZones,
   portalIdToNumberAndStringArray,
   replaceAllLabels,
+  replaceAllZones,
 } from '@/core/service/WorldService.ts'
 import {
   addUndoItemBlock,
@@ -369,9 +370,10 @@ async function importCommandReceived(args: string[], playerId: number) {
 
   sendGlobalChatMessage(`Importing world from ${worldId}`)
 
-  const { blocks, labels } = await getAnotherWorldData(worldId, getPwApiClient())
+  const { blocks, labels, zones } = await getAnotherWorldData(worldId, getPwApiClient())
   const blocksFromAnotherWorld = blocks
   const labelsFromAnotherWorld = labels
+  const zonesFromAnotherWorld = zones
 
   const partialImportUsed = args.length === 7
   let allBlocks: WorldBlock[]
@@ -429,6 +431,7 @@ async function importCommandReceived(args: string[], playerId: number) {
     allBlocks = mergeWorldBlocks(emptyBlocksWorldBlocks, worldDataWorldBlocks)
 
     replaceAllLabels(Array.from(labelsFromAnotherWorld.values()))
+    replaceAllZones(Array.from(zonesFromAnotherWorld.values()))
   }
 
   const botData = getBotData(playerId)

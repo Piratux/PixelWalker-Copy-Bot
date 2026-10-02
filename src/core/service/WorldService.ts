@@ -8,6 +8,7 @@ import {
   Point,
   PWGameWorldHelper,
   SendableBlockPacket,
+  Zone,
 } from 'pw-js-world'
 import {
   getPwBlocksByPwId,
@@ -330,6 +331,7 @@ export async function getAnotherWorldData(worldId: string, pwApiClient: PWApiCli
   let copyFromAnotherWorldFinished = false
   let blocksResult: DeserialisedStructure | null = null
   let labelsResult: Map<string, Label> | null = null
+  let zonesResult: Map<string, Zone> | null = null
 
   pwGameClient.addHook(pwGameWorldHelper.receiveHook).addCallback('playerInitPacket', () => {
     try {
@@ -337,6 +339,7 @@ export async function getAnotherWorldData(worldId: string, pwApiClient: PWApiCli
 
       blocksResult = getAllWorldBlocks(pwGameWorldHelper)
       labelsResult = pwGameWorldHelper.labels
+      zonesResult = pwGameWorldHelper.zones
     } catch (e) {
       handleException(e)
     } finally {
@@ -352,12 +355,13 @@ export async function getAnotherWorldData(worldId: string, pwApiClient: PWApiCli
   }
 
   await workerWaitUntil(() => copyFromAnotherWorldFinished, { timeout: 10000, intervalBetweenAttempts: 1000 })
-  if (blocksResult === null || labelsResult === null) {
+  if (blocksResult === null || labelsResult === null || zonesResult === null) {
     throw new GameError(`Getting blocks from another world took too long. World ID: ${worldId}`)
   }
   return {
     blocks: blocksResult,
     labels: labelsResult,
+    zones: zonesResult,
   }
 }
 
@@ -460,6 +464,13 @@ export function placeZones(worldZones: WorldZone[]) {
     newZones.push(newZone)
   }
   return newZones
+}
+
+export function replaceAllZones(zones: Zone[]) {
+  useZoneStore().zonePasteQueue.clear()
+
+  deleteZones([...getPwGameWorldHelper().zones.values()].map((zone) => ({ zone })))
+  placeZones(zones.map((zone) => ({ zone })))
 }
 
 // Deletes zone by its name
