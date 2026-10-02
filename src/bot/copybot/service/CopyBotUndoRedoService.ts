@@ -1,7 +1,7 @@
 import { CopyBotData } from '@/bot/copybot/type/CopyBotData.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { WorldZone } from '@/core/type/WorldZone.ts'
-import { getBlockAt, placeMultipleBlocks } from '@/core/service/WorldService.ts'
+import { deleteZones, getBlockAt, placeMultipleBlocks, placeZones } from '@/core/service/WorldService.ts'
 import { sendPrivateChatMessage } from '@/core/service/ChatMessageService.ts'
 
 const MAX_UNDO_REDO_STACK_LENGTH = 100
@@ -63,7 +63,7 @@ export function performUndoZones(botData: CopyBotData, count: number) {
     if (undoRedoItem === undefined) {
       break
     }
-    // applyZones(undoRedoItem.oldZones, undoRedoItem.newZones)
+    applyUndoRedoZones(undoRedoItem.oldZones, undoRedoItem.newZones)
     botData.redoZoneStack.push(undoRedoItem)
   }
   return i
@@ -76,7 +76,7 @@ export function performRedoZones(botData: CopyBotData, count: number) {
     if (undoRedoItem === undefined) {
       break
     }
-    // applyZones(undoRedoItem.newZones, undoRedoItem.oldZones)
+    applyUndoRedoZones(undoRedoItem.newZones, undoRedoItem.oldZones)
     botData.undoZoneStack.push(undoRedoItem)
   }
   return i
@@ -90,157 +90,11 @@ function getOldBlocks(newBlocks: WorldBlock[]): WorldBlock[] {
   }))
 }
 
-// function applyZones(targetZones: WorldZone[], previousZones: WorldZone[]) {
-//   if (targetZones.length === 0 && previousZones.length === 0) {
-//     return
-//   }
-//
-//   const previousZoneKeys = new Set(previousZones.map(getZoneKey))
-//   const targetZoneKeys = new Set(targetZones.map(getZoneKey))
-//
-//   for (const previousZone of previousZones) {
-//     if (targetZoneKeys.has(getZoneKey(previousZone))) {
-//       continue
-//     }
-//
-//     deleteZone(previousZone)
-//   }
-//
-//   for (const targetZone of targetZones) {
-//     const zoneKey = getZoneKey(targetZone)
-//     const existingZone = previousZoneKeys.has(zoneKey) ? findExistingZone(targetZone) : undefined
-//     if (existingZone === undefined) {
-//       createZone(targetZone)
-//       continue
-//     }
-//
-//     upsertZone(existingZone.id, targetZone)
-//   }
-// }
+function applyUndoRedoZones(oldZones: WorldZone[], newZones: WorldZone[]) {
+  deleteZones(newZones)
 
-// function createZone(worldZone: WorldZone) {
-//   const queuedZone = cloneDeep(worldZone)
-//   useZoneStore().zonePasteQueue.set(queuedZone.zone.name, queuedZone)
-//
-//   // @ts-expect-error TODO: fix this when protocol is updated and marked as optional
-//   queuedZone.zone.id = undefined
-//
-//   getPwGameClient().send('worldZoneUpsertRequestPacket', {
-//     zone: queuedZone.zone.toJSON(),
-//   })
-// }
-//
-// function deleteZone(worldZone: WorldZone) {
-//   const helperZone = waitForZone(worldZone)
-//   if (helperZone === undefined) {
-//     return
-//   }
-//
-//   getPwGameClient().send('worldZoneDeleteRequestPacket', {
-//     id: helperZone.id,
-//   })
-// }
-//
-// function upsertZone(zoneId: string, worldZone: WorldZone) {
-//   const targetZone = cloneDeep(worldZone)
-//   targetZone.zone.id = zoneId
-//
-//   getPwGameClient().send('worldZoneUpsertRequestPacket', {
-//     zone: targetZone.zone.toJSON(),
-//   })
-//
-//   const currentZone = waitForZone({ zone: targetZone.zone })
-//   if (currentZone === undefined) {
-//     return
-//   }
-//
-//   const currentPositions = new Set(currentZone.membershipRle.toPositions().map((pos) => `${pos.x},${pos.y}`))
-//   const targetPositions = new Set(targetZone.zone.membershipRle.toPositions().map((pos) => `${pos.x},${pos.y}`))
-//
-//   for (const posKey of currentPositions) {
-//     if (targetPositions.has(posKey)) {
-//       continue
-//     }
-//
-//     const [x, y] = posKey.split(',').map(Number)
-//     getPwGameClient().send('worldZoneAreaEditRequestPacket', {
-//       zoneId,
-//       x,
-//       y,
-//       width: 1,
-//       height: 1,
-//       add: false,
-//     })
-//   }
-//
-//   for (const posKey of targetPositions) {
-//     if (currentPositions.has(posKey)) {
-//       continue
-//     }
-//
-//     const [x, y] = posKey.split(',').map(Number)
-//     getPwGameClient().send('worldZoneAreaEditRequestPacket', {
-//       zoneId,
-//       x,
-//       y,
-//       width: 1,
-//       height: 1,
-//       add: true,
-//     })
-//   }
-// }
-//
-// async function findExistingZone(worldZone: WorldZone) {
-//   const zoneById = getZoneById(worldZone.zone.id)
-//   if (zoneById !== undefined) {
-//     return zoneById
-//   }
-//
-//   return waitForZone(worldZone, 250)
-// }
-//
-// function getZoneById(zoneId: string | undefined) {
-//   if (zoneId === undefined || zoneId === '') {
-//     return undefined
-//   }
-//
-//   return getPwGameWorldHelper().zones.get(zoneId)
-// }
-//
-// function waitForZone(worldZone: WorldZone, timeoutMs = 2000) {
-//   const endTime = Date.now() + timeoutMs
-//   while (Date.now() <= endTime) {
-//     const zone = findZoneInHelper(worldZone)
-//     if (zone !== undefined) {
-//       return zone
-//     }
-//
-//     await sleep(25)
-//   }
-//
-//   return undefined
-// }
-//
-// function findZoneInHelper(worldZone: WorldZone) {
-//   const zoneById = getZoneById(worldZone.zone.id)
-//   if (zoneById !== undefined) {
-//     return zoneById
-//   }
-//
-//   for (const zone of getPwGameWorldHelper().zones.values()) {
-//     if (zone.name === worldZone.zone.name) {
-//       return zone
-//     }
-//   }
-//
-//   return undefined
-// }
-//
-// function getZoneKey(worldZone: WorldZone) {
-//   return worldZone.zone.id !== undefined && worldZone.zone.id !== ''
-//     ? `id:${worldZone.zone.id}`
-//     : `name:${worldZone.zone.name}`
-// }
+  placeZones(oldZones)
+}
 
 export function performUndo(botData: CopyBotData, playerId: number, count: number) {
   const blockUndoCount = performUndoBlocks(botData, count)

@@ -462,6 +462,19 @@ export function placeZones(worldZones: WorldZone[]) {
   return newZones
 }
 
+// Deletes zone by its name
+export function deleteZones(worldZones: WorldZone[]) {
+  for (const worldZone of worldZones) {
+    const zoneId = [...getPwGameWorldHelper().zones.values()].find((zone) => zone.name === worldZone.zone.name)?.id
+    if (zoneId === undefined) {
+      continue
+    }
+    getPwGameClient().send('worldZoneDeleteRequestPacket', {
+      id: zoneId,
+    })
+  }
+}
+
 export function commonWorldZoneUpsertPacketReceived(data: ProtoGen.WorldZoneUpsertPacket) {
   for (const [zoneName, worldZone] of useZoneStore().zonePasteQueue.entries()) {
     if (zoneName == data.zone?.name) {
