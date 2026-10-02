@@ -1,5 +1,19 @@
 ## Changelog
 
+### 2026-10-02 Version 1.26.0
+
+- Bot: Added support for zones. This includes support for:
+  - Copy/paste with coins
+    - All zone positions must be within selected area, to select the zone.
+    - Multiple zones can be selected at a time.
+  - .import
+  - .mask (you can do ".mask zone" to select only zones)
+  - .move
+  - .paste
+  - .smartpaste (equivalent to .paste for zones)
+  - .undo
+  - .redo
+
 ### 2026-09-28 Version 1.25.0
 
 - Bot: Updated to work with PixelWalker version 2026.12.0

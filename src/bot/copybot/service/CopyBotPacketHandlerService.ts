@@ -554,7 +554,7 @@ function helpCommandReceived(args: string[], playerId: number) {
       break
     case CopyBotCommandName.MASK:
       sendPrivateChatMessage(
-        '.mask [default | background | foreground | overlay] - masks layers or non empty blocks when pasting',
+        '.mask [default | background | foreground | overlay | zone] - masks layers or non empty blocks when pasting',
         playerId,
       )
       sendPrivateChatMessage(
@@ -576,7 +576,10 @@ function helpCommandReceived(args: string[], playerId: number) {
       break
     case CopyBotCommandName.IMPORT:
       sendPrivateChatMessage('.import world_id [src_from_x src_from_y src_to_x src_to_y dest_to_x dest_to_y]', playerId)
-      sendPrivateChatMessage('Copies blocks from world with "world_id" and places them into current world', playerId)
+      sendPrivateChatMessage(
+        'Copies blocks, labels and zones from world with "world_id" and places them into current world',
+        playerId,
+      )
       sendPrivateChatMessage('src_from_(x/y) - top left corner position to copy from', playerId)
       sendPrivateChatMessage('src_to_(x/y) - bottom right corner position to copy to', playerId)
       sendPrivateChatMessage('dest_to_(x/y) - top left corner position to paste to', playerId)
