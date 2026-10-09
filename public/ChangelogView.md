@@ -1,5 +1,9 @@
 ## Changelog
 
+### 2026-10-02 Version 1.27.0
+
+- Bot: Updated to work with PixelWalker version 2026.13.0
+
 ### 2026-10-02 Version 1.26.0
 
 - Bot: Added support for zones. This includes support for:

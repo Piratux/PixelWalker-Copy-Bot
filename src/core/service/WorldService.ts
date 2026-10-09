@@ -458,9 +458,8 @@ export function placeZones(worldZones: WorldZone[]) {
 
     useZoneStore().zonePasteQueue.set(newZone.zone.name, newZone)
 
-    getPwGameClient().send('worldZoneUpsertRequestPacket', {
-      zone: newZone.zone.toJSON(),
-    })
+    getPwGameClient().send(newZone.zone.toPacket())
+
     newZones.push(newZone)
   }
   return newZones
