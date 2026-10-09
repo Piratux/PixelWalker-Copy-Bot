@@ -124,13 +124,12 @@ function writeNotes(
         const MAX_OFFSET_ATTEMPTS = 4
         for (let offset = 0; offset < MAX_OFFSET_ATTEMPTS; offset++) {
           const { x, y } = getNotePos(spot + offset, columnHeight)
-          if (blocks.blocks[LayerType.Foreground][x][y].bId !== 0) {
-            continue
-          }
-
-          if (x < 0 && x >= pwMapWidth && y < 0 && y >= pwMapHeight) {
+          if (x < 0 || x >= pwMapWidth || y < 0 || y >= pwMapHeight) {
             sendGlobalChatMessage(`ERROR! Note at x=${x}, y=${y} is out of bounds. Stopping.`)
             return lastX
+          }
+          if (blocks.blocks[LayerType.Foreground][x][y].bId !== 0) {
+            continue
           }
           lastX = Math.max(lastX, x)
 
