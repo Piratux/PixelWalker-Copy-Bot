@@ -475,6 +475,10 @@ function helpCommandReceived(args: string[], playerId: number) {
       playerId,
     )
     sendPrivateChatMessage('See more info about each command via .help [command]', playerId)
+    sendPrivateChatMessage(
+      'Command documentation: https://piratux.github.io/PixelWalker-Copy-Bot/docs/commands/',
+      playerId,
+    )
     sendPrivateChatMessage('You can also use the bot: piratux.github.io/PixelWalker-Copy-Bot/', playerId)
     return
   }

@@ -1,5 +1,9 @@
 ## Changelog
 
+### 2026-10-11 Version 1.28.0
+
+- Website: Added detailed documentation for all commands in website.
+
 ### 2026-10-02 Version 1.27.0
 
 - Bot: Updated to work with PixelWalker version 2026.13.0

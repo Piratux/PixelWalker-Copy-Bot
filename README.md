@@ -32,6 +32,18 @@ reflected live.
 
 When `package.json` changes, you need to run dev command again.
 
+### Documentation
+
+Documentation lives in `docs/`, with VitePress navigation and search configured in `docs/.vitepress/config.ts`.
+The **Documentation** item in the left menu opens the documentation site.
+
+`npm run dev` also serves it at http://localhost:3000/PixelWalker-Copy-Bot/docs/.
+For standalone documentation development, use `npm run docs:dev`.
+
+`npm run build` builds both the application and documentation, placing the documentation in `dist/docs/`.
+It is published at https://piratux.github.io/PixelWalker-Copy-Bot/docs/ by the existing deployment workflow.
+Use `npm run docs:build` and `npm run docs:preview` to build and preview only the documentation.
+
 ### Linting errors
 
 This project automatically shows linting and typescript errors in the browser.

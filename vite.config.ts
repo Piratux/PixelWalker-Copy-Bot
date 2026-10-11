@@ -6,12 +6,36 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import eslint from 'vite-plugin-eslint2'
 import checker from 'vite-plugin-checker'
 import { playwright } from '@vitest/browser-playwright'
+import { createServer as createDocsServer } from 'vitepress'
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
   return {
     base: '/PixelWalker-Copy-Bot/',
     plugins: [
+      {
+        name: 'documentation',
+        async configureServer(server) {
+          const docsServer = await createDocsServer(path.resolve(__dirname, 'docs'), {
+            middlewareMode: true,
+            hmr: server.httpServer === null ? undefined : { server: server.httpServer, path: 'docs-hmr' },
+          })
+          server.httpServer?.once('close', () => {
+            void docsServer.close()
+          })
+          server.middlewares.use((request, response, next) => {
+            const pathname = request.url?.split('?')[0] ?? ''
+            if (pathname === '/PixelWalker-Copy-Bot/docs') {
+              response.writeHead(302, { Location: '/PixelWalker-Copy-Bot/docs/' })
+              response.end()
+            } else if (pathname.startsWith('/PixelWalker-Copy-Bot/docs/')) {
+              docsServer.middlewares(request, response, next)
+            } else {
+              next()
+            }
+          })
+        },
+      },
       vue(),
       tsconfigPaths(),
       nodePolyfills(),

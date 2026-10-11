@@ -2,13 +2,18 @@ import { RouteName } from '@/router/RouteName'
 
 interface MenuItem {
   text: string
-  routeName: RouteName
+  routeName?: RouteName
+  href?: string
 }
 
 export const MENU_ITEMS: MenuItem[] = [
   {
     text: 'Home',
     routeName: RouteName.HOME,
+  },
+  {
+    text: 'Documentation',
+    href: `${import.meta.env.BASE_URL}docs/`,
   },
   {
     text: 'Import EELVL',

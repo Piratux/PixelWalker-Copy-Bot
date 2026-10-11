@@ -15,7 +15,10 @@
   <v-navigation-drawer v-model="drawer" :permanent="showDrawer">
     <v-list color="primary">
       <div v-for="item in MENU_ITEMS" :key="item.text">
-        <v-list-item link @click="handleRouting(item.routeName)">
+        <v-list-item v-if="item.href !== undefined" link :href="item.href" target="_blank" rel="noopener noreferrer">
+          <v-list-item-title>{{ item.text }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item v-else-if="item.routeName !== undefined" link @click="handleRouting(item.routeName)">
           <v-list-item-title>{{ item.text }}</v-list-item-title>
         </v-list-item>
       </div>
