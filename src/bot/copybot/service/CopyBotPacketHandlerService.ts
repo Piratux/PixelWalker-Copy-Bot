@@ -471,7 +471,7 @@ function helpCommandReceived(args: string[], playerId: number) {
     sendPrivateChatMessage('Gold coin - select blocks', playerId)
     sendPrivateChatMessage('Blue coin - paste blocks', playerId)
     sendPrivateChatMessage(
-      'Commands: .help .ping .paste .smartpaste .undo .redo .import .edit .move .mask .flip .snake .off .on',
+      'Commands: .help .ping .paste .smartpaste .undo .redo .import .edit .move .mask .skipair .flip .snake .off .on',
       playerId,
     )
     sendPrivateChatMessage('See more info about each command via .help [command]', playerId)
@@ -515,7 +515,11 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage(`Example usage: .flip v`, playerId)
       break
     case CopyBotCommandName.PASTE:
-      sendPrivateChatMessage('.paste x_times y_times [x_spacing y_spacing] - repeat next paste (x/y)_times.', playerId)
+      sendPrivateChatMessage(
+        '.paste x_times y_times [x_spacing y_spacing] - immediately repeat the selection at its original location.',
+        playerId,
+      )
+      sendPrivateChatMessage('x_times/y_times - number of columns/rows. No blue coin is needed.', playerId)
       sendPrivateChatMessage('(x/y)_spacing - gap size to leave between pastes.', playerId)
       sendPrivateChatMessage(`Example usage 1: .paste 2 3`, playerId)
       sendPrivateChatMessage(`Example usage 2: .paste 2 3 4 1`, playerId)
@@ -531,8 +535,10 @@ function helpCommandReceived(args: string[], playerId: number) {
         playerId,
       )
       sendPrivateChatMessage(`Then select region for copy from {x=0,y=0} to {x=0,y=0}.`, playerId)
-      sendPrivateChatMessage(`Then Type in chat .smartpaste 5 1`, playerId)
-      sendPrivateChatMessage(`Lastly paste your selection at {x=0,y=0}`, playerId)
+      sendPrivateChatMessage(
+        `Then type .smartpaste 5 1 to repeat immediately at {x=0,y=0}. No blue coin is needed.`,
+        playerId,
+      )
       sendPrivateChatMessage(
         `As result, you should see purple switches with ids [1,2,3,4,5] placed in a row.`,
         playerId,
@@ -553,16 +559,15 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage('Use this command again to disable this mode', playerId)
       break
     case CopyBotCommandName.MASK:
-      sendPrivateChatMessage(
-        '.mask [default | background | foreground | overlay | zone] - masks layers or non empty blocks when pasting',
-        playerId,
-      )
+      sendPrivateChatMessage('.mask mode [mode ...] - choose block layers and/or zones to paste.', playerId)
+      sendPrivateChatMessage('Modes: default, background, foreground, overlay, zone. Use lowercase names.', playerId)
+      sendPrivateChatMessage('Each command replaces the previous mask. Use .skipair to ignore empty blocks.', playerId)
       sendPrivateChatMessage(
         `Example usage 1: .mask foreground background (only pastes foreground and background blocks)`,
         playerId,
       )
       sendPrivateChatMessage(
-        `Example usage 2: .mask default (shorthand for .mask background foreground overlay)`,
+        `Example usage 2: .mask default (shorthand for .mask background foreground overlay zone)`,
         playerId,
       )
       break
