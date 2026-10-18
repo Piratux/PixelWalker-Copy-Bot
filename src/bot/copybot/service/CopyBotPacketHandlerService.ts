@@ -6,7 +6,7 @@ import {
   getPwGameClient,
   getPwGameWorldHelper,
 } from '@/core/store/PwClientStore.ts'
-import { Block, IPlayer, LayerType, Point, ZoneMembership } from 'pw-js-world'
+import { Block, IPlayer, LayerType, Point, Zone, ZoneMembership } from 'pw-js-world'
 import { cloneDeep, isEmpty, isEqual } from 'lodash-es'
 import { CopyBotData, createBotData } from '@/bot/copybot/type/CopyBotData.ts'
 import { useCopyBotStore } from '@/bot/copybot/store/CopyBotStore.ts'
@@ -187,6 +187,9 @@ export async function commandReceived(message: string, playerId: number) {
     case CopyBotCommandName.PRINT_BLOCKS:
       printblocksCommandReceived(commandArgs, playerId)
       break
+    case CopyBotCommandName.VISION_ZONES:
+      visionzonesCommandReceived(commandArgs, playerId)
+      break
     default:
       throw new GameError('Unrecognised command. Type .help to see all commands', playerId)
   }
@@ -351,6 +354,172 @@ function printblocksCommandReceived(_args: string[], playerId: number) {
       })
       .join('\n'),
   )
+}
+
+function visionzonesCommandReceived(args: string[], playerId: number) {
+  requireDeveloper(playerId)
+  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+
+  const ERROR_MESSAGE = 'Correct usage is .visionzones fromX fromY toX toY visionRadius'
+  const numbers = args.map(Number)
+  if (
+    args.length !== 5 ||
+    args.some((arg) => arg.trim() === '') ||
+    numbers.some((n) => !Number.isFinite(n)) ||
+    numbers.slice(0, 4).some((n) => !Number.isSafeInteger(n)) ||
+    numbers[4] < 0
+  ) {
+    throw new GameError(ERROR_MESSAGE, playerId)
+  }
+
+  const [fromX, fromY, toX, toY, visionRadius] = numbers
+  const [minPos, maxPos] = getMinMaxPos(vec2(fromX, fromY), vec2(toX, toY))
+  const helper = getPwGameWorldHelper()
+  if (minPos.x < 0 || minPos.y < 0 || maxPos.x >= helper.width || maxPos.y >= helper.height) {
+    throw new GameError('Vision zone area must be inside the world', playerId)
+  }
+
+  const nonBlockingBlocks = [PwBlockName.GRAVITY_SLOW_DOT, PwBlockName.INVISIBLE_GRAVITY_SLOW_DOT, PwBlockName.EMPTY]
+
+  // Only foreground slow dots are transparent, including neither air nor invisible slow dots.
+  const isBlocking = (x: number, y: number) =>
+    !nonBlockingBlocks.includes(getBlockAt(vec2(x, y), LayerType.Foreground).name as PwBlockName)
+
+  const hasLineOfSight = (origin: Point, target: Point) => {
+    const dx = target.x - origin.x
+    const dy = target.y - origin.y
+    const stepX = Math.sign(dx)
+    const stepY = Math.sign(dy)
+    const tDeltaX = dx === 0 ? Infinity : 1 / Math.abs(dx)
+    const tDeltaY = dy === 0 ? Infinity : 1 / Math.abs(dy)
+    let tMaxX = tDeltaX / 2
+    let tMaxY = tDeltaY / 2
+    let x = origin.x
+    let y = origin.y
+
+    // DDA traces between tile centers, stepping to the next grid-cell boundary.
+    while (x !== target.x || y !== target.y) {
+      // Account for floating-point drift when a ray crosses a grid corner.
+      const crossesCorner = Number.isFinite(tMaxX) && Number.isFinite(tMaxY) && Math.abs(tMaxX - tMaxY) <= 1e-10
+      if (crossesCorner) {
+        // Do not allow vision to leak diagonally through blocking corners.
+        // if (isBlocking(x + stepX, y) || isBlocking(x, y + stepY)) {
+        //   return false
+        // }
+        x += stepX
+        y += stepY
+        tMaxX += tDeltaX
+        tMaxY += tDeltaY
+      } else if (tMaxX < tMaxY) {
+        x += stepX
+        tMaxX += tDeltaX
+      } else {
+        y += stepY
+        tMaxY += tDeltaY
+      }
+
+      // The first blocking tile is visible, but tiles behind it are not.
+      if (x === target.x && y === target.y) {
+        return true
+      }
+      if (isBlocking(x, y)) {
+        return false
+      }
+    }
+    return true
+  }
+
+  const zones: WorldZone[] = []
+  for (let x = minPos.x; x <= maxPos.x; x++) {
+    for (let y = minPos.y; y <= maxPos.y; y++) {
+      const origin = vec2(x, y)
+      const positions: Point[] = []
+      const minX = Math.max(0, Math.ceil(x - visionRadius))
+      const maxX = Math.min(helper.width - 1, Math.floor(x + visionRadius))
+      const minY = Math.max(0, Math.ceil(y - visionRadius))
+      const maxY = Math.min(helper.height - 1, Math.floor(y + visionRadius))
+      for (let visibleX = minX; visibleX <= maxX; visibleX++) {
+        for (let visibleY = minY; visibleY <= maxY; visibleY++) {
+          const target = vec2(visibleX, visibleY)
+          if (Math.round(Math.hypot(visibleX - x, visibleY - y)) <= visionRadius && hasLineOfSight(origin, target)) {
+            positions.push(target)
+          }
+        }
+      }
+
+      const membership = ZoneMembership.fromPositions(positions)
+      zones.push({
+        zone: new Zone(
+          {
+            id: '',
+            name: '',
+            priority: 0,
+            hue: 0,
+            membershipRle: membership,
+            vision: ProtoGen.ZoneVision.ON,
+            visionCombine: ProtoGen.ZoneVision.ON,
+            visionOutside: ProtoGen.ZoneVision.INHERIT,
+            hasVisionColor: false,
+            visionColor: 0,
+            cameraModeX: ProtoGen.ZoneCameraMode.INHERIT,
+            cameraModeY: ProtoGen.ZoneCameraMode.INHERIT,
+            cameraTarget: ProtoGen.ZoneCameraTarget.INHERIT,
+            cameraMovement: ProtoGen.ZoneCameraMovement.INHERIT,
+            cameraFollowMovement: ProtoGen.ZoneCameraMovement.INHERIT,
+            lighting: ProtoGen.ZoneLighting.INHERIT,
+            lightColor: 0xffffff,
+            lightFeatherTop: 0,
+            lightFeatherRight: 0,
+            lightFeatherBottom: 0,
+            lightFeatherLeft: 0,
+            lightMarginTop: 0,
+            lightMarginRight: 0,
+            lightMarginBottom: 0,
+            lightMarginLeft: 0,
+            lightSmoothing: 0,
+            playerLight: ProtoGen.ZonePlayerLight.INHERIT,
+            playerLightRadius: 0,
+            playerLightStrength: 0,
+            playerLightColor: 0xffffff,
+            fog: ProtoGen.ZoneFog.INHERIT,
+            fogColor: 0xffffff,
+            fogOpacity: 0,
+            fogDensity: 0,
+            fogDirection: 0,
+            fogSpeed: 0,
+            fogFeatherTop: 0,
+            fogFeatherRight: 0,
+            fogFeatherBottom: 0,
+            fogFeatherLeft: 0,
+            fogMarginTop: 0,
+            fogMarginRight: 0,
+            fogMarginBottom: 0,
+            fogMarginLeft: 0,
+            fogSmoothing: 0,
+            distortion: ProtoGen.ZoneDistortion.INHERIT,
+            distortionStrength: 0,
+            distortionScale: 0,
+            distortionSpeed: 0,
+            distortionFeatherTop: 0,
+            distortionFeatherRight: 0,
+            distortionFeatherBottom: 0,
+            distortionFeatherLeft: 0,
+            distortionMarginTop: 0,
+            distortionMarginRight: 0,
+            distortionMarginBottom: 0,
+            distortionMarginLeft: 0,
+            distortionSmoothing: 0,
+          },
+          membership._width,
+          membership._height,
+        ),
+      })
+    }
+  }
+
+  const newZones = placeZones(zones)
+  addUndoItemZone(getBotData(playerId), newZones, [])
+  sendPrivateChatMessage(`Placed ${newZones.length} vision zones`, playerId)
 }
 
 async function importCommandReceived(args: string[], playerId: number) {
@@ -635,6 +804,14 @@ function helpCommandReceived(args: string[], playerId: number) {
     case CopyBotCommandName.PRINT_BLOCKS:
       sendPrivateChatMessage('.printblocks - dev command that prints selected blocks to console', playerId)
       sendPrivateChatMessage('This is useful when writing tests', playerId)
+      break
+    case CopyBotCommandName.VISION_ZONES:
+      sendPrivateChatMessage('.visionzones fromX fromY toX toY visionRadius', playerId)
+      sendPrivateChatMessage('Creates a circular visibility zone for each tile in the inclusive rectangle', playerId)
+      sendPrivateChatMessage(
+        'Only foreground gravity_slow_dot tiles are transparent; all other tiles block vision',
+        playerId,
+      )
       break
     default:
       throw new GameError(`Unrecognised command ${commandName}. Type .help to see all commands`, playerId)

@@ -17,4 +17,5 @@ export enum CopyBotCommandName {
   PLACE_ALL = 'placeall',
   PLACE_EELVL_EXPORT = 'placeeelvlexport',
   PRINT_BLOCKS = 'printblocks',
+  VISION_ZONES = 'visionzones',
 }
