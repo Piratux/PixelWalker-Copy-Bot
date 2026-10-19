@@ -7,21 +7,23 @@ http://piratux.github.io/PixelWalker-Copy-Bot/
 
 ## Requirements to run project
 
-Node.js 24
+Node.js 24 (>=24.9.0) and Bun 1.4.3.
+
+Bun manages dependencies and runs package scripts; Node.js is still required by the development tools.
 
 ## Local development
 
 If you want to setup project for local development, at the root of project run once:
 
 ```
-npm install
-npx simple-git-hooks
+bun install
+bunx simple-git-hooks
 ```
 
 Then when you want to test changes, you can run:
 
 ```
-npm run dev
+bun run dev
 ```
 
 Then open up this:\
@@ -32,17 +34,20 @@ reflected live.
 
 When `package.json` changes, you need to run dev command again.
 
+Commit dependency changes together with `bun.lock`. CI and Docker use
+`bun install --frozen-lockfile` to install the locked dependencies.
+
 ### Documentation
 
 Documentation lives in `docs/`, with VitePress navigation and search configured in `docs/.vitepress/config.ts`.
 The **Documentation** item in the left menu opens the documentation site.
 
-`npm run dev` also serves it at http://localhost:3000/PixelWalker-Copy-Bot/docs/.
-For standalone documentation development, use `npm run docs:dev`.
+`bun run dev` also serves it at http://localhost:3000/PixelWalker-Copy-Bot/docs/.
+For standalone documentation development, use `bun run docs:dev`.
 
-`npm run build` builds both the application and documentation, placing the documentation in `dist/docs/`.
+`bun run build` builds both the application and documentation, placing the documentation in `dist/docs/`.
 It is published at https://piratux.github.io/PixelWalker-Copy-Bot/docs/ by the existing deployment workflow.
-Use `npm run docs:build` and `npm run docs:preview` to build and preview only the documentation.
+Use `bun run docs:build` and `bun run docs:preview` to build and preview only the documentation.
 
 ### Linting errors
 
@@ -51,7 +56,7 @@ This project automatically shows linting and typescript errors in the browser.
 If you want to list the errors in console, such that you can more easily navigate to source location you can run:
 
 ```
-npm run lint
+bun run lint
 ```
 
 ### Local env files
@@ -72,7 +77,7 @@ Before running tests, you need to setup the following .env variables:
 - VITE_TEST_RUN_PW_WORLD_ID (world needs to be exactly of size 200x200)
 
 ```
-npm run test
+bun run test
 ```
 
 When running tests, do not modify the source code, because that will automatically restart the tests and may cause some
@@ -89,8 +94,8 @@ It prints array of `WorldBlock[]` that you can paste directly to tests.
 At the root of project run:
 
 ```
-npm run build
-npm run preview
+bun run build
+bun run preview
 ```
 
 Then open up this:\
@@ -103,7 +108,7 @@ Vite's HMR won't work for production build, so you need to run build and preview
 To run coverage report, run the following command at the root of project:
 
 ```
-npm run coverage
+bun run coverage
 ```
 
 Then you can open up coverage report in browser UI.
@@ -130,7 +135,7 @@ following needs to be performed:
 - Run:
 
 ```
-npm run gen-files
+bun run gen-files
 ```
 
 - Update block names in `EelvlBlocks.ts` and `EerBlocks.ts` based on new names in generated files.
@@ -144,7 +149,7 @@ npm run gen-files
 If you change pre commit hooks, you need to run the following command:
 
 ```
-npx simple-git-hooks
+bunx simple-git-hooks
 ```
 
 See more info here: https://github.com/toplenboren/simple-git-hooks

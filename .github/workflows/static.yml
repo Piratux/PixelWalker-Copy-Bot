@@ -35,15 +35,18 @@ jobs:
         uses: actions/setup-node@v6 # https://github.com/actions/setup-node
         with:
           node-version: 24.16.0
-          cache: 'npm'
-      - name: Print npm version
-        run: npm --version
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2 # https://github.com/oven-sh/setup-bun
+        with:
+          bun-version: 1.4.3
+      - name: Print Bun version
+        run: bun --version
       - name: Print node version
         run: node --version
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
       - name: Build
-        run: npm run build
+        run: bun run build
       - name: Copy index.html to 404.html
         run: cp ./dist/index.html ./dist/404.html
       - name: Setup Pages

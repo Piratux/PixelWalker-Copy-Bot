@@ -2,8 +2,8 @@
 
 ## Do's
 
-- Use `npm run lint` after finishing making code changes.
-- Use `npm run ts-check` after finishing making code changes.
+- Use `bun run lint` after finishing making code changes.
+- Use `bun run ts-check` after finishing making code changes.
 - Do `git add ...` on all newly created files.
 - When making changes to copy bot, make adjustments to following places if needed:
   - documentation in `docs/`.
@@ -12,10 +12,10 @@
 
 ## Don'ts
 
-- Do not write or run tests (this includes not running `npm test`).
+- Do not write or run tests (this includes not running `bun run test`).
 - Do not turn existing functions from void to async or vice versa.
 - Do not remove the comments.
 - Do not add new dependencies to the project.
 - Do not modify existing dependencies in the project.
-- Do not run `npm run build`
+- Do not run `bun run build`
 - Do not commit or push code.

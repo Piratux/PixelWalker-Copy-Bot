@@ -7,19 +7,19 @@
     "dev": "vite",
     "test": "vitest",
     "coverage": "vitest --coverage.enabled=true",
-    "build": "vite build && npm run docs:build",
+    "build": "vite build && bun run docs:build",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "preview": "vite preview",
-    "format": "npx prettier . --write --ignore-pattern dist",
-    "lint": "npx eslint . --fix --ignore-pattern dist",
+    "format": "bunx prettier . --write --ignore-pattern dist",
+    "lint": "bunx eslint . --fix --ignore-pattern dist",
     "ts-check": "vue-tsc --noEmit",
-    "check-dependencies": "npx npm-check-updates",
-    "update-dependencies-all": "npx npm-check-updates -u && npm install",
-    "update-dependencies-interactive": "npx npm-check-updates -i",
-    "gen-files": "npx tsx src/script/GenerateBlockEnumFiles.ts",
-    "gen-tests": "npx tsx src/script/GenerateTests.ts",
+    "check-dependencies": "bunx npm-check-updates",
+    "update-dependencies-all": "bunx npm-check-updates -u && bun install",
+    "update-dependencies-interactive": "bunx npm-check-updates -i",
+    "gen-files": "bunx tsx src/script/GenerateBlockEnumFiles.ts",
+    "gen-tests": "bunx tsx src/script/GenerateTests.ts",
     "bombot": "vite-node --config vite.config.cli.ts src/cli/BomBotCli.ts"
   },
   "dependencies": {
@@ -36,14 +36,15 @@
     "playerioclient": "^1.0.7",
     "pngjs": "^7.0.0",
     "pw-js-api": "0.3.23",
-    "pw-js-world": "github:doomestee/pw-js-world#8772202993316edeb5cc7e898265b59cbcff795d",
+    "pw-js-world": "0.5.5",
     "vue": "^3.5.35",
     "vue-router": "^5.1.0",
     "vuetify": "^4.0.7",
     "worker-timers": "^8.0.31"
   },
   "engines": {
-    "node": ">=24.9.0"
+    "node": ">=24.9.0",
+    "bun": "1.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -77,7 +78,7 @@
     "vue-tsc": "^3.3.2"
   },
   "simple-git-hooks": {
-    "pre-commit": "npx lint-staged && npm run ts-check"
+    "pre-commit": "bunx lint-staged && bun run ts-check"
   },
   "lint-staged": {
     "*": [

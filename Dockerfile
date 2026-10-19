@@ -4,16 +4,19 @@
 # never bake them into the image.
 # ──────────────────────────────────────────────────────────────────────────────
 
+FROM oven/bun:1.4.3-alpine AS bun
+
 FROM node:24-alpine
+
+COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 
 WORKDIR /app
 
 # Install dependencies (devDependencies are required for vite-node)
-COPY package*.json ./
-RUN npm ci
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
 # Copy the rest of the source
 COPY . .
 
-CMD ["npm", "run", "bombot"]
-
+CMD ["bun", "run", "bombot"]
