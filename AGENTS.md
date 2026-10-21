@@ -5,10 +5,11 @@
 - Use `bun run lint` after finishing making code changes.
 - Use `bun run ts-check` after finishing making code changes.
 - Do `git add ...` on all newly created files.
-- When making changes to copy bot, make adjustments to following places if needed:
+- When making changes to copy bot, make adjustments to following places if change is related to copy bot commands:
   - documentation in `docs/`.
   - `.help [command]` section.
   - Note: Documentation is mainly intended for end users, so do not include implementation details that are not visible by end users.
+- Add in changelog entry for every change.
 
 ## Don'ts
 

@@ -7,7 +7,7 @@ import ManyKeysMap from 'many-keys-map'
 import { vec2 } from '@basementuniverse/vec'
 import { EelvlFileHeader } from '@/webtool/eelvl/type/EelvlFileHeader.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
-import { getBlockName, portalIdToNumber } from '@/core/service/WorldService.ts'
+import { blockIsPortal, getBlockName, portalIdToNumber } from '@/core/service/WorldService.ts'
 import { EelvlLayer } from '@/webtool/eelvl/enum/EelvlLayer.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { EelvlBlockEntry } from '@/webtool/eelvl/type/EelvlBlockEntry.ts'
@@ -50,6 +50,7 @@ export function getExportedToEelvlData(worldBlocks: DeserialisedStructure): Eelv
   writeEeelvlFileHeader(bytes, world)
 
   const missingBlocks: MissingBlockInfo[] = []
+  const portalIdMap = getEelvlPortalIdMap(worldBlocks)
 
   const blocks = new ManyKeysMap<EelvlBlockEntry, vec2[]>()
   for (let pwLayer = 0; pwLayer < TOTAL_PW_LAYERS; pwLayer++) {
@@ -65,7 +66,7 @@ export function getExportedToEelvlData(worldBlocks: DeserialisedStructure): Eelv
           continue
         }
 
-        const eelvlBlockOrMissingBlockInfo: EelvlBlock | string = mapBlockIdPwToEelvl(pwBlock, pwLayer)
+        const eelvlBlockOrMissingBlockInfo: EelvlBlock | string = mapBlockIdPwToEelvl(pwBlock, pwLayer, portalIdMap)
         let eelvlBlock: EelvlBlock
         if (typeof eelvlBlockOrMissingBlockInfo === 'string') {
           eelvlBlock = createMissingBlockSign(eelvlBlockOrMissingBlockInfo)
@@ -169,7 +170,11 @@ export function writePositionsByteArrays(bytes: ByteArray, positions: vec2[]) {
   bytes.writeBytes(positionsY)
 }
 
-function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock | string {
+function mapBlockIdPwToEelvl(
+  pwBlock: Block,
+  pwLayer: LayerType,
+  portalIdMap: Map<string, number>,
+): EelvlBlock | string {
   const pwBlockName = getBlockName(pwBlock.bId)
 
   switch (pwBlockName) {
@@ -215,12 +220,12 @@ function mapBlockIdPwToEelvl(pwBlock: Block, pwLayer: LayerType): EelvlBlock | s
     case PwBlockName.PORTAL_VISIBLE_RIGHT:
     case PwBlockName.PORTAL_VISIBLE_UP:
     case PwBlockName.PORTAL_VISIBLE_DOWN:
-      return getPwToEelvlPortalBlock(pwBlock, EelvlBlockId.PORTAL_VISIBLE_LEFT)
+      return getPwToEelvlPortalBlock(pwBlock, EelvlBlockId.PORTAL_VISIBLE_LEFT, portalIdMap)
     case PwBlockName.PORTAL_INVISIBLE_LEFT:
     case PwBlockName.PORTAL_INVISIBLE_RIGHT:
     case PwBlockName.PORTAL_INVISIBLE_UP:
     case PwBlockName.PORTAL_INVISIBLE_DOWN:
-      return getPwToEelvlPortalBlock(pwBlock, EelvlBlockId.PORTAL_INVISIBLE_LEFT)
+      return getPwToEelvlPortalBlock(pwBlock, EelvlBlockId.PORTAL_INVISIBLE_LEFT, portalIdMap)
     case PwBlockName.PORTAL_WORLD:
       return {
         blockId: EelvlBlockId.PORTAL_WORLD,
@@ -358,7 +363,56 @@ function getPwToEelvlEffectsMultiJumpBlock(pwBlock: Block): EelvlBlock {
   return { blockId: EelvlBlockId.EFFECTS_MULTI_JUMP, intParameter: jumpCount }
 }
 
-function getPwToEelvlPortalBlock(pwBlock: Block, eelvlBlockId: EelvlBlockId): EelvlBlock | string {
+function getEelvlPortalIdMap(worldBlocks: DeserialisedStructure): Map<string, number> {
+  const usedNumberIds = new Set<number>()
+  const portalIds = new Set<string>()
+  for (const layer of worldBlocks.blocks) {
+    for (const column of layer) {
+      for (const block of column) {
+        if (!blockIsPortal(block.name)) {
+          continue
+        }
+        portalIds.add(block.args.portal_id as string)
+        portalIds.add(block.args.target_id as string)
+      }
+    }
+  }
+
+  for (const portalId of portalIds) {
+    const numberId = portalIdToNumber(portalId)
+    if (numberId !== undefined) {
+      usedNumberIds.add(numberId)
+    }
+  }
+
+  const portalIdMap = new Map<string, number>()
+  let nextNumberId = 50000
+  for (const portalId of portalIds) {
+    const numberId = portalIdToNumber(portalId)
+    if (numberId !== undefined) {
+      portalIdMap.set(portalId, numberId)
+    } else {
+      while (usedNumberIds.has(nextNumberId)) {
+        nextNumberId++
+      }
+
+      if (nextNumberId > 99999) {
+        throw new Error('World has too many different portal ids with characters')
+      }
+
+      portalIdMap.set(portalId, nextNumberId)
+      usedNumberIds.add(nextNumberId)
+      nextNumberId++
+    }
+  }
+  return portalIdMap
+}
+
+function getPwToEelvlPortalBlock(
+  pwBlock: Block,
+  eelvlBlockId: EelvlBlockId,
+  portalIdMap: Map<string, number>,
+): EelvlBlock {
   const portalId = pwBlock.args.portal_id as string
   const portalTarget = pwBlock.args.target_id as string
   let rotation
@@ -380,16 +434,11 @@ function getPwToEelvlPortalBlock(pwBlock: Block, eelvlBlockId: EelvlBlockId): Ee
       rotation = 0
       break
   }
-  const portalIdInt = portalIdToNumber(portalId)
-  const portalTargetInt = portalIdToNumber(portalTarget)
-  if (portalIdInt === undefined || portalTargetInt === undefined) {
-    return `${pwBlock.name} portal id: ${portalId}, portal target: ${portalTarget}, rotation: ${rotation}`
-  }
   return {
     blockId: eelvlBlockId,
     intParameter: rotation,
-    portalId: portalIdInt,
-    portalTarget: portalTargetInt,
+    portalId: portalIdMap.get(portalId)!,
+    portalTarget: portalIdMap.get(portalTarget)!,
   }
 }
 

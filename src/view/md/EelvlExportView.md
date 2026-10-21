@@ -25,7 +25,7 @@ Compared with PixelWalker, EELVL doesn't have:
 - Orange, yellow, cyan and purple canvas foreground blocks
 - Bronze and silver colors of gilded block pack
 - Multiple layers: water, fog and some decorations are placed on overlay layer. If there are blocks in overlay and foreground layer, blocks in overlay layer are not exported.
-- Strings in portal ID and portal target ID
+- Strings in portal ID and portal target ID. These are converted to unused numeric IDs starting from 50000, preserving portal links and existing numeric IDs.
 - Strings in world portal spawn point ID and world portal spawn point target ID
 - White and black crystal
 - 1px and 2px outlines
