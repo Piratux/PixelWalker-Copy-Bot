@@ -22,6 +22,6 @@ Redo reapplies the original changes regardless of your current selection or mask
 
 ## History limits
 
-Block and zone changes are redone **separately**. `.redo 1` reapplies the block changes from up to one action and the zone changes from up to one action. These may be different actions. New block changes clear block redo history; new zone changes clear zone redo history. Your redo history is not shared with other players.
+Block and zone changes from the same action are redone **together**. `.redo 1` reapplies one recorded action. Any newly recorded action clears your redo history for both blocks and zones. Your redo history is not shared with other players.
 
-See [undo coverage](./undo.md#coverage) and [undo limitations](./undo.md#important-limits) before relying on history. Full-import label and zone replacement is not recorded for undo or redo. Snake placements are not recorded for undo or redo. Redo can overwrite changes made at the same positions by other players. Coordinate with other builders.
+See [undo coverage](./undo.md#coverage) and [undo limitations](./undo.md#important-limits) before relying on history. Full-import label replacement is not recorded for undo or redo. Snake placements are not recorded for undo or redo. Redo can overwrite changes made at the same positions by other players. Coordinate with other builders.

@@ -6,7 +6,17 @@ import { sendPrivateChatMessage } from '@/core/service/ChatMessageService.ts'
 
 const MAX_UNDO_REDO_STACK_LENGTH = 100
 
-export function addUndoItemBlock(botData: CopyBotData, newBlocks: WorldBlock[]) {
+export function addUndoItem(
+  botData: CopyBotData,
+  newBlocks: WorldBlock[],
+  newZones: WorldZone[],
+  oldZones: WorldZone[],
+) {
+  addUndoItemBlock(botData, newBlocks)
+  addUndoItemZone(botData, newZones, oldZones)
+}
+
+function addUndoItemBlock(botData: CopyBotData, newBlocks: WorldBlock[]) {
   botData.redoStack = []
   if (botData.undoStack.length >= MAX_UNDO_REDO_STACK_LENGTH) {
     botData.undoStack.shift()
@@ -17,7 +27,7 @@ export function addUndoItemBlock(botData: CopyBotData, newBlocks: WorldBlock[]) 
   })
 }
 
-export function addUndoItemZone(botData: CopyBotData, newZones: WorldZone[], oldZones: WorldZone[] = []) {
+function addUndoItemZone(botData: CopyBotData, newZones: WorldZone[], oldZones: WorldZone[]) {
   botData.redoZoneStack = []
   if (botData.undoZoneStack.length >= MAX_UNDO_REDO_STACK_LENGTH) {
     botData.undoZoneStack.shift()
@@ -108,12 +118,12 @@ function applyUndoRedoZones(oldZones: WorldZone[], newZones: WorldZone[]) {
 
 export function performUndo(botData: CopyBotData, playerId: number, count: number) {
   const blockUndoCount = performUndoBlocks(botData, count)
-  const zoneUndoCount = performUndoZones(botData, count)
-  sendPrivateChatMessage(`Undo performed ${blockUndoCount} block time(s) and ${zoneUndoCount} zone time(s).`, playerId)
+  performUndoZones(botData, count)
+  sendPrivateChatMessage(`Undo performed ${blockUndoCount} time(s).`, playerId)
 }
 
 export function performRedo(botData: CopyBotData, playerId: number, count: number) {
   const blockRedoCount = performRedoBlocks(botData, count)
-  const zoneRedoCount = performRedoZones(botData, count)
-  sendPrivateChatMessage(`Redo performed ${blockRedoCount} block time(s) and ${zoneRedoCount} zone time(s).`, playerId)
+  performRedoZones(botData, count)
+  sendPrivateChatMessage(`Redo performed ${blockRedoCount} time(s).`, playerId)
 }

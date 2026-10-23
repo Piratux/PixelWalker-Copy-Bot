@@ -9,7 +9,7 @@
   - documentation in `docs/`.
   - `.help [command]` section.
   - Note: Documentation is mainly intended for end users, so do not include implementation details that are not visible by end users.
-- Add in changelog entry for every change.
+- Add in changelog (public/ChangelogView.md) entry for every change.
 
 ## Don'ts
 

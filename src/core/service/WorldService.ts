@@ -469,7 +469,7 @@ export function replaceAllZones(zones: Zone[]) {
   useZoneStore().zonePasteQueue.clear()
 
   deleteZones([...getPwGameWorldHelper().zones.values()].map((zone) => ({ zone })))
-  placeZones(zones.map((zone) => ({ zone })))
+  return placeZones(zones.map((zone) => ({ zone })))
 }
 
 // Deletes zone by its name

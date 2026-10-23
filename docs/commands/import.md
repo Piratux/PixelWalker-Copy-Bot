@@ -24,7 +24,7 @@ Blocks are imported at their original coordinates. The current [block-layer mask
 ::: danger Replaces world content
 With default settings, imported air clears destination blocks, including areas not covered by the source world. All destination labels and zones are replaced with the source labels and zones, **regardless of `.mask zone` or skip-air**.
 
-Block changes are recorded for [`.undo`](./undo.md). Full-import label and zone replacement is not recorded for undo or redo. Back up important world content first.
+Block changes and zone replacement are recorded together for [`.undo`](./undo.md), so one undo reverses both. Label replacement is not recorded for undo or redo. Back up important world content first.
 :::
 
 The import does not resize the destination world. Use a destination large enough for the source or import a smaller rectangle.

@@ -5,7 +5,7 @@ import { Block, LayerType } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { runSelectCommandTest } from '@/test/RuntimeTestsUtil.ts'
-import { commandReceived, pasteBlocks } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
+import { commandReceived, pasteBlocksAndZones } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
 import { createUnrecognisedMaskModeError } from '@/bot/copybot/service/CopyBotErrorService.ts'
 
 describe.sequential('.mask', () => {
@@ -26,7 +26,7 @@ describe.sequential('.mask', () => {
     ]
     await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(2, 0), async (botData) => {
       await commandReceived(ctx.task.name, playerId)
-      await pasteBlocks(botData, vec2(0, 1))
+      await pasteBlocksAndZones(botData, vec2(0, 1))
     })
   })
 
@@ -45,7 +45,7 @@ describe.sequential('.mask', () => {
     ]
     await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(2, 0), async (botData) => {
       await commandReceived(ctx.task.name, playerId)
-      await pasteBlocks(botData, vec2(0, 1))
+      await pasteBlocksAndZones(botData, vec2(0, 1))
     })
   })
 
@@ -64,7 +64,7 @@ describe.sequential('.mask', () => {
     ]
     await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(2, 0), async (botData) => {
       await commandReceived(ctx.task.name, playerId)
-      await pasteBlocks(botData, vec2(0, 1))
+      await pasteBlocksAndZones(botData, vec2(0, 1))
     })
   })
 
@@ -83,7 +83,7 @@ describe.sequential('.mask', () => {
     ]
     await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(2, 0), async (botData) => {
       await commandReceived(ctx.task.name, playerId)
-      await pasteBlocks(botData, vec2(0, 1))
+      await pasteBlocksAndZones(botData, vec2(0, 1))
     })
   })
 
@@ -103,7 +103,7 @@ describe.sequential('.mask', () => {
     ]
     await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(2, 0), async (botData) => {
       await commandReceived(ctx.task.name, playerId)
-      await pasteBlocks(botData, vec2(0, 1))
+      await pasteBlocksAndZones(botData, vec2(0, 1))
     })
   })
 

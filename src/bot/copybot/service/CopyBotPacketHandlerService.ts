@@ -35,12 +35,7 @@ import {
   replaceAllLabels,
   replaceAllZones,
 } from '@/core/service/WorldService.ts'
-import {
-  addUndoItemBlock,
-  addUndoItemZone,
-  performRedo,
-  performUndo,
-} from '@/bot/copybot/service/CopyBotUndoRedoService.ts'
+import { addUndoItem, performRedo, performUndo } from '@/bot/copybot/service/CopyBotUndoRedoService.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { AnyBlockField, ProtoGen } from 'pw-js-api'
 import {
@@ -59,6 +54,7 @@ import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { WorldZone } from '@/core/type/WorldZone.ts'
+import { CopyBotUndoRedoZoneItem } from '@/bot/copybot/type/CopyBotUndoRedoZoneItem.ts'
 import { CopyBotCommandName } from '@/bot/copybot/enum/CopyBotCommandName.ts'
 import { CopyBotMaskCommandMode } from '@/bot/copybot/enum/CopyBotMaskCommandMode.ts'
 import {
@@ -522,7 +518,7 @@ function visionzonesCommandReceived(args: string[], playerId: number) {
   }
 
   const newZones = placeZones(zones)
-  addUndoItemZone(getBotData(playerId), newZones, [])
+  addUndoItem(getBotData(playerId), [], newZones, [])
   sendPrivateChatMessage(`Placed ${newZones.length} vision zones`, playerId)
 }
 
@@ -551,6 +547,8 @@ async function importCommandReceived(args: string[], playerId: number) {
 
   const partialImportUsed = args.length === 7
   let allBlocks: WorldBlock[]
+  let newZones: WorldZone[] = []
+  let oldZones: WorldZone[] = []
   if (partialImportUsed) {
     const numberArgs = args.slice(1, 7).map(Number)
     if (numberArgs.some((n) => !isFinite(n))) {
@@ -605,13 +603,14 @@ async function importCommandReceived(args: string[], playerId: number) {
     allBlocks = mergeWorldBlocks(emptyBlocksWorldBlocks, worldDataWorldBlocks)
 
     replaceAllLabels(Array.from(labelsFromAnotherWorld.values()))
-    replaceAllZones(Array.from(zonesFromAnotherWorld.values()))
+    oldZones = [...getPwGameWorldHelper().zones.values()].map((zone) => ({ zone: cloneDeep(zone) }))
+    newZones = replaceAllZones(Array.from(zonesFromAnotherWorld.values()))
   }
 
   const botData = getBotData(playerId)
   allBlocks = filterByLayerMasks(allBlocks, botData)
   allBlocks = filterBySkipAir(allBlocks, botData)
-  addUndoItemBlock(botData, allBlocks)
+  addUndoItem(botData, allBlocks, newZones, oldZones)
 
   const success = await placeMultipleBlocks(allBlocks)
   handlePlaceBlocksResult(success)
@@ -722,12 +721,15 @@ function helpCommandReceived(args: string[], playerId: number) {
       )
       break
     case CopyBotCommandName.UNDO:
-      sendPrivateChatMessage('.undo [count] - undoes last paste performed by bot "count" times', playerId)
+      sendPrivateChatMessage(
+        '.undo [count] - undoes the last recorded bot actions, blocks and zones together',
+        playerId,
+      )
       sendPrivateChatMessage(`Example usage 1: .undo`, playerId)
       sendPrivateChatMessage(`Example usage 2: .undo 3`, playerId)
       break
     case CopyBotCommandName.REDO:
-      sendPrivateChatMessage('.redo [count] - redoes last paste performed by bot "count" times', playerId)
+      sendPrivateChatMessage('.redo [count] - redoes undone bot actions, blocks and zones together', playerId)
       sendPrivateChatMessage(`Example usage 1: .redo`, playerId)
       sendPrivateChatMessage(`Example usage 2: .redo 3`, playerId)
       break
@@ -884,8 +886,7 @@ async function pasteCommandReceived(args: string[], playerId: number, smartPaste
   botData.smartRepeatEnabled = smartPaste
 
   try {
-    pasteZones(botData, botData.selectedFromPos)
-    await pasteBlocks(botData, botData.selectedFromPos)
+    await pasteBlocksAndZones(botData, botData.selectedFromPos)
     sendPrivateChatMessage(
       `Selection repeated ${repeatX}x${repeatY} times` +
         (spacingX !== 0 && spacingY !== 0 ? ` with spacing ${spacingX}x${spacingY}` : ''),
@@ -956,7 +957,7 @@ function placeEditedBlocks(playerId: number, editedBlocks: WorldBlock[]) {
   const botData = getBotData(playerId)
   const offsetPos = vec2.add(botData.selectedFromPos, botData.selectionLocalTopLeftPos)
   editedBlocks = applyPosOffsetForBlocks(offsetPos, editedBlocks)
-  addUndoItemBlock(botData, editedBlocks)
+  addUndoItem(botData, editedBlocks, [], [])
   void placeMultipleBlocks(editedBlocks)
 }
 
@@ -1413,7 +1414,7 @@ function filterBySkipAir(allBlocks: WorldBlock[], botData: CopyBotData) {
   })
 }
 
-export async function pasteBlocks(botData: CopyBotData, blockPos: Point) {
+export async function pasteBlocksAndZones(botData: CopyBotData, blockPos: Point) {
   let allBlocks: WorldBlock[] = []
 
   const mapWidth = getPwGameWorldHelper().width
@@ -1467,7 +1468,8 @@ export async function pasteBlocks(botData: CopyBotData, blockPos: Point) {
   allBlocks = filterBySkipAir(allBlocks, botData)
   allBlocks = applyMoveMode(botData, allBlocks)
 
-  addUndoItemBlock(botData, allBlocks)
+  const { newZones, oldZones } = pasteZones(botData, blockPos)
+  addUndoItem(botData, allBlocks, newZones, oldZones)
   await placeMultipleBlocks(allBlocks)
 }
 
@@ -1646,15 +1648,13 @@ function blueCoinBlockPlaced(
     }
   } else if (botData.moveEnabled) {
     const blockPos = data.positions[data.positions.length - 1]
-    void pasteBlocks(botData, blockPos)
-    pasteZones(botData, blockPos)
+    void pasteBlocksAndZones(botData, blockPos)
   } else {
     // We want to prevent paste happening when player accidentally uses fill or brush tool
     // But simultaneously, if player drags blue coin across the map, there could be multiple blue coins in single packet
     // This is not ideal, but good enough
     for (const blockPos of data.positions) {
-      void pasteBlocks(botData, blockPos)
-      pasteZones(botData, blockPos)
+      void pasteBlocksAndZones(botData, blockPos)
     }
   }
 }
@@ -1671,13 +1671,13 @@ function getMinMaxPos(pos1: Point, pos2: Point) {
   return [minPos, maxPos]
 }
 
-function pasteZones(botData: CopyBotData, blockPos: Point) {
+function pasteZones(botData: CopyBotData, blockPos: Point): CopyBotUndoRedoZoneItem {
   if (!botData.maskZoneEnabled) {
-    return
+    return { newZones: [], oldZones: [] }
   }
 
   if (botData.selectedZones.length === 0) {
-    return
+    return { newZones: [], oldZones: [] }
   }
 
   const mapWidth = getPwGameWorldHelper().width
@@ -1743,10 +1743,10 @@ function pasteZones(botData: CopyBotData, blockPos: Point) {
   const oldZones = botData.moveEnabled ? (botData.lastMovedZones ?? botData.selectedZones) : []
   deleteZones(oldZones)
   const newZones = placeZones(zones)
-  addUndoItemZone(botData, newZones, oldZones)
   if (botData.moveEnabled) {
     botData.lastMovedZones = newZones
   }
+  return { newZones, oldZones }
 }
 
 function getBlocksInArea(fromPos: Point, toPos: Point): WorldBlock[] {
