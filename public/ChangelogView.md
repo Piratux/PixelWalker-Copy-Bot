@@ -1,6 +1,6 @@
 ## Changelog
 
-### 2026-10-23 Version 1.29.0
+### 2026-10-23 Version 1.30.0
 
 - Bot: Undo/redo are now performed together
 
