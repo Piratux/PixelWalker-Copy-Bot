@@ -432,6 +432,10 @@ function visionzonesCommandReceived(args: string[], playerId: number) {
   const zones: WorldZone[] = []
   for (let x = minPos.x; x <= maxPos.x; x++) {
     for (let y = minPos.y; y <= maxPos.y; y++) {
+      if (isBlocking(x, y)) {
+        continue
+      }
+
       const origin = vec2(x, y)
       const positions: Point[] = []
       const minX = Math.max(0, Math.ceil(x - visionRadius))
@@ -807,9 +811,12 @@ function helpCommandReceived(args: string[], playerId: number) {
       break
     case CopyBotCommandName.VISION_ZONES:
       sendPrivateChatMessage('.visionzones fromX fromY toX toY visionRadius', playerId)
-      sendPrivateChatMessage('Creates a circular visibility zone for each tile in the inclusive rectangle', playerId)
       sendPrivateChatMessage(
-        'Only foreground gravity_slow_dot tiles are transparent; all other tiles block vision',
+        'Creates a circular visibility zone for each see-through tile in the inclusive rectangle',
+        playerId,
+      )
+      sendPrivateChatMessage(
+        'Only foreground air, gravity_slow_dot and invisible_gravity_slow_dot tiles are transparent; all other tiles are skipped and block vision',
         playerId,
       )
       break
