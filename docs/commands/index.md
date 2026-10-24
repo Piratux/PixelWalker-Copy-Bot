@@ -4,6 +4,8 @@ These are the **15 public chat commands** implemented by Copy Bot. Start with th
 
 `[argument]` means optional. `x` and `y` refer to horizontal and vertical tile coordinates, respectively.
 
+Wait for placement to finish before sending another command. Each command clears pending placement work from previous commands, which can interrupt unfinished zone placement. Blocks and zones already placed are not removed.
+
 | Command                          | Syntax                                                                                          | Purpose                                       |
 | -------------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------- |
 | [`.help`](./help.md)             | `.help [command]`                                                                               | General help or help for one command          |

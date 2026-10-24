@@ -16,6 +16,7 @@ import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import {
   applyPosOffsetForBlocks,
+  commonWorldZoneAreaEditPacketReceived,
   commonWorldZoneUpsertPacketReceived,
   convertDeserializedStructureToWorldBlocks,
   deleteZones,
@@ -39,6 +40,7 @@ import { addUndoItem, performRedo, performUndo } from '@/bot/copybot/service/Cop
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { AnyBlockField, ProtoGen } from 'pw-js-api'
 import {
+  clearPendingPlacements,
   commonPlayerInitPacketReceived,
   createEmptyBlocksFullWorldSize,
   handlePlaceBlocksResult,
@@ -77,6 +79,7 @@ const callbacks: CallbackEntry[] = [
   { name: 'playerChatPacket', fn: playerChatPacketReceived },
   { name: 'playerJoinedPacket', fn: playerJoinedPacketReceived },
   { name: 'worldZoneUpsertPacket', fn: commonWorldZoneUpsertPacketReceived },
+  { name: 'worldZoneAreaEditPacket', fn: commonWorldZoneAreaEditPacketReceived },
 ]
 
 export function registerCopyBotCallbacks() {
@@ -126,6 +129,8 @@ export async function commandReceived(message: string, playerId: number) {
   const command = message.split(' ')
   const commandName = command[0].toLowerCase().slice(1)
   const commandArgs = command.slice(1)
+
+  clearPendingPlacements()
 
   switch (commandName as CopyBotCommandName) {
     case CopyBotCommandName.HELP:
@@ -519,7 +524,7 @@ function visionzonesCommandReceived(args: string[], playerId: number) {
 
   const newZones = placeZones(zones)
   addUndoItem(getBotData(playerId), [], newZones, [])
-  sendPrivateChatMessage(`Placed ${newZones.length} vision zones`, playerId)
+  handlePlaceBlocksResult(true)
 }
 
 async function importCommandReceived(args: string[], playerId: number) {

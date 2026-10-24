@@ -26,7 +26,7 @@ import { registerCurseBotCallbacks } from '@/bot/cursebot/service/CurseBotPacket
 import { registerShiftBotCallbacks } from '@/bot/shiftbot/service/ShiftBotPacketHandlerService.ts'
 import { registerBArenaBotCallbacks } from '@/bot/barenabot/service/BArenaBotPacketHandlerService.ts'
 import { resetCopyBotStore } from '@/bot/copybot/store/CopyBotStore.ts'
-import { resetZoneStore } from '@/core/store/ZoneStore.ts'
+import { resetZoneStore, useZoneStore } from '@/core/store/ZoneStore.ts'
 
 export async function authenticate(pwApiClient: PWApiClient): Promise<void> {
   const authenticationResult = await pwApiClient.authenticate()
@@ -272,15 +272,42 @@ export function commonPlayerInitPacketReceived() {
   usePwClientStore().isConnected = true
 }
 
+export function clearPendingPlacements(): void {
+  usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket = 0
+  usePwClientStore().unsuccessfullyPlacedBlockPackets.clear()
+  usePwClientStore().placementCompletionPending = false
+  usePwClientStore().placementCompletionAnnounced = false
+  useZoneStore().zonePasteQueue.clear()
+  useZoneStore().pendingZoneAreaEdits.clear()
+}
+
 export function handlePlaceBlocksResult(success: boolean): void {
-  let message: string
   if (success) {
-    message = 'Successfully finished placing all blocks.'
-    sendGlobalChatMessage(message)
-    useAlertStore().success(message)
+    if (!usePwClientStore().placementCompletionAnnounced) {
+      usePwClientStore().placementCompletionPending = true
+      announcePlacementIfComplete()
+    }
   } else {
+    usePwClientStore().placementCompletionPending = false
     throw new GameError('Failed to place all blocks.')
   }
+}
+
+export function announcePlacementIfComplete(): void {
+  if (
+    !usePwClientStore().placementCompletionPending ||
+    usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket > 0 ||
+    useZoneStore().zonePasteQueue.size > 0 ||
+    useZoneStore().pendingZoneAreaEdits.size > 0
+  ) {
+    return
+  }
+
+  usePwClientStore().placementCompletionPending = false
+  usePwClientStore().placementCompletionAnnounced = true
+  const message = 'Successfully finished placing all blocks and zones.'
+  sendGlobalChatMessage(message)
+  useAlertStore().success(message)
 }
 
 export function updateAwaitedWorldBlockPlacedPackets(data: ProtoGen.WorldBlockPlacedPacket) {
@@ -296,6 +323,7 @@ export function updateAwaitedWorldBlockPlacedPackets(data: ProtoGen.WorldBlockPl
       .sort((a, b) => (a.x !== b.x ? a.x - b.x : a.y - b.y))
     const packetKey = JSON.stringify({ blockId: data.blockId, positions: sortedPositions })
     usePwClientStore().unsuccessfullyPlacedBlockPackets.delete(packetKey)
+    announcePlacementIfComplete()
   }
 }
 

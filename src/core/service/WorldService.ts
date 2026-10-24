@@ -25,7 +25,12 @@ import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { cloneDeep, shuffle } from 'lodash-es'
 import { ProtoGen, PWApiClient, PWGameClient } from 'pw-js-api'
-import { authenticate, getAllWorldBlocks, joinWorld } from '@/core/service/PwClientService.ts'
+import {
+  announcePlacementIfComplete,
+  authenticate,
+  getAllWorldBlocks,
+  joinWorld,
+} from '@/core/service/PwClientService.ts'
 import { handleException } from '@/core/util/Exception.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
@@ -151,6 +156,7 @@ export async function placeLayerDataBlocks(
 }
 
 async function placePackets(packets: SendableBlockPacket[], blockCount: number): Promise<boolean> {
+  usePwClientStore().placementCompletionAnnounced = false
   usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket = blockCount
   let lasttotalBlocksLeftToReceiveFromWorldBlockPlacedPacketValue =
     usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket
@@ -195,6 +201,7 @@ async function placePackets(packets: SendableBlockPacket[], blockCount: number):
     console.error(usePwClientStore().unsuccessfullyPlacedBlockPackets)
   }
 
+  usePwClientStore().placementCompletionPending = false
   return false
 }
 
@@ -458,6 +465,8 @@ export function placeZones(worldZones: WorldZone[]) {
     newZone.zone.name = `Zone copy ${useZoneStore().globalZoneCounter}`
 
     useZoneStore().zonePasteQueue.set(newZone.zone.name, newZone)
+    usePwClientStore().placementCompletionPending = true
+    usePwClientStore().placementCompletionAnnounced = false
 
     getPwGameClient().send(newZone.zone.toPacket())
 
@@ -468,6 +477,7 @@ export function placeZones(worldZones: WorldZone[]) {
 
 export function replaceAllZones(zones: Zone[]) {
   useZoneStore().zonePasteQueue.clear()
+  useZoneStore().pendingZoneAreaEdits.clear()
 
   deleteZones([...getPwGameWorldHelper().zones.values()].map((zone) => ({ zone })))
   return placeZones(zones.map((zone) => ({ zone })))
@@ -489,7 +499,11 @@ export function deleteZones(worldZones: WorldZone[]) {
 export function commonWorldZoneUpsertPacketReceived(data: ProtoGen.WorldZoneUpsertPacket) {
   for (const [zoneName, worldZone] of useZoneStore().zonePasteQueue.entries()) {
     if (zoneName == data.zone?.name) {
-      for (const rectangle of getGridRectangles(worldZone.zone.membershipRle.toBoolGrid())) {
+      const rectangles = getGridRectangles(worldZone.zone.membershipRle.toBoolGrid())
+      if (rectangles.length > 0) {
+        useZoneStore().pendingZoneAreaEdits.set(data.zone.id, new Set(rectangles.map(getZoneAreaEditKey)))
+      }
+      for (const rectangle of rectangles) {
         getPwGameClient().send('worldZoneAreaEditRequestPacket', {
           zoneId: data.zone.id,
           ...rectangle,
@@ -497,7 +511,28 @@ export function commonWorldZoneUpsertPacketReceived(data: ProtoGen.WorldZoneUpse
         })
       }
       useZoneStore().zonePasteQueue.delete(zoneName)
+      announcePlacementIfComplete()
       return
     }
   }
+}
+
+function getZoneAreaEditKey(data: Pick<ProtoGen.WorldZoneAreaEditPacket, 'x' | 'y' | 'width' | 'height'>): string {
+  return `${data.x},${data.y},${data.width},${data.height}`
+}
+
+export function commonWorldZoneAreaEditPacketReceived(data: ProtoGen.WorldZoneAreaEditPacket) {
+  if (!data.add || (data.playerId !== undefined && data.playerId !== getPwGameWorldHelper().botPlayerId)) {
+    return
+  }
+
+  const pendingEdits = useZoneStore().pendingZoneAreaEdits.get(data.zoneId)
+  if (pendingEdits?.delete(getZoneAreaEditKey(data)) !== true) {
+    return
+  }
+
+  if (pendingEdits.size === 0) {
+    useZoneStore().pendingZoneAreaEdits.delete(data.zoneId)
+  }
+  announcePlacementIfComplete()
 }

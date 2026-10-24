@@ -13,6 +13,8 @@ interface PwClientStore {
   botType: BotType
   totalBlocksLeftToReceiveFromWorldBlockPlacedPacket: number
   unsuccessfullyPlacedBlockPackets: Map<string, SendableBlockPacket>
+  placementCompletionPending: boolean
+  placementCompletionAnnounced: boolean
   blocks: ListBlockResult[]
   blocksByPwId: Map<number, ListBlockResult>
   blocksByPwName: Map<string, ListBlockResult>
@@ -34,6 +36,8 @@ function createPwClientStore(): PwClientStore {
     botType: BotType.COPY_BOT,
     totalBlocksLeftToReceiveFromWorldBlockPlacedPacket: 0,
     unsuccessfullyPlacedBlockPackets: new Map(),
+    placementCompletionPending: false,
+    placementCompletionAnnounced: false,
     blocks: [],
     blocksByPwId: new Map(),
     blocksByPwName: new Map(),
