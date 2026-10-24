@@ -36,7 +36,6 @@ import { GameError } from '@/core/class/GameError.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { WorldData } from '@/core/type/WorldData.ts'
-import { WorldZone } from '@/core/type/WorldZone.ts'
 import { useZoneStore } from '@/core/store/ZoneStore.ts'
 import { getGridRectangles } from '@/core/util/Geometry.ts'
 
@@ -451,24 +450,24 @@ export function replaceAllLabels(labels: ILabel[]) {
   }
 }
 
-export function placeZones(worldZones: WorldZone[]) {
-  const newZones: WorldZone[] = []
-  for (const worldZone of worldZones) {
-    const newZone = cloneDeep(worldZone)
+export function placeZones(zones: Zone[]) {
+  const newZones: Zone[] = []
+  for (const zone of zones) {
+    const newZone = cloneDeep(zone)
 
     // @ts-expect-error TODO: fix this when protocol is updated and marked as optional
-    newZone.zone.id = undefined
+    newZone.id = undefined
 
     useZoneStore().globalZoneCounter += 1
 
     // We can only identify the zone by name after it has been placed
-    newZone.zone.name = `Zone copy ${useZoneStore().globalZoneCounter}`
+    newZone.name = `Zone copy ${useZoneStore().globalZoneCounter}`
 
-    useZoneStore().zonePasteQueue.set(newZone.zone.name, newZone)
+    useZoneStore().zonePasteQueue.set(newZone.name, newZone)
     usePwClientStore().placementCompletionPending = true
     usePwClientStore().placementCompletionAnnounced = false
 
-    getPwGameClient().send(newZone.zone.toPacket())
+    getPwGameClient().send(newZone.toPacket())
 
     newZones.push(newZone)
   }
@@ -479,14 +478,14 @@ export function replaceAllZones(zones: Zone[]) {
   useZoneStore().zonePasteQueue.clear()
   useZoneStore().pendingZoneAreaEdits.clear()
 
-  deleteZones([...getPwGameWorldHelper().zones.values()].map((zone) => ({ zone })))
-  return placeZones(zones.map((zone) => ({ zone })))
+  deleteZones([...getPwGameWorldHelper().zones.values()])
+  return placeZones(zones)
 }
 
 // Deletes zone by its name
-export function deleteZones(worldZones: WorldZone[]) {
-  for (const worldZone of worldZones) {
-    const zoneId = [...getPwGameWorldHelper().zones.values()].find((zone) => zone.name === worldZone.zone.name)?.id
+export function deleteZones(zones: Zone[]) {
+  for (const zone of zones) {
+    const zoneId = [...getPwGameWorldHelper().zones.values()].find((worldZone) => worldZone.name === zone.name)?.id
     if (zoneId === undefined) {
       continue
     }
@@ -497,9 +496,9 @@ export function deleteZones(worldZones: WorldZone[]) {
 }
 
 export function commonWorldZoneUpsertPacketReceived(data: ProtoGen.WorldZoneUpsertPacket) {
-  for (const [zoneName, worldZone] of useZoneStore().zonePasteQueue.entries()) {
+  for (const [zoneName, zone] of useZoneStore().zonePasteQueue.entries()) {
     if (zoneName == data.zone?.name) {
-      const rectangles = getGridRectangles(worldZone.zone.membershipRle.toBoolGrid())
+      const rectangles = getGridRectangles(zone.membershipRle.toBoolGrid())
       if (rectangles.length > 0) {
         useZoneStore().pendingZoneAreaEdits.set(data.zone.id, new Set(rectangles.map(getZoneAreaEditKey)))
       }

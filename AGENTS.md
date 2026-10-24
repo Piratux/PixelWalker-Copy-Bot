@@ -12,6 +12,7 @@
 - Add in changelog (public/ChangelogView.md) entry for every change.
   - When adding new entry, always use current date and bump minor version.
   - Changelog is for non technical people so keep it simple and short. Do not include implementation details that are not visible by end users.
+  - If change is purely technical and not visible by end users, then do not add entry in changelog.
 
 ## Don'ts
 

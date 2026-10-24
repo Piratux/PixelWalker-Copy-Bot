@@ -1,17 +1,16 @@
 import { CopyBotState } from '@/bot/copybot/enum/CopyBotState.ts'
-import { Point } from 'pw-js-world'
+import { Point, Zone } from 'pw-js-world'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { CopyBotUndoRedoItem } from '@/bot/copybot/type/CopyBotUndoRedoItem.ts'
 import { CopyBotUndoRedoZoneItem } from '@/bot/copybot/type/CopyBotUndoRedoZoneItem.ts'
-import { WorldZone } from '@/core/type/WorldZone.ts'
 
 export interface CopyBotData {
   botState: CopyBotState
   selectedFromPos: Point
   selectedToPos: Point
   selectedBlocks: WorldBlock[]
-  selectedZones: WorldZone[]
+  selectedZones: Zone[]
   selectionSize: Point
   selectionLocalTopLeftPos: Point
   selectionLocalBottomRightPos: Point
@@ -26,7 +25,7 @@ export interface CopyBotData {
   maskZoneEnabled: boolean
   skipAirEnabled: boolean
   replacedByLastMoveOperationBlocks: WorldBlock[]
-  lastMovedZones: WorldZone[] | null
+  lastMovedZones: Zone[] | null
   undoStack: CopyBotUndoRedoItem[]
   redoStack: CopyBotUndoRedoItem[]
   undoZoneStack: CopyBotUndoRedoZoneItem[]

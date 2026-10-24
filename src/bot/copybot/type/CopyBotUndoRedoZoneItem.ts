@@ -1,6 +1,6 @@
-import { WorldZone } from '@/core/type/WorldZone.ts'
+import { Zone } from 'pw-js-world'
 
 export interface CopyBotUndoRedoZoneItem {
-  oldZones: WorldZone[]
-  newZones: WorldZone[]
+  oldZones: Zone[]
+  newZones: Zone[]
 }

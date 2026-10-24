@@ -55,7 +55,6 @@ import { GameError } from '@/core/class/GameError.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import { BotType } from '@/core/enum/BotType.ts'
-import { WorldZone } from '@/core/type/WorldZone.ts'
 import { CopyBotUndoRedoZoneItem } from '@/bot/copybot/type/CopyBotUndoRedoZoneItem.ts'
 import { CopyBotCommandName } from '@/bot/copybot/enum/CopyBotCommandName.ts'
 import { CopyBotMaskCommandMode } from '@/bot/copybot/enum/CopyBotMaskCommandMode.ts'
@@ -435,7 +434,7 @@ function visionzonesCommandReceived(args: string[], playerId: number) {
     return true
   }
 
-  const zones: WorldZone[] = []
+  const zones: Zone[] = []
   for (let x = minPos.x; x <= maxPos.x; x++) {
     for (let y = minPos.y; y <= maxPos.y; y++) {
       if (isBlocking(x, y)) {
@@ -458,8 +457,8 @@ function visionzonesCommandReceived(args: string[], playerId: number) {
       }
 
       const membership = ZoneMembership.fromPositions(positions)
-      zones.push({
-        zone: new Zone(
+      zones.push(
+        new Zone(
           {
             id: '',
             name: '',
@@ -523,7 +522,7 @@ function visionzonesCommandReceived(args: string[], playerId: number) {
           membership._width,
           membership._height,
         ),
-      })
+      )
     }
   }
 
@@ -558,8 +557,8 @@ async function importCommandReceived(args: string[], playerId: number) {
   const partialImportUsed = args.length === 7
   const botData = getBotData(playerId)
   let allBlocks: WorldBlock[]
-  let newZones: WorldZone[] = []
-  let oldZones: WorldZone[] = []
+  let newZones: Zone[] = []
+  let oldZones: Zone[] = []
   if (partialImportUsed) {
     const numberArgs = args.slice(1, 7).map(Number)
     if (numberArgs.some((n) => !isFinite(n))) {
@@ -614,8 +613,8 @@ async function importCommandReceived(args: string[], playerId: number) {
       )
       const offsetPos = vec2(destToX - srcFromX, destToY - srcFromY)
       for (const selectedZone of selectedZones) {
-        selectedZone.zone.membershipRle = ZoneMembership.fromPositions(
-          selectedZone.zone.membershipRle
+        selectedZone.membershipRle = ZoneMembership.fromPositions(
+          selectedZone.membershipRle
             .toPositions()
             .map((pos) => vec2.add(pos, offsetPos))
             .filter((pos) => pos.x >= 0 && pos.x < mapWidth && pos.y >= 0 && pos.y < mapHeight),
@@ -631,7 +630,7 @@ async function importCommandReceived(args: string[], playerId: number) {
     allBlocks = mergeWorldBlocks(emptyBlocksWorldBlocks, worldDataWorldBlocks)
 
     replaceAllLabels(Array.from(labelsFromAnotherWorld.values()))
-    oldZones = [...getPwGameWorldHelper().zones.values()].map((zone) => ({ zone: cloneDeep(zone) }))
+    oldZones = [...getPwGameWorldHelper().zones.values()].map((zone) => cloneDeep(zone))
     newZones = replaceAllZones(Array.from(zonesFromAnotherWorld.values()))
   }
 
@@ -1720,7 +1719,7 @@ function pasteZones(botData: CopyBotData, blockPos: Point): CopyBotUndoRedoZoneI
   const pastePosBlocksFromPos = vec2.add(blockPos, botData.selectionLocalTopLeftPos)
   const pastePosBlocksToPos = vec2.add(blockPos, botData.selectionLocalBottomRightPos)
 
-  const zones: WorldZone[] = []
+  const zones: Zone[] = []
 
   for (let x = 0; x < Math.abs(botData.repeatVec.x); x++) {
     const pastePosBlocksFromPosOffsetX = pastePosBlocksFromPos.x + x * offsetSize.x
@@ -1759,8 +1758,8 @@ function pasteZones(botData: CopyBotData, blockPos: Point): CopyBotUndoRedoZoneI
 
       for (const selectedZone of botData.selectedZones) {
         const newZone = cloneDeep(selectedZone)
-        newZone.zone.membershipRle = ZoneMembership.fromPositions(
-          newZone.zone.membershipRle
+        newZone.membershipRle = ZoneMembership.fromPositions(
+          newZone.membershipRle
             .toPositions()
             .map((pos) => vec2.add(pos, offsetPos))
             .filter((pos) => pos.x >= 0 && pos.x < mapWidth && pos.y >= 0 && pos.y < mapHeight),
@@ -1803,9 +1802,9 @@ function getZonesInArea(
   fromPos: Point,
   toPos: Point,
   zones: Iterable<Zone> = getPwGameWorldHelper().zones.values(),
-): WorldZone[] {
+): Zone[] {
   const [minPos, maxPos] = getMinMaxPos(fromPos, toPos)
-  const data: WorldZone[] = []
+  const data: Zone[] = []
 
   for (const zone of zones) {
     const zonePositions = zone.membershipRle.toPositions()
@@ -1817,7 +1816,7 @@ function getZonesInArea(
     if (
       zonePositions.every((pos) => pos.x >= minPos.x && pos.x <= maxPos.x && pos.y >= minPos.y && pos.y <= maxPos.y)
     ) {
-      data.push({ zone })
+      data.push(zone)
     }
   }
 

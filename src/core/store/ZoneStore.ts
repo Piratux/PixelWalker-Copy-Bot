@@ -1,7 +1,7 @@
-import { WorldZone } from '@/core/type/WorldZone.ts'
+import { Zone } from 'pw-js-world'
 
 interface ZoneStore {
-  zonePasteQueue: Map<string, WorldZone>
+  zonePasteQueue: Map<string, Zone>
   pendingZoneAreaEdits: Map<string, Set<string>>
   globalZoneCounter: number
 }

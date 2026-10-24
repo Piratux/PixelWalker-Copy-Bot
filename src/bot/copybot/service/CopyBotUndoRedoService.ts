@@ -1,17 +1,12 @@
 import { CopyBotData } from '@/bot/copybot/type/CopyBotData.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
-import { WorldZone } from '@/core/type/WorldZone.ts'
+import { Zone } from 'pw-js-world'
 import { deleteZones, getBlockAt, placeMultipleBlocks, placeZones } from '@/core/service/WorldService.ts'
 import { sendPrivateChatMessage } from '@/core/service/ChatMessageService.ts'
 
 const MAX_UNDO_REDO_STACK_LENGTH = 100
 
-export function addUndoItem(
-  botData: CopyBotData,
-  newBlocks: WorldBlock[],
-  newZones: WorldZone[],
-  oldZones: WorldZone[],
-) {
+export function addUndoItem(botData: CopyBotData, newBlocks: WorldBlock[], newZones: Zone[], oldZones: Zone[]) {
   addUndoItemBlock(botData, newBlocks)
   addUndoItemZone(botData, newZones, oldZones)
 }
@@ -27,7 +22,7 @@ function addUndoItemBlock(botData: CopyBotData, newBlocks: WorldBlock[]) {
   })
 }
 
-function addUndoItemZone(botData: CopyBotData, newZones: WorldZone[], oldZones: WorldZone[]) {
+function addUndoItemZone(botData: CopyBotData, newZones: Zone[], oldZones: Zone[]) {
   botData.redoZoneStack = []
   if (botData.undoZoneStack.length >= MAX_UNDO_REDO_STACK_LENGTH) {
     botData.undoZoneStack.shift()
@@ -106,13 +101,13 @@ function getOldBlocks(newBlocks: WorldBlock[]): WorldBlock[] {
   }))
 }
 
-function applyUndoRedoZones(oldZones: WorldZone[], newZones: WorldZone[]) {
+function applyUndoRedoZones(oldZones: Zone[], newZones: Zone[]) {
   deleteZones(newZones)
 
   const restoredZones = placeZones(oldZones)
   // Move history entries share zone references, so keep their generated names current after restoration.
   for (let i = 0; i < oldZones.length; i++) {
-    oldZones[i].zone = restoredZones[i].zone
+    Object.assign(oldZones[i], restoredZones[i])
   }
 }
 
