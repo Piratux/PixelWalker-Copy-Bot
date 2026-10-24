@@ -4,6 +4,7 @@
 
 - Bot: Greatly improved performance of zone placing.
 - Bot: Added .visionzones command - creates visibility zones around see-through tiles in a rectangular area.
+- Bot: Partial .import now also imports zones
 
 ### 2026-10-23 Version 1.30.0
 

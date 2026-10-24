@@ -556,6 +556,7 @@ async function importCommandReceived(args: string[], playerId: number) {
   const zonesFromAnotherWorld = zones
 
   const partialImportUsed = args.length === 7
+  const botData = getBotData(playerId)
   let allBlocks: WorldBlock[]
   let newZones: WorldZone[] = []
   let oldZones: WorldZone[] = []
@@ -605,6 +606,23 @@ async function importCommandReceived(args: string[], playerId: number) {
 
     const partialBlocks = getDeserialisedStructureSection(blocksFromAnotherWorld, srcFromX, srcFromY, srcToX, srcToY)
     allBlocks = convertDeserializedStructureToWorldBlocks(partialBlocks, vec2(destToX, destToY))
+    if (botData.maskZoneEnabled) {
+      const selectedZones = getZonesInArea(
+        vec2(srcFromX, srcFromY),
+        vec2(srcToX, srcToY),
+        zonesFromAnotherWorld.values(),
+      )
+      const offsetPos = vec2(destToX - srcFromX, destToY - srcFromY)
+      for (const selectedZone of selectedZones) {
+        selectedZone.zone.membershipRle = ZoneMembership.fromPositions(
+          selectedZone.zone.membershipRle
+            .toPositions()
+            .map((pos) => vec2.add(pos, offsetPos))
+            .filter((pos) => pos.x >= 0 && pos.x < mapWidth && pos.y >= 0 && pos.y < mapHeight),
+        )
+      }
+      newZones = placeZones(selectedZones)
+    }
     // TODO: Maybe add labels just for that imported area?
   } else {
     const emptyBlocks = createEmptyBlocksFullWorldSize(getPwGameWorldHelper())
@@ -617,7 +635,6 @@ async function importCommandReceived(args: string[], playerId: number) {
     newZones = replaceAllZones(Array.from(zonesFromAnotherWorld.values()))
   }
 
-  const botData = getBotData(playerId)
   allBlocks = filterByLayerMasks(allBlocks, botData)
   allBlocks = filterBySkipAir(allBlocks, botData)
   addUndoItem(botData, allBlocks, newZones, oldZones)
@@ -772,6 +789,10 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage('.import world_id [src_from_x src_from_y src_to_x src_to_y dest_to_x dest_to_y]', playerId)
       sendPrivateChatMessage(
         'Copies blocks, labels and zones from world with "world_id" and places them into current world',
+        playerId,
+      )
+      sendPrivateChatMessage(
+        'Partial imports copy blocks and fully contained zones, respect the zone mask, and leave labels and existing zones unchanged',
         playerId,
       )
       sendPrivateChatMessage('src_from_(x/y) - top left corner position to copy from', playerId)
@@ -1778,12 +1799,15 @@ function getBlocksInArea(fromPos: Point, toPos: Point): WorldBlock[] {
   return data
 }
 
-function getZonesInArea(fromPos: Point, toPos: Point): WorldZone[] {
+function getZonesInArea(
+  fromPos: Point,
+  toPos: Point,
+  zones: Iterable<Zone> = getPwGameWorldHelper().zones.values(),
+): WorldZone[] {
   const [minPos, maxPos] = getMinMaxPos(fromPos, toPos)
-  const helper = getPwGameWorldHelper()
   const data: WorldZone[] = []
 
-  for (const zone of helper.zones.values()) {
+  for (const zone of zones) {
     const zonePositions = zone.membershipRle.toPositions()
 
     if (zonePositions.length === 0) {

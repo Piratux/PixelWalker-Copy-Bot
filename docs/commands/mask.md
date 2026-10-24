@@ -34,7 +34,7 @@ Each command **replaces** the previous mask. It is not a toggle and does not add
 
 ## Interactions with other commands
 
-The mask filters blue-coin pastes, [`.paste`](./paste.md), [`.smartpaste`](./smartpaste.md), and source clearing in [move mode](./move.md). It filters imported **blocks**, too.
+The mask filters blue-coin pastes, [`.paste`](./paste.md), [`.smartpaste`](./smartpaste.md), and source clearing in [move mode](./move.md). It filters imported **blocks**, too, and controls whether partial [`.import`](./import.md) copies fully contained zones.
 
 The mask does not apply to [`.edit`](./edit.md), [`.flip`](./flip.md), or [snake placements](./snake.md). A full [`.import`](./import.md) replaces labels and zones regardless of the zone mask.
 

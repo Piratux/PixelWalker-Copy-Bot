@@ -1,6 +1,6 @@
 # .import
 
-Import blocks from another world into the current world. A full import also replaces labels and zones.
+Import blocks and zones from another world into the current world. A full import also replaces labels and existing zones.
 
 Both you and the bot need edit permission. **You must be the current world's owner**. No selection is required.
 
@@ -45,7 +45,9 @@ Coordinates are tile coordinates starting at `(0, 0)`. Use integers and specify 
 
 This copies the inclusive source rectangle `(2, 4)` to `(25, 16)` (24 tiles wide and 13 high) to destination `(2, 4)`.
 
-Partial import copies **blocks only**: it does not import labels or zones, nor does it clear blocks outside the destination rectangle. Air inside the imported rectangle can still clear destination blocks unless skip-air is enabled.
+Partial import copies blocks and **zones fully contained in the source rectangle**, shifting those zones to the destination along with the blocks. Zones crossing the source rectangle's boundary are not imported. The zone mask must be enabled (for example, with `.mask default` or `.mask zone`).
+
+Existing destination zones and labels are left unchanged, and blocks outside the destination rectangle are not cleared. Air inside the imported rectangle can still clear destination blocks unless skip-air is enabled. Imported blocks and zones are recorded together for [`.undo`](./undo.md) and [`.redo`](./redo.md).
 
 ## Interactions with other commands
 
