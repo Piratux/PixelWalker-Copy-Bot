@@ -16,6 +16,7 @@ const commandGroups = [
       { text: '.mask', link: '/commands/mask' },
       { text: '.skipair', link: '/commands/skipair' },
       { text: '.snake', link: '/commands/snake' },
+      { text: '.visionzones', link: '/commands/visionzones' },
       { text: '.undo', link: '/commands/undo' },
       { text: '.redo', link: '/commands/redo' },
       { text: '.import', link: '/commands/import' },

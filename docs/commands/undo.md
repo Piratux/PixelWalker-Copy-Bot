@@ -23,6 +23,7 @@ Restore recorded changes made by the bot for your player. Both you and the bot n
 | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
 | Blue-coin pastes, [`.paste`](./paste.md), [`.smartpaste`](./smartpaste.md), and [move mode](./move.md) | Block and zone changes                                                  |
 | [`.edit`](./edit.md) and [`.flip`](./flip.md)                                                          | Block changes                                                           |
+| [`.visionzones`](./visionzones.md)                                                                     | Created zones                                                           |
 | Full and partial [imports](./import.md)                                                                | Block changes and full-import zone replacement; labels are not recorded |
 | [Snake placements](./snake.md) and manual player edits                                                 | Not recorded                                                            |
 

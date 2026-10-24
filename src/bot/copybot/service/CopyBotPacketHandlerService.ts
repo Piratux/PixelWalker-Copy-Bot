@@ -358,7 +358,6 @@ function printblocksCommandReceived(_args: string[], playerId: number) {
 }
 
 function visionzonesCommandReceived(args: string[], playerId: number) {
-  requireDeveloper(playerId)
   requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
 
   const ERROR_MESSAGE = 'Correct usage is .visionzones fromX fromY toX toY visionRadius'
@@ -380,7 +379,13 @@ function visionzonesCommandReceived(args: string[], playerId: number) {
     throw new GameError('Vision zone area must be inside the world', playerId)
   }
 
-  const nonBlockingBlocks = [PwBlockName.GRAVITY_SLOW_DOT, PwBlockName.INVISIBLE_GRAVITY_SLOW_DOT, PwBlockName.EMPTY]
+  const nonBlockingBlocks = [
+    PwBlockName.EMPTY,
+    PwBlockName.GRAVITY_DOT,
+    PwBlockName.GRAVITY_SLOW_DOT,
+    PwBlockName.INVISIBLE_GRAVITY_DOT,
+    PwBlockName.INVISIBLE_GRAVITY_SLOW_DOT,
+  ]
 
   // Only foreground slow dots are transparent, including neither air nor invisible slow dots.
   const isBlocking = (x: number, y: number) =>
@@ -648,7 +653,7 @@ function helpCommandReceived(args: string[], playerId: number) {
     sendPrivateChatMessage('Gold coin - select blocks', playerId)
     sendPrivateChatMessage('Blue coin - paste blocks', playerId)
     sendPrivateChatMessage(
-      'Commands: .help .ping .paste .smartpaste .undo .redo .import .edit .move .mask .skipair .flip .snake .off .on',
+      'Commands: .help .ping .paste .smartpaste .undo .redo .import .edit .move .mask .skipair .flip .snake .visionzones .off .on',
       playerId,
     )
     sendPrivateChatMessage('See more info about each command via .help [command]', playerId)
@@ -823,7 +828,7 @@ function helpCommandReceived(args: string[], playerId: number) {
         playerId,
       )
       sendPrivateChatMessage(
-        'Only foreground air, gravity_slow_dot and invisible_gravity_slow_dot tiles are transparent; all other tiles are skipped and block vision',
+        'Only foreground air, dot and slow dot tiles are transparent; all other tiles are skipped and block vision',
         playerId,
       )
       break
