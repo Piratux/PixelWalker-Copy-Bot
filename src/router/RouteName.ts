@@ -11,5 +11,6 @@ export enum RouteName {
   BLOCK_FINDER = 'block-finder',
   MINIMAP_TELEPORTER = 'minimap-teleporter',
   CHANGELOG = 'changelog',
+  REPORT_ISSUES = 'report-issues',
   NOT_FOUND = 'not-found',
 }

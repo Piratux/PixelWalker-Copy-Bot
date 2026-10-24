@@ -47,4 +47,8 @@ export const MENU_ITEMS: MenuItem[] = [
     text: 'Changelog',
     routeName: RouteName.CHANGELOG,
   },
+  {
+    text: 'Report issues',
+    routeName: RouteName.REPORT_ISSUES,
+  },
 ]

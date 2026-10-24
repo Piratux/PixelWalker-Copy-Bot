@@ -51,3 +51,7 @@ The command acts **immediately at the selection's original location**. No blue c
 Use [`.help`](../commands/help.md) for in-game help.
 
 Block and zone changes from coin pastes are recorded for [`.undo`](../commands/undo.md). See [undo coverage](../commands/undo.md#coverage) for other actions and [undo limitations](../commands/undo.md#important-limits) before relying on history. Undo is not a world backup.
+
+## Report issues
+
+Found a problem? Choose **Report issues** in the app's navigation or [report it on GitHub](https://github.com/Piratux/PixelWalker-Copy-Bot/issues). Check existing issues first, then include steps to reproduce the problem, expected and actual behavior, and any relevant screenshots or error messages. Do not share passwords, access tokens, or other private information.
