@@ -1,5 +1,9 @@
 ## Changelog
 
+### 2026-10-24 Version 1.31.0
+
+- Bot: Greatly improved performance of zone placing.
+
 ### 2026-10-23 Version 1.30.0
 
 - Bot: Undo/redo are now performed together

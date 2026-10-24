@@ -33,6 +33,7 @@ import { BotType } from '@/core/enum/BotType.ts'
 import { WorldData } from '@/core/type/WorldData.ts'
 import { WorldZone } from '@/core/type/WorldZone.ts'
 import { useZoneStore } from '@/core/store/ZoneStore.ts'
+import { getGridRectangles } from '@/core/util/Geometry.ts'
 
 export function getBlockAt(pos: Point, layer: number): Block {
   try {
@@ -488,13 +489,10 @@ export function deleteZones(worldZones: WorldZone[]) {
 export function commonWorldZoneUpsertPacketReceived(data: ProtoGen.WorldZoneUpsertPacket) {
   for (const [zoneName, worldZone] of useZoneStore().zonePasteQueue.entries()) {
     if (zoneName == data.zone?.name) {
-      for (const pos of worldZone.zone.membershipRle.toPositions()) {
+      for (const rectangle of getGridRectangles(worldZone.zone.membershipRle.toBoolGrid())) {
         getPwGameClient().send('worldZoneAreaEditRequestPacket', {
           zoneId: data.zone.id,
-          x: pos.x,
-          y: pos.y,
-          width: 1,
-          height: 1,
+          ...rectangle,
           add: true,
         })
       }
