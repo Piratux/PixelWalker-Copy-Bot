@@ -37,6 +37,7 @@ import {
   placeZones,
   portalIdToNumberAndStringArray,
   replaceAllZones,
+  commonWorldClearedPacketReceived,
 } from '@/core/service/WorldService.ts'
 import { addUndoItem, performRedo, performUndo } from '@/bot/copybot/service/CopyBotUndoRedoService.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
@@ -84,6 +85,7 @@ const callbacks: CallbackEntry[] = [
   { name: 'worldLabelUpsertPacket', fn: commonWorldLabelUpsertPacketReceived },
   { name: 'worldZoneUpsertPacket', fn: commonWorldZoneUpsertPacketReceived },
   { name: 'worldZoneAreaEditPacket', fn: commonWorldZoneAreaEditPacketReceived },
+  { name: 'worldClearedPacket', fn: commonWorldClearedPacketReceived },
 ]
 
 export function registerCopyBotCallbacks() {

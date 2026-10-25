@@ -588,3 +588,10 @@ export function commonWorldZoneAreaEditPacketReceived(data: ProtoGen.WorldZoneAr
   }
   announcePlacementIfComplete()
 }
+
+// TODO: Get rid of this when this is fixed https://github.com/doomestee/pw-js-world/issues/49
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function commonWorldClearedPacketReceived(_data: ProtoGen.WorldClearedPacket) {
+  getPwGameWorldHelper().zones = new Map()
+  getPwGameWorldHelper().labels = new Map()
+}
