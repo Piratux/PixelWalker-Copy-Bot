@@ -5,4 +5,4 @@ export const GENERIC_WEBSITE_ERROR =
 
 export const TOTAL_PW_LAYERS = 3
 
-export const LAST_TESTED_PW_VERSION = '2026.8.0'
+export const LAST_TESTED_PW_PROTO_VERSION = '0eefc11c77dc3332'
