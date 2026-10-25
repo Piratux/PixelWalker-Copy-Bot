@@ -10,7 +10,7 @@ import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 const everyBlockWorldId = 'ewki341n7ve153l'
 
 // NOTE: These tests should be done by pw-js-api/pw-js-world libraries author, but author does not do them.
-describe.sequential('Packets', () => {
+describe('Packets', { concurrent: false }, () => {
   beforeEach(async () => {
     await clearWorld()
   })

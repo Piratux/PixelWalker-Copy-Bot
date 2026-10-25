@@ -4,7 +4,7 @@ import { compareDeserialisedStructureData, getDataFromPngFile } from '@/test/Run
 import { getAnotherWorldBlocks } from '@/core/service/WorldService.ts'
 import piratuxPfpPngFile from '@/test/resources/piratux-pfp.png?url'
 
-describe.sequential('PNG Import', () => {
+describe('PNG Import', { concurrent: false }, () => {
   test('PNG Import Quantized', { timeout: 60_000 }, async () => {
     const piratuxProfilePictureQuantizedWorldId = '1sjs9llu6t76p6u'
     const expectedData = await getAnotherWorldBlocks(piratuxProfilePictureQuantizedWorldId, getPwApiClient())

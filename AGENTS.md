@@ -13,10 +13,11 @@
   - When adding new entry, always use current date and bump minor version.
   - Changelog is for non technical people so keep it simple and short. Do not include implementation details that are not visible by end users.
   - If change is purely technical and not visible by end users, then do not add entry in changelog.
+- Use `bun` commands instead of `npm`, etc.
 
 ## Don'ts
 
-- Do not write or run tests (this includes not running `bun run test`).
+- Do not write or run tests (this includes not running `bun run test`), unless explicitly allowed.
 - Do not turn existing functions from void to async or vice versa.
 - Do not remove the comments.
 - Do not add new dependencies to the project.

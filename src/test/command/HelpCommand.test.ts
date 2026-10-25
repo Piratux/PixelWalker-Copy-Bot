@@ -3,7 +3,7 @@ import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { commandReceived } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
 import { CopyBotCommandName } from '@/bot/copybot/enum/CopyBotCommandName.ts'
 
-describe.sequential('.help', () => {
+describe('.help', { concurrent: false }, () => {
   test('.help', async (ctx) => {
     const playerId = getPwGameWorldHelper().botPlayerId
     await commandReceived(ctx.task.name, playerId)

@@ -6,7 +6,7 @@ import { getExportedToEelvlData } from '@/webtool/eelvl/service/EelvlExporterSer
 import { getImportedFromEelvlData } from '@/webtool/eelvl/service/EelvlImporterService.ts'
 import { bufferToArrayBuffer } from '@/core/util/Buffers.ts'
 
-describe.sequential('EELVL Export', () => {
+describe('EELVL Export', { concurrent: false }, () => {
   test('EELVL Export (with EELVL Import)', { timeout: 60_000 }, async () => {
     const testEelvlExportWorldId = 'ra9285102d4a41a'
     const expectedData = await getAnotherWorldBlocks(testEelvlExportWorldId, getPwApiClient())

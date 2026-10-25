@@ -13,7 +13,7 @@ import {
 } from '@/bot/copybot/service/CopyBotErrorService.ts'
 import { GameError } from '@/core/class/GameError.ts'
 
-describe.sequential('.import', () => {
+describe('.import', { concurrent: false }, () => {
   test('.import 8nqftm1t0j43121 2 5 4 3 2 5 (corner select)', async () => {
     const playerId = getPwGameWorldHelper().botPlayerId
     const inputBlocks: WorldBlock[] = []

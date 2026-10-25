@@ -8,7 +8,7 @@ import { runSelectCommandTest } from '@/test/RuntimeTestsUtil.ts'
 import { commandReceived, pasteBlocksAndZones } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
 import { createUnrecognisedMaskModeError } from '@/bot/copybot/service/CopyBotErrorService.ts'
 
-describe.sequential('.mask', () => {
+describe('.mask', { concurrent: false }, () => {
   test('.mask default', async (ctx) => {
     const playerId = getPwGameWorldHelper().botPlayerId
     const inputBlocks: WorldBlock[] = [

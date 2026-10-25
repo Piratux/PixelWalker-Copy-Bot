@@ -13,7 +13,7 @@ import {
 } from '@/bot/copybot/service/CopyBotErrorService.ts'
 import { colourToUint32 } from '@/core/util/Colours.ts'
 
-describe.sequential('.smartpaste', () => {
+describe('.smartpaste', { concurrent: false }, () => {
   test('.smartpaste 3 1', async (ctx) => {
     const playerId = getPwGameWorldHelper().botPlayerId
     const inputBlocks: WorldBlock[] = [

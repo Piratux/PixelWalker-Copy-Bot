@@ -15,6 +15,7 @@ export default defineConfig(() => {
     plugins: [
       {
         name: 'documentation',
+        apply: () => process.env.VITEST === undefined,
         async configureServer(server) {
           const docsServer = await createDocsServer(path.resolve(__dirname, 'docs'), {
             middlewareMode: true,
@@ -45,6 +46,11 @@ export default defineConfig(() => {
       }),
     ],
     optimizeDeps: {
+      include: [
+        'vite-plugin-node-polyfills/shims/buffer',
+        'vite-plugin-node-polyfills/shims/global',
+        'vite-plugin-node-polyfills/shims/process',
+      ],
       esbuildOptions: {
         target: 'esnext',
       },

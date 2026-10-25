@@ -7,7 +7,7 @@ import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { runSelectCommandTest } from '@/test/RuntimeTestsUtil.ts'
 import { commandReceived } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
 
-describe.sequential('.edit', () => {
+describe('.edit', { concurrent: false }, () => {
   test('.edit add 5', async (ctx) => {
     const playerId = getPwGameWorldHelper().botPlayerId
     const inputBlocks: WorldBlock[] = [
