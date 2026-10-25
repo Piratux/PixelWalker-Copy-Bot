@@ -1,4 +1,4 @@
-import { ListBlockResult, PWApiClient, PWGameClient } from 'pw-js-api'
+import { CataloggedBlock, ListBlockResult, PWApiClient, PWGameClient } from 'pw-js-api'
 import { PWGameWorldHelper, SendableBlockPacket } from 'pw-js-world'
 import { BotType } from '@/core/enum/BotType.ts'
 
@@ -18,6 +18,7 @@ interface PwClientStore {
   blocks: ListBlockResult[]
   blocksByPwId: Map<number, ListBlockResult>
   blocksByPwName: Map<string, ListBlockResult>
+  catallogedBlocks: CataloggedBlock[]
   isConnected: boolean
   isAdminModeOn: boolean
 }
@@ -41,6 +42,7 @@ function createPwClientStore(): PwClientStore {
     blocks: [],
     blocksByPwId: new Map(),
     blocksByPwName: new Map(),
+    catallogedBlocks: [],
     isConnected: false,
     isAdminModeOn: false,
   }
@@ -82,4 +84,8 @@ export function getPwBlocksByPwName(): Map<string, ListBlockResult> {
 
 export function getPwBotType(): BotType {
   return store.botType
+}
+
+export function getPwCatalogBlocks(): CataloggedBlock[] {
+  return store.catallogedBlocks
 }

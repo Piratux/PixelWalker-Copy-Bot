@@ -1,5 +1,13 @@
 ## Changelog
 
+### 2026-10-25 Version 1.32.0
+
+- Website: EELVL Export now also converts physics blocks that have similiar physics properties to PixelWalker physics blocks. This includes:
+  - Ropes
+  - Hazards
+  - One ways
+  - Solid blocks
+
 ### 2026-10-24 Version 1.31.0
 
 - Bot: Greatly improved performance of zone placing.

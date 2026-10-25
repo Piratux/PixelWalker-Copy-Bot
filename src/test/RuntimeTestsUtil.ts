@@ -1,5 +1,5 @@
 import { DeserialisedStructure, ILabel } from 'pw-js-world'
-import { deepStrictEqual } from 'node:assert'
+import { AssertionError, deepStrictEqual } from 'node:assert'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { getImportedFromEelvlData } from '@/webtool/eelvl/service/EelvlImporterService.ts'
 import { placeMultipleBlocks, placeWorldDataBlocks } from '@/core/service/WorldService.ts'
@@ -19,22 +19,29 @@ export function compareDeserialisedStructureData(
   receivedData: DeserialisedStructure,
   expectedData: DeserialisedStructure,
 ) {
+  const mismatches: string[] = []
   deepStrictEqual(receivedData.width, expectedData.width)
   deepStrictEqual(receivedData.height, expectedData.height)
   for (let layer = 0; layer < TOTAL_PW_LAYERS; layer++) {
-    for (let x = 0; x < receivedData.width; x++) {
-      for (let y = 0; y < receivedData.height; y++) {
-        const receivedBlock = receivedData.blocks[layer][x][y]
-        const expectedBlock = expectedData.blocks[layer][x][y]
-        deepStrictEqual(
-          receivedBlock,
-          expectedBlock,
-          new Error(
-            `ERROR! Block at ${x}, ${y} on layer ${layer} is not equal.\nGot (${receivedBlock.name}):\n${JSON.stringify(receivedBlock)}.\nExpected (${expectedBlock.name}):\n${JSON.stringify(expectedBlock)}`,
-          ),
-        )
+    for (let y = 0; y < Math.max(receivedData.height, expectedData.height); y++) {
+      for (let x = 0; x < Math.max(receivedData.width, expectedData.width); x++) {
+        const receivedBlock = receivedData.blocks[layer]?.[x]?.[y]
+        const expectedBlock = expectedData.blocks[layer]?.[x]?.[y]
+        try {
+          deepStrictEqual(receivedBlock, expectedBlock)
+        } catch (error) {
+          if (!(error instanceof AssertionError)) {
+            throw error
+          }
+          mismatches.push(
+            `ERROR! Block at ${x}, ${y} on layer ${layer} is not equal.\nGot (${receivedBlock?.name}):\n${JSON.stringify(receivedBlock)}.\nExpected (${expectedBlock?.name}):\n${JSON.stringify(expectedBlock)}`,
+          )
+        }
       }
     }
+  }
+  if (mismatches.length > 0) {
+    throw new Error(`Structure comparison failed with ${mismatches.length} mismatch(es):\n\n${mismatches.join('\n\n')}`)
   }
 }
 

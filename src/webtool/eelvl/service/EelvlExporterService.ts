@@ -1,5 +1,10 @@
 import { EelvlBlockId } from '@/webtool/eelvl/gen/EelvlBlockId.ts'
-import { getPwBlocksByPwId, getPwGameWorldHelper, usePwClientStore } from '@/core/store/PwClientStore.ts'
+import {
+  getPwBlocksByPwId,
+  getPwCatalogBlocks,
+  getPwGameWorldHelper,
+  usePwClientStore,
+} from '@/core/store/PwClientStore.ts'
 import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
 import { EelvlBlock } from '@/webtool/eelvl/type/EelvlBlock.ts'
 import { downloadFile } from '@/core/service/FileService.ts'
@@ -170,6 +175,43 @@ export function writePositionsByteArrays(bytes: ByteArray, positions: vec2[]) {
   bytes.writeBytes(positionsY)
 }
 
+// Blocks that don't have 1 to 1 visual look between PW and EE, but have same physics/collision
+function getPwToEelvlBestEffortMappedBlock(pwBlock: Block): EelvlBlock | undefined {
+  const blocks = getPwCatalogBlocks()
+  const block = blocks[pwBlock.bId]
+  if (block === undefined) {
+    return
+  }
+
+  if (block.tab === 'blocks') {
+    if (block.collision === undefined) {
+      return { blockId: EelvlBlockId.BASIC_GRAY }
+    }
+    if (block.collision === 'oneway') {
+      switch (block.facing) {
+        case 'up':
+          return { blockId: EelvlBlockId.ONEWAY_GRAY_TOP, intParameter: 1 }
+        case 'right':
+          return { blockId: EelvlBlockId.ONEWAY_GRAY_TOP, intParameter: 2 }
+        case 'down':
+          return { blockId: EelvlBlockId.ONEWAY_GRAY_TOP, intParameter: 3 }
+        case 'left':
+          return { blockId: EelvlBlockId.ONEWAY_GRAY_TOP, intParameter: 0 }
+      }
+    }
+  }
+
+  if (block.hazard === true) {
+    return { blockId: EelvlBlockId.HAZARD_SPIKES_BROWN_CENTER }
+  }
+
+  if (block.climbable === true) {
+    return { blockId: EelvlBlockId.CLIMBABLE_ROPE_VERTICAL }
+  }
+
+  return undefined
+}
+
 function mapBlockIdPwToEelvl(
   pwBlock: Block,
   pwLayer: LayerType,
@@ -300,6 +342,11 @@ function mapBlockIdPwToEelvl(
         } else {
           return { blockId: Number(blockId) }
         }
+      }
+
+      const bestEffortMappedBlock = getPwToEelvlBestEffortMappedBlock(pwBlock)
+      if (bestEffortMappedBlock !== undefined) {
+        return bestEffortMappedBlock
       }
 
       if (pwLayer !== LayerType.Background) {

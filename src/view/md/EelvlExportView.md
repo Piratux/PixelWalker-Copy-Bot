@@ -37,6 +37,13 @@ Compared with PixelWalker, EELVL doesn't have:
 - Weak boosts
 - Curse/poison door/gates
 
-All missing blocks are replaced with sign (except for backgrounds). Labels aren't exported as they can be placed off-grid in PixelWalker.
+The following block types are converted to similar EELVL equivalent even if there is no 1 to 1 match:
+
+- Ropes
+- Hazards
+- One ways
+- Solid blocks
+
+The remaining missing blocks are replaced with sign (except for backgrounds and overlay). Labels aren't exported as they can be placed off-grid in PixelWalker.
 
 Fun fact: signs only let you enter 140 characters in EEO. But it accepts EELVL files with signs longer than 140 characters and correctly shows them in game.

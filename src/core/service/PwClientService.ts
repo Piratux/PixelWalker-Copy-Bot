@@ -1,4 +1,4 @@
-import { ListBlockResult, ProtoGen, PWApiClient, PWGameClient } from 'pw-js-api'
+import { CataloggedBlock, ListBlockResult, ProtoGen, PWApiClient, PWCatalog, PWGameClient } from 'pw-js-api'
 import { GENERIC_CHAT_ERROR, TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { Block, DeserialisedStructure, Point, PWGameWorldHelper } from 'pw-js-world'
 import { placeWorldDataBlocks } from '@/core/service/WorldService.ts'
@@ -50,15 +50,19 @@ export async function joinWorld(pwGameClient: PWGameClient, worldId: string): Pr
   }
 }
 
-function initPwBlocks(blocks: ListBlockResult[]) {
+function initPwBlocks(blocks: ListBlockResult[], catallogedBlocks: CataloggedBlock[]) {
   usePwClientStore().blocks = []
   usePwClientStore().blocksByPwId = new Map()
   usePwClientStore().blocksByPwName = new Map()
+  usePwClientStore().catallogedBlocks = []
 
   blocks.forEach((block) => {
     usePwClientStore().blocks.push(block)
     usePwClientStore().blocksByPwId.set(block.Id, block)
     usePwClientStore().blocksByPwName.set(block.PaletteId, block)
+  })
+  catallogedBlocks.forEach((block) => {
+    usePwClientStore().catallogedBlocks.push(block)
   })
 }
 
@@ -139,7 +143,8 @@ export async function initPwClasses(
   await joinWorld(getPwGameClient(), usePwClientStore().worldId)
 
   const pwBlocks = await getPwBlocks()
-  initPwBlocks(pwBlocks)
+  const pwCatallogedBlocks = await PWCatalog.getBlocks()
+  initPwBlocks(pwBlocks, pwCatallogedBlocks)
   initEelvlBlocks(pwBlocks)
   initEerBlocks(EER_MAPPINGS)
 
