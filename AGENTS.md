@@ -14,6 +14,7 @@
   - Changelog is for non technical people so keep it simple and short. Do not include implementation details that are not visible by end users.
   - If change is purely technical and not visible by end users, then do not add entry in changelog.
 - Use `bun` commands instead of `npm`, etc.
+- When asked for explanation of code changes, when answering also add a comment next to code which was unclear.
 
 ## Don'ts
 
