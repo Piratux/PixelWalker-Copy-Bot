@@ -8,7 +8,7 @@ import {
 } from '@/core/service/PwClientService.ts'
 
 export function getImportedFromPwlvlData(fileData: ArrayBuffer): DeserialisedStructure {
-  const blocks = createEmptyBlocksFullWorldSize(getPwGameWorldHelper())
+  const blocks = createEmptyBlocksFullWorldSize()
   const importedBlocks = StructureHelper.read(Buffer.from(fileData))
   const layersInImportedBlocks = importedBlocks.blocks.length
   const width = Math.min(getPwGameWorldHelper().width, importedBlocks.width)
@@ -25,7 +25,7 @@ export function getImportedFromPwlvlData(fileData: ArrayBuffer): DeserialisedStr
 }
 
 export async function importFromPwlvl(fileData: ArrayBuffer): Promise<void> {
-  requireBotEditPermission(getPwGameWorldHelper())
+  requireBotEditPermission()
 
   const worldData = getImportedFromPwlvlData(fileData)
   const success = await placeWorldDataBlocks(worldData)

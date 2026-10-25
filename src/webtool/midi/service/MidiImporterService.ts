@@ -20,7 +20,7 @@ type PwMappedNote = number
 type NoteMap = Map<Distance, Map<PwInstrument, Set<PwMappedNote>>>
 
 export async function importFromMidi(fileData: ArrayBuffer, showColors: boolean) {
-  requireBotEditPermission(getPwGameWorldHelper())
+  requireBotEditPermission()
 
   const worldData = getImportedFromMidiData(fileData, showColors)
 
@@ -51,7 +51,7 @@ export function getImportedFromMidiData(fileData: ArrayBuffer, showColors: boole
   const pwMapWidth = getPwGameWorldHelper().width
   const pwMapHeight = getPwGameWorldHelper().height
 
-  const blocks = createEmptyBlocksFullWorldSize(getPwGameWorldHelper())
+  const blocks = createEmptyBlocksFullWorldSize()
 
   // These blocks create a spawner, and a set of boosts that get you to the max falling speed pretty fast
   blocks.blocks[LayerType.Foreground][0][0] = new Block(PwBlockName.TOOL_SPAWN_LOBBY)

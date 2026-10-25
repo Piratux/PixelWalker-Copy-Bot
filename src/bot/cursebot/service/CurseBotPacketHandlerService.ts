@@ -393,7 +393,7 @@ async function loadCurseBotData() {
 
 async function stopCommandReceived(_args: string[], playerId: number) {
   requireWorldOwner(playerId)
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   if (useCurseBotWorldStore().currentState === CurseBotState.STOPPED) {
     throw new GameError('CurseBot is already stopped', playerId)
@@ -414,7 +414,7 @@ async function stopCurseBot() {
 
 async function startCommandReceived(_args: string[], playerId: number, loadWorld: boolean) {
   requireWorldOwner(playerId)
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   if (useCurseBotWorldStore().currentState !== CurseBotState.STOPPED) {
     throw new GameError('CurseBot is already running', playerId)

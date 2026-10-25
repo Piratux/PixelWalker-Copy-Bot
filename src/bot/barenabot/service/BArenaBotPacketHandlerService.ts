@@ -464,7 +464,7 @@ async function loadBArenaBotData() {
 
 async function stopCommandReceived(_args: string[], playerId: number) {
   requireWorldOwner(playerId)
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   if (useBArenaBotWorldStore().currentState === BArenaBotState.STOPPED) {
     throw new GameError('BArenaBot is already stopped', playerId)
@@ -485,7 +485,7 @@ async function stopBArenaBot() {
 
 async function startCommandReceived(_args: string[], playerId: number, loadWorld: boolean) {
   requireWorldOwner(playerId)
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   if (useBArenaBotWorldStore().currentState !== BArenaBotState.STOPPED) {
     throw new GameError('BArenaBot is already running', playerId)

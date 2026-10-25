@@ -135,7 +135,7 @@ function applyWorldBackground(
 }
 
 export async function importFromEelvl(fileData: ArrayBuffer): Promise<MissingBlockInfo[]> {
-  requireBotEditPermission(getPwGameWorldHelper())
+  requireBotEditPermission()
 
   const eelvlImportResult = getImportedFromEelvlData(fileData)
   const success = await placeWorldDataBlocks(eelvlImportResult.blocks)

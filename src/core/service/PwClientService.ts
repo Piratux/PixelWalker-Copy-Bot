@@ -181,12 +181,13 @@ export function createEmptyBlocks(size: vec2): DeserialisedStructure {
   return new DeserialisedStructure(pwBlock3DArray, { width: width, height: height })
 }
 
-export function createEmptyBlocksFullWorldSize(pwGameWorldHelper: PWGameWorldHelper): DeserialisedStructure {
+export function createEmptyBlocksFullWorldSize(): DeserialisedStructure {
+  const pwGameWorldHelper = getPwGameWorldHelper()
   return createEmptyBlocks(vec2(pwGameWorldHelper.width, pwGameWorldHelper.height))
 }
 
 export async function clearWorld(): Promise<void> {
-  const emptyBlocks = createEmptyBlocksFullWorldSize(getPwGameWorldHelper())
+  const emptyBlocks = createEmptyBlocksFullWorldSize()
   await placeWorldDataBlocks(emptyBlocks)
 }
 
@@ -205,7 +206,7 @@ export async function enterEditKey(pwGameClient: PWGameClient, secretEditKey: st
   })
 
   try {
-    await workerWaitUntil(() => hasPlayerEditPermission(getPwGameWorldHelper(), getPwGameWorldHelper().botPlayerId), {
+    await workerWaitUntil(() => hasPlayerEditPermission(getPwGameWorldHelper().botPlayerId), {
       timeout: 5000,
       intervalBetweenAttempts: 1000,
     })
@@ -219,25 +220,25 @@ export async function enterEditKey(pwGameClient: PWGameClient, secretEditKey: st
   }
 }
 
-function hasPlayerEditPermission(pwGameWorldHelper: PWGameWorldHelper, playerId: number): boolean {
-  return pwGameWorldHelper.getPlayer(playerId)?.rights.canEdit === true
+function hasPlayerEditPermission(playerId: number): boolean {
+  return getPwGameWorldHelper().getPlayer(playerId)?.rights.canEdit === true
 }
 
-export function requirePlayerEditPermission(pwGameWorldHelper: PWGameWorldHelper, playerId: number): void {
-  if (!hasPlayerEditPermission(pwGameWorldHelper, playerId)) {
+export function requirePlayerEditPermission(playerId: number): void {
+  if (!hasPlayerEditPermission(playerId)) {
     throw new GameError('You do not have edit access.', playerId)
   }
 }
 
-export function requireBotEditPermission(pwGameWorldHelper: PWGameWorldHelper): void {
-  if (!hasPlayerEditPermission(pwGameWorldHelper, pwGameWorldHelper.botPlayerId)) {
+export function requireBotEditPermission(): void {
+  if (!hasPlayerEditPermission(getPwGameWorldHelper().botPlayerId)) {
     throw new GameError('Bot does not have edit access.')
   }
 }
 
-export function requirePlayerAndBotEditPermission(pwGameWorldHelper: PWGameWorldHelper, playerId: number): void {
-  requirePlayerEditPermission(pwGameWorldHelper, playerId)
-  requireBotEditPermission(pwGameWorldHelper)
+export function requirePlayerAndBotEditPermission(playerId: number): void {
+  requirePlayerEditPermission(playerId)
+  requireBotEditPermission()
 }
 
 export function requireBotAsWorldOwner(): void {
@@ -346,7 +347,7 @@ export function teleportPlayer(pos: Point) {
   requireBotAsWorldOwner()
 
   const playerId = getOwnerPlayerId()
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   for (const [playerId, player] of getPwGameWorldHelper().players) {
     if (player.isWorldOwner && playerId !== getPwGameWorldHelper().botPlayerId) {

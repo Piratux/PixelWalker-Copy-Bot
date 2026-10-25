@@ -13,7 +13,7 @@ import { colourToUint32 } from '@/core/util/Colours.ts'
 import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
 
 export async function importFromPng(fileData: ArrayBuffer, quantize = true) {
-  requireBotEditPermission(getPwGameWorldHelper())
+  requireBotEditPermission()
 
   const worldData = getImportedFromPngData(fileData, quantize)
   const success = await placeLayerDataBlocks(worldData, vec2(0, 0), LayerType.Background)
@@ -72,7 +72,7 @@ export function getImportedFromPngData(fileData: ArrayBuffer, quantize = true): 
     }
   }
 
-  const blocks = createEmptyBlocksFullWorldSize(getPwGameWorldHelper())
+  const blocks = createEmptyBlocksFullWorldSize()
 
   for (const [hex, locations] of colorMap) {
     const block = new Block(PwBlockName.CUSTOM_SOLID_BG, [hex])

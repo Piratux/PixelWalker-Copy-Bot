@@ -567,7 +567,7 @@ function helpCommandReceived(args: string[], playerId: number) {
 
 async function placeallbombotCommandReceived(_args: string[], playerId: number) {
   requireDeveloper(playerId)
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   const currentPos = cloneDeep(blockTypeDataStartPos)
   const sortedListBlocks = getPwBlocks()
@@ -795,7 +795,7 @@ async function loadBomBotData() {
 
 async function stopCommandReceived(_args: string[], playerId: number) {
   requireWorldOwner(playerId)
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   if (useBomBotWorldStore().currentState === BomBotState.STOPPED) {
     throw new GameError('BomBot is already stopped', playerId)
@@ -816,7 +816,7 @@ async function stopBomBot() {
 
 async function startCommandReceived(_args: string[], playerId: number, loadWorld: boolean) {
   requireWorldOwner(playerId)
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   if (useBomBotWorldStore().currentState !== BomBotState.STOPPED) {
     throw new GameError('BomBot is already running', playerId)

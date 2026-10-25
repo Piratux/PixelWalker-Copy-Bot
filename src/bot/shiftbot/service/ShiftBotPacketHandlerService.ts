@@ -476,7 +476,7 @@ async function loadShiftBotData() {
 
 async function stopCommandReceived(_args: string[], playerId: number) {
   requireWorldOwner(playerId)
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   if (useShiftBotWorldStore().currentState === ShiftBotState.STOPPED) {
     throw new GameError('ShiftBot is already stopped', playerId)
@@ -497,7 +497,7 @@ async function stopShiftBot() {
 
 async function startCommandReceived(_args: string[], playerId: number, loadWorld: boolean) {
   requireWorldOwner(playerId)
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   if (useShiftBotWorldStore().currentState !== ShiftBotState.STOPPED) {
     throw new GameError('ShiftBot is already running', playerId)

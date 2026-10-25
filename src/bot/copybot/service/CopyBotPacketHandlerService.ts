@@ -263,7 +263,7 @@ function moveCommandReceived(_args: string[], playerId: number) {
 
 async function placeallCommandReceived(_args: string[], playerId: number) {
   requireDeveloper(playerId)
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   const sortedListBlocks = getPwBlocks()
   const worldBlocks = []
@@ -320,7 +320,7 @@ async function placeallCommandReceived(_args: string[], playerId: number) {
 
 async function placeEelvlExportCommandReceived(_args: string[], playerId: number) {
   requireDeveloper(playerId)
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   const everyBlockWorldId = 'ewki341n7ve153l'
   const everyBlockWorldData = await getAnotherWorldBlocks(everyBlockWorldId, getPwApiClient())
@@ -334,7 +334,7 @@ async function placeEelvlExportCommandReceived(_args: string[], playerId: number
 
 function printblocksCommandReceived(_args: string[], playerId: number) {
   requireDeveloper(playerId)
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   const botData = getBotData(playerId)
   console.log(
@@ -357,7 +357,7 @@ function printblocksCommandReceived(_args: string[], playerId: number) {
 }
 
 function visionzonesCommandReceived(args: string[], playerId: number) {
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   const ERROR_MESSAGE = 'Correct usage is .visionzones fromX fromY toX toY visionRadius'
   const numbers = args.map(Number)
@@ -536,7 +536,7 @@ async function importCommandReceived(args: string[], playerId: number) {
     throw new GameError('Command is exclusive to world owners', playerId)
   }
 
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   const ERROR_MESSAGE =
     'Correct usage is .import world_id [src_from_x src_from_y src_to_x src_to_y dest_to_x dest_to_y]'
@@ -624,7 +624,7 @@ async function importCommandReceived(args: string[], playerId: number) {
     }
     // TODO: Maybe add labels just for that imported area?
   } else {
-    const emptyBlocks = createEmptyBlocksFullWorldSize(getPwGameWorldHelper())
+    const emptyBlocks = createEmptyBlocksFullWorldSize()
     const emptyBlocksWorldBlocks = convertDeserializedStructureToWorldBlocks(emptyBlocks)
     const worldDataWorldBlocks = convertDeserializedStructureToWorldBlocks(blocksFromAnotherWorld)
     allBlocks = mergeWorldBlocks(emptyBlocksWorldBlocks, worldDataWorldBlocks)
@@ -858,7 +858,7 @@ function helpCommandReceived(args: string[], playerId: number) {
 }
 
 function undoCommandReceived(args: string[], playerId: number) {
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   let count = 1
   if (args.length >= 1) {
@@ -872,7 +872,7 @@ function undoCommandReceived(args: string[], playerId: number) {
 }
 
 function redoCommandReceived(args: string[], playerId: number) {
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   let count = 1
   if (args.length >= 1) {
@@ -886,7 +886,7 @@ function redoCommandReceived(args: string[], playerId: number) {
 }
 
 async function pasteCommandReceived(args: string[], playerId: number, smartPaste: boolean) {
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   const ERROR_MESSAGE = `Correct usage is ${smartPaste ? '.smartpaste' : '.paste'} x_times y_times [x_spacing y_spacing]`
   const repeatX = Number(args[0])
@@ -934,7 +934,7 @@ async function pasteCommandReceived(args: string[], playerId: number, smartPaste
 }
 
 function snakeCommandReceived(args: string[], playerId: number) {
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   const CORRECT_COMMAND_USAGE = `Correct usage is .snake [off | on time offset hideclock]`
 
@@ -992,7 +992,7 @@ function placeEditedBlocks(playerId: number, editedBlocks: WorldBlock[]) {
 }
 
 function editCommandReceived(args: string[], playerId: number) {
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   if (getBotData(playerId).selectedBlocks.length === 0) {
     throw new GameError(`Select blocks before replacing them!`, playerId)
@@ -1186,7 +1186,7 @@ function editSubCommand(args: string[], playerId: number): WorldBlock[] {
 }
 
 function flipCommandReceived(args: string[], playerId: number) {
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   if (args.length !== 1) {
     throw new GameError(`Correct usage is .flip [h | v]`, playerId)
@@ -1616,7 +1616,7 @@ function goldCoinBlockPlaced(
   },
 ) {
   const playerId = data.playerId!
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   const worldBlocks = createOldWorldBlocks(data.positions, states.oldBlocks)
   void placeMultipleBlocks(worldBlocks)
@@ -1643,7 +1643,7 @@ function blueCoinBlockPlaced(
   },
 ) {
   const playerId = data.playerId!
-  requirePlayerAndBotEditPermission(getPwGameWorldHelper(), playerId)
+  requirePlayerAndBotEditPermission(playerId)
 
   const worldBlocks = createOldWorldBlocks(data.positions, states.oldBlocks)
   void placeMultipleBlocks(worldBlocks)
