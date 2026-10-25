@@ -7,6 +7,8 @@
   - Hazards
   - One ways
   - Solid blocks
+- Bot: Added label support for coin copy/paste, repeated pastes, moving and partial imports.
+- Bot: Added `.mask label` to copy only labels. Labels are included by default and supported by undo/redo, including full imports.
 
 ### 2026-10-24 Version 1.31.0
 

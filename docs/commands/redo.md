@@ -8,7 +8,7 @@ Reapply your available undone changes. Both you and the bot need edit permission
 .redo [count]
 ```
 
-`count` defaults to `1`. Use a positive integer to request multiple actions. If fewer actions are available, only those actions are redone. The bot privately reports separate block and zone counts.
+`count` defaults to `1`. Use a positive integer to request multiple actions. If fewer actions are available, only those actions are redone. The bot privately reports the number of actions redone.
 
 ## Examples
 
@@ -22,6 +22,6 @@ Redo reapplies the original changes regardless of your current selection or mask
 
 ## History limits
 
-Block and zone changes from the same action are redone **together**. `.redo 1` reapplies one recorded action. Any newly recorded action clears your redo history for both blocks and zones. Your redo history is not shared with other players.
+Block, label and zone changes from the same action are redone **together**. `.redo 1` reapplies one recorded action. Any newly recorded action clears your redo history for blocks, labels and zones. Your redo history is not shared with other players.
 
-See [undo coverage](./undo.md#coverage) and [undo limitations](./undo.md#important-limits) before relying on history. Full-import label replacement is not recorded for undo or redo. Snake placements are not recorded for undo or redo. Redo can overwrite changes made at the same positions by other players. Coordinate with other builders.
+See [undo coverage](./undo.md#coverage) and [undo limitations](./undo.md#important-limits) before relying on history. Snake placements are not recorded for undo or redo. Redo can overwrite changes made at the same positions by other players. Coordinate with other builders.

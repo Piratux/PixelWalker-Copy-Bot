@@ -37,4 +37,6 @@ The paste is anchored to the first gold coin. The first copy occupies the select
 
 The current [mask](./mask.md), [skip-air setting](./skipair.md), and [move mode](./move.md) apply. Fully selected zones are repeated if the zone mask is enabled; in normal copy mode, multi-copy repetition avoids duplicating zones at the original location.
 
+Labels anchored inside the selection repeat when the label mask is enabled, keeping their text, styling and position within each tile. In copy mode, a label copy at the source location is skipped to avoid duplicating the original labels. Existing destination labels are left unchanged. Labels whose copied anchors would fall outside the world are skipped. Skip-air does not affect labels.
+
 A later blue coin pastes only one copy. `.paste` also switches back to ordinary pasting after [`.smartpaste`](./smartpaste.md).

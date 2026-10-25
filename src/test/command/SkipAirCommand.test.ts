@@ -5,7 +5,7 @@ import { Block, LayerType } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { runSelectCommandTest } from '@/test/RuntimeTestsUtil.ts'
-import { commandReceived, pasteBlocksAndZones } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
+import { commandReceived, pasteBlocksLabelsAndZones } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
 
 describe('.skipair', { concurrent: false }, () => {
   test('.skipair', async (ctx) => {
@@ -31,7 +31,7 @@ describe('.skipair', { concurrent: false }, () => {
     ]
     await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(1, 1), async (botData) => {
       await commandReceived(ctx.task.name, playerId)
-      await pasteBlocksAndZones(botData, vec2(2, 1))
+      await pasteBlocksLabelsAndZones(botData, vec2(2, 1))
     })
   })
 })

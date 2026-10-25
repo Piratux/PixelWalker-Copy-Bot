@@ -21,10 +21,10 @@ Select a structure from its top-left corner to its bottom-right corner, then run
 .flip h
 ```
 
-The bot updates the copied selection and immediately places its mirrored blocks at the original selection location. Blue coins subsequently paste the mirrored selection.
+The bot updates the copied block selection and immediately places its mirrored blocks at the original selection location. Blue coins subsequently paste the mirrored blocks.
 
 ::: tip Selection order
 Select top-left first and bottom-right second for flipping. Selecting the corners in reverse order can place flipped blocks in unexpected positions.
 :::
 
-This changes positions, **not block arguments or directional orientation**, and does not mirror zones. The current [mask](./mask.md) and [skip-air setting](./skipair.md) do not apply.
+This changes positions, **not block arguments or directional orientation**. Labels and zones are not mirrored; The current [mask](./mask.md) and [skip-air setting](./skipair.md) do not apply.

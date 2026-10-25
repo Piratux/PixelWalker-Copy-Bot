@@ -38,6 +38,8 @@ import { BotType } from '@/core/enum/BotType.ts'
 import { WorldData } from '@/core/type/WorldData.ts'
 import { useZoneStore } from '@/core/store/ZoneStore.ts'
 import { getGridRectangles } from '@/core/util/Geometry.ts'
+import { useLabelStore } from '@/core/store/LabelStore.ts'
+import { labelsHaveSameContent } from '@/core/util/Labels.ts'
 
 export function getBlockAt(pos: Point, layer: number): Block {
   try {
@@ -448,6 +450,58 @@ export function replaceAllLabels(labels: ILabel[]) {
       label,
     })
   }
+}
+
+export function placeLabels(labels: ILabel[]): ILabel[] {
+  const newLabels = cloneDeep(labels)
+  for (const label of newLabels) {
+    label.id = undefined
+    useLabelStore().totalLabelsLeftToReceive += 1
+    getPwGameClient().send('worldLabelUpsertRequestPacket', { label })
+  }
+  return newLabels
+}
+
+export function deleteWorldLabels(labels: ILabel[]) {
+  if (labels.length === 0) {
+    return
+  }
+  const availableLabels = new Map(getPwGameWorldHelper().labels)
+  const labelIds: string[] = []
+  for (const label of labels) {
+    // An undo or another move must wait until the server assigns the new label's ID.
+    const worldLabel =
+      (label.id === undefined ? undefined : availableLabels.get(label.id)) ??
+      [...availableLabels.values()].find((candidate) => labelsHaveSameContent(candidate, label))
+    if (worldLabel?.id === undefined) {
+      throw new GameError(
+        'Cannot find the label to remove. It may have been changed or deleted; select the area again.',
+      )
+    }
+    labelIds.push(worldLabel.id)
+    availableLabels.delete(worldLabel.id)
+  }
+
+  for (const id of labelIds) {
+    getPwGameClient().send('worldLabelDeleteRequestPacket', { id })
+    getPwGameWorldHelper().labels.delete(id)
+  }
+}
+
+export function commonWorldLabelUpsertPacketReceived(
+  data: ProtoGen.WorldLabelUpsertPacket,
+  states?: { oldLabel: Label | null },
+) {
+  if (useLabelStore().totalLabelsLeftToReceive === 0 || states?.oldLabel != null) {
+    return
+  }
+  if (data.label?.id === undefined) {
+    throw new GameError('Label placement response is missing the label ID.')
+  }
+
+  // Selections and older history snapshots find replacement server IDs by matching label contents.
+  useLabelStore().totalLabelsLeftToReceive -= 1
+  announcePlacementIfComplete()
 }
 
 export function placeZones(zones: Zone[]) {

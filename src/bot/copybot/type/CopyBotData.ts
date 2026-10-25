@@ -1,9 +1,10 @@
 import { CopyBotState } from '@/bot/copybot/enum/CopyBotState.ts'
-import { Point, Zone } from 'pw-js-world'
+import { ILabel, Point, Zone } from 'pw-js-world'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { CopyBotUndoRedoItem } from '@/bot/copybot/type/CopyBotUndoRedoItem.ts'
 import { CopyBotUndoRedoZoneItem } from '@/bot/copybot/type/CopyBotUndoRedoZoneItem.ts'
+import { CopyBotUndoRedoLabelItem } from '@/bot/copybot/type/CopyBotUndoRedoLabelItem.ts'
 
 export interface CopyBotData {
   botState: CopyBotState
@@ -11,6 +12,7 @@ export interface CopyBotData {
   selectedToPos: Point
   selectedBlocks: WorldBlock[]
   selectedZones: Zone[]
+  selectedLabels: ILabel[]
   selectionSize: Point
   selectionLocalTopLeftPos: Point
   selectionLocalBottomRightPos: Point
@@ -23,13 +25,17 @@ export interface CopyBotData {
   maskBackgroundEnabled: boolean
   maskOverlayEnabled: boolean
   maskZoneEnabled: boolean
+  maskLabelEnabled: boolean
   skipAirEnabled: boolean
   replacedByLastMoveOperationBlocks: WorldBlock[]
   lastMovedZones: Zone[] | null
+  lastMovedLabels: ILabel[] | null
   undoStack: CopyBotUndoRedoItem[]
   redoStack: CopyBotUndoRedoItem[]
   undoZoneStack: CopyBotUndoRedoZoneItem[]
   redoZoneStack: CopyBotUndoRedoZoneItem[]
+  undoLabelStack: CopyBotUndoRedoLabelItem[]
+  redoLabelStack: CopyBotUndoRedoLabelItem[]
   snakeModeEnabled: boolean
   snakeModeTime: number
   snakeModeCurrentOffset: number
@@ -44,6 +50,7 @@ export function createBotData(): CopyBotData {
     selectedToPos: vec2(0, 0),
     selectedBlocks: [],
     selectedZones: [],
+    selectedLabels: [],
     selectionSize: vec2(1, 1),
     selectionLocalTopLeftPos: vec2(0, 0),
     selectionLocalBottomRightPos: vec2(1, 1),
@@ -56,13 +63,17 @@ export function createBotData(): CopyBotData {
     maskBackgroundEnabled: true,
     maskOverlayEnabled: true,
     maskZoneEnabled: true,
+    maskLabelEnabled: true,
     skipAirEnabled: false,
     replacedByLastMoveOperationBlocks: [],
     lastMovedZones: null,
+    lastMovedLabels: null,
     undoStack: [],
     redoStack: [],
     undoZoneStack: [],
     redoZoneStack: [],
+    undoLabelStack: [],
+    redoLabelStack: [],
     snakeModeEnabled: false,
     snakeModeTime: 0,
     snakeModeCurrentOffset: 0,

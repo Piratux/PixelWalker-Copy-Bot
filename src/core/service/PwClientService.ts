@@ -27,6 +27,7 @@ import { registerShiftBotCallbacks } from '@/bot/shiftbot/service/ShiftBotPacket
 import { registerBArenaBotCallbacks } from '@/bot/barenabot/service/BArenaBotPacketHandlerService.ts'
 import { resetCopyBotStore } from '@/bot/copybot/store/CopyBotStore.ts'
 import { resetZoneStore, useZoneStore } from '@/core/store/ZoneStore.ts'
+import { resetLabelStore, useLabelStore } from '@/core/store/LabelStore.ts'
 
 export async function authenticate(pwApiClient: PWApiClient): Promise<void> {
   const authenticationResult = await pwApiClient.authenticate()
@@ -107,6 +108,7 @@ export async function initPwClasses(
 ) {
   resetPwClientStore()
   resetZoneStore()
+  resetLabelStore()
 
   usePwClientStore().worldId = worldId
   usePwClientStore().email = email.toLowerCase() // Login page in PW lowercases email before sending to server
@@ -304,14 +306,15 @@ export function announcePlacementIfComplete(): void {
     !usePwClientStore().placementCompletionPending ||
     usePwClientStore().totalBlocksLeftToReceiveFromWorldBlockPlacedPacket > 0 ||
     useZoneStore().zonePasteQueue.size > 0 ||
-    useZoneStore().pendingZoneAreaEdits.size > 0
+    useZoneStore().pendingZoneAreaEdits.size > 0 ||
+    useLabelStore().totalLabelsLeftToReceive > 0
   ) {
     return
   }
 
   usePwClientStore().placementCompletionPending = false
   usePwClientStore().placementCompletionAnnounced = true
-  const message = 'Successfully finished placing all blocks and zones.'
+  const message = 'Successfully finished placing all blocks, labels and zones.'
   sendGlobalChatMessage(message)
   useAlertStore().success(message)
 }

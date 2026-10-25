@@ -6,7 +6,7 @@ import {
   getPwGameClient,
   getPwGameWorldHelper,
 } from '@/core/store/PwClientStore.ts'
-import { Block, IPlayer, LayerType, Point, Zone, ZoneMembership } from 'pw-js-world'
+import { Block, ILabel, IPlayer, LayerType, Point, Zone, ZoneMembership } from 'pw-js-world'
 import { cloneDeep, isEmpty, isEqual } from 'lodash-es'
 import { CopyBotData, createBotData } from '@/bot/copybot/type/CopyBotData.ts'
 import { useCopyBotStore } from '@/bot/copybot/store/CopyBotStore.ts'
@@ -16,9 +16,11 @@ import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { vec2 } from '@basementuniverse/vec'
 import {
   applyPosOffsetForBlocks,
+  commonWorldLabelUpsertPacketReceived,
   commonWorldZoneAreaEditPacketReceived,
   commonWorldZoneUpsertPacketReceived,
   convertDeserializedStructureToWorldBlocks,
+  deleteWorldLabels,
   deleteZones,
   getAnotherWorldBlocks,
   getAnotherWorldData,
@@ -30,10 +32,10 @@ import {
   mergeWorldBlocks,
   numberAndStringArrayTypesMatch,
   placeMultipleBlocks,
+  placeLabels,
   placeWorldDataBlocks,
   placeZones,
   portalIdToNumberAndStringArray,
-  replaceAllLabels,
   replaceAllZones,
 } from '@/core/service/WorldService.ts'
 import { addUndoItem, performRedo, performUndo } from '@/bot/copybot/service/CopyBotUndoRedoService.ts'
@@ -56,6 +58,7 @@ import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { CopyBotUndoRedoZoneItem } from '@/bot/copybot/type/CopyBotUndoRedoZoneItem.ts'
+import { CopyBotUndoRedoLabelItem } from '@/bot/copybot/type/CopyBotUndoRedoLabelItem.ts'
 import { CopyBotCommandName } from '@/bot/copybot/enum/CopyBotCommandName.ts'
 import { CopyBotMaskCommandMode } from '@/bot/copybot/enum/CopyBotMaskCommandMode.ts'
 import {
@@ -78,6 +81,7 @@ const callbacks: CallbackEntry[] = [
   { name: 'worldBlockPlacedPacket', fn: worldBlockPlacedPacketReceived },
   { name: 'playerChatPacket', fn: playerChatPacketReceived },
   { name: 'playerJoinedPacket', fn: playerJoinedPacketReceived },
+  { name: 'worldLabelUpsertPacket', fn: commonWorldLabelUpsertPacketReceived },
   { name: 'worldZoneUpsertPacket', fn: commonWorldZoneUpsertPacketReceived },
   { name: 'worldZoneAreaEditPacket', fn: commonWorldZoneAreaEditPacketReceived },
 ]
@@ -209,7 +213,7 @@ function maskCommandReceived(args: string[], playerId: number) {
   }
 
   if (args.length === 0) {
-    throw new GameError(`Correct usage is .mask [default | background | foreground | overlay | zone]`, playerId)
+    throw new GameError(`Correct usage is .mask [default | background | foreground | overlay | zone | label]`, playerId)
   }
 
   const botData = getBotData(playerId)
@@ -218,12 +222,14 @@ function maskCommandReceived(args: string[], playerId: number) {
   botData.maskForegroundEnabled = false
   botData.maskOverlayEnabled = false
   botData.maskZoneEnabled = false
+  botData.maskLabelEnabled = false
 
   if (args.includes(CopyBotMaskCommandMode.DEFAULT)) {
     botData.maskBackgroundEnabled = true
     botData.maskForegroundEnabled = true
     botData.maskOverlayEnabled = true
     botData.maskZoneEnabled = true
+    botData.maskLabelEnabled = true
     sendPrivateChatMessage(`Mask default enabled`, playerId)
   }
 
@@ -245,6 +251,11 @@ function maskCommandReceived(args: string[], playerId: number) {
   if (args.includes(CopyBotMaskCommandMode.ZONE)) {
     botData.maskZoneEnabled = true
     sendPrivateChatMessage(`Mask zone enabled`, playerId)
+  }
+
+  if (args.includes(CopyBotMaskCommandMode.LABEL)) {
+    botData.maskLabelEnabled = true
+    sendPrivateChatMessage(`Mask label enabled`, playerId)
   }
 }
 
@@ -501,6 +512,8 @@ async function importCommandReceived(args: string[], playerId: number) {
   let allBlocks: WorldBlock[]
   let newZones: Zone[] = []
   let oldZones: Zone[] = []
+  let newLabels: ILabel[] = []
+  let oldLabels: ILabel[] = []
   if (partialImportUsed) {
     const numberArgs = args.slice(1, 7).map(Number)
     if (numberArgs.some((n) => !isFinite(n))) {
@@ -564,21 +577,32 @@ async function importCommandReceived(args: string[], playerId: number) {
       }
       newZones = placeZones(selectedZones)
     }
-    // TODO: Maybe add labels just for that imported area?
+    // Label anchors use pixels, while import coordinates and offsets use tiles.
+    if (botData.maskLabelEnabled) {
+      const selectedLabels = getLabelsInArea(
+        vec2(srcFromX, srcFromY),
+        vec2(srcToX, srcToY),
+        labelsFromAnotherWorld.values(),
+      )
+      const offsetPos = vec2(destToX - srcFromX, destToY - srcFromY)
+      newLabels = placeLabels(offsetLabels(selectedLabels, offsetPos))
+    }
   } else {
     const emptyBlocks = createEmptyBlocksFullWorldSize()
     const emptyBlocksWorldBlocks = convertDeserializedStructureToWorldBlocks(emptyBlocks)
     const worldDataWorldBlocks = convertDeserializedStructureToWorldBlocks(blocksFromAnotherWorld)
     allBlocks = mergeWorldBlocks(emptyBlocksWorldBlocks, worldDataWorldBlocks)
 
-    replaceAllLabels(Array.from(labelsFromAnotherWorld.values()))
+    oldLabels = cloneDeep([...getPwGameWorldHelper().labels.values()])
+    deleteWorldLabels(oldLabels)
+    newLabels = placeLabels(offsetLabels([...labelsFromAnotherWorld.values()], vec2(0, 0)))
     oldZones = [...getPwGameWorldHelper().zones.values()].map((zone) => cloneDeep(zone))
     newZones = replaceAllZones(Array.from(zonesFromAnotherWorld.values()))
   }
 
   allBlocks = filterByLayerMasks(allBlocks, botData)
   allBlocks = filterBySkipAir(allBlocks, botData)
-  addUndoItem(botData, allBlocks, newZones, oldZones)
+  addUndoItem(botData, allBlocks, newZones, oldZones, newLabels, oldLabels)
 
   const success = await placeMultipleBlocks(allBlocks)
   handlePlaceBlocksResult(success)
@@ -608,8 +632,8 @@ function onCommandReceived(_args: string[], playerId: number) {
 
 function helpCommandReceived(args: string[], playerId: number) {
   if (args.length == 0) {
-    sendPrivateChatMessage('Gold coin - select blocks', playerId)
-    sendPrivateChatMessage('Blue coin - paste blocks', playerId)
+    sendPrivateChatMessage('Gold coin - select blocks, labels and fully contained zones', playerId)
+    sendPrivateChatMessage('Blue coin - paste the selection', playerId)
     sendPrivateChatMessage(
       'Commands: .help .ping .paste .smartpaste .undo .redo .import .edit .move .mask .skipair .flip .snake .visionzones .off .on',
       playerId,
@@ -655,7 +679,8 @@ function helpCommandReceived(args: string[], playerId: number) {
       sendPrivateChatMessage('name_find - restricts to blocks with this substring in their name', playerId)
       break
     case CopyBotCommandName.FLIP:
-      sendPrivateChatMessage('.flip [h | v] - flips selected blocks horizontally or vertically.', playerId)
+      sendPrivateChatMessage('.flip [h | v] - flips selected block positions horizontally or vertically.', playerId)
+      sendPrivateChatMessage('Labels and zones are not flipped. Masks do not apply.', playerId)
       sendPrivateChatMessage(`Example usage: .flip v`, playerId)
       break
     case CopyBotCommandName.PASTE:
@@ -665,6 +690,7 @@ function helpCommandReceived(args: string[], playerId: number) {
       )
       sendPrivateChatMessage('x_times/y_times - number of columns/rows. No blue coin is needed.', playerId)
       sendPrivateChatMessage('(x/y)_spacing - gap size to leave between pastes.', playerId)
+      sendPrivateChatMessage('Includes labels and fully selected zones when their masks are enabled.', playerId)
       sendPrivateChatMessage(`Example usage 1: .paste 2 3`, playerId)
       sendPrivateChatMessage(`Example usage 2: .paste 2 3 4 1`, playerId)
       break
@@ -673,6 +699,7 @@ function helpCommandReceived(args: string[], playerId: number) {
         '.smartpaste - same as .paste, but increments special block arguments, when using repeated paste.',
         playerId,
       )
+      sendPrivateChatMessage('Labels and zones repeat unchanged when their masks are enabled.', playerId)
       sendPrivateChatMessage(`Requires specifying pattern before placing in paste location.`, playerId)
       sendPrivateChatMessage(
         `Example: place purple switch id=1 at {x=0,y=0} and purple switch id=2 at {x=1,y=0}.`,
@@ -690,31 +717,34 @@ function helpCommandReceived(args: string[], playerId: number) {
       break
     case CopyBotCommandName.UNDO:
       sendPrivateChatMessage(
-        '.undo [count] - undoes the last recorded bot actions, blocks and zones together',
+        '.undo [count] - undoes the last recorded bot actions, blocks, labels and zones together',
         playerId,
       )
       sendPrivateChatMessage(`Example usage 1: .undo`, playerId)
       sendPrivateChatMessage(`Example usage 2: .undo 3`, playerId)
       break
     case CopyBotCommandName.REDO:
-      sendPrivateChatMessage('.redo [count] - redoes undone bot actions, blocks and zones together', playerId)
+      sendPrivateChatMessage('.redo [count] - redoes undone bot actions, blocks, labels and zones together', playerId)
       sendPrivateChatMessage(`Example usage 1: .redo`, playerId)
       sendPrivateChatMessage(`Example usage 2: .redo 3`, playerId)
       break
     case CopyBotCommandName.MOVE:
-      sendPrivateChatMessage('.move - enables move mode, which moves selected blocks and zones', playerId)
+      sendPrivateChatMessage('.move - enables move mode, which moves selected blocks, labels and zones', playerId)
       sendPrivateChatMessage('Use this command again to disable this mode', playerId)
       break
     case CopyBotCommandName.MASK:
-      sendPrivateChatMessage('.mask mode [mode ...] - choose block layers and/or zones to paste.', playerId)
-      sendPrivateChatMessage('Modes: default, background, foreground, overlay, zone. Use lowercase names.', playerId)
+      sendPrivateChatMessage('.mask mode [mode ...] - choose block layers, labels and/or zones to paste.', playerId)
+      sendPrivateChatMessage(
+        'Modes: default, background, foreground, overlay, zone, label. Use lowercase names.',
+        playerId,
+      )
       sendPrivateChatMessage('Each command replaces the previous mask. Use .skipair to ignore empty blocks.', playerId)
       sendPrivateChatMessage(
         `Example usage 1: .mask foreground background (only pastes foreground and background blocks)`,
         playerId,
       )
       sendPrivateChatMessage(
-        `Example usage 2: .mask default (shorthand for .mask background foreground overlay zone)`,
+        `Example usage 2: .mask default (shorthand for .mask background foreground overlay zone label)`,
         playerId,
       )
       break
@@ -733,9 +763,15 @@ function helpCommandReceived(args: string[], playerId: number) {
         playerId,
       )
       sendPrivateChatMessage(
-        'Partial imports copy blocks and fully contained zones, respect the zone mask, and leave labels and existing zones unchanged',
+        'Partial imports copy blocks, labels anchored in the area and fully contained zones, respecting their masks',
         playerId,
       )
+      sendPrivateChatMessage('Full imports replace all labels and zones regardless of masks.', playerId)
+      sendPrivateChatMessage(
+        'Completion is announced after all imported blocks, labels and zones are placed.',
+        playerId,
+      )
+      sendPrivateChatMessage('Blocks, labels and zones are recorded together for undo/redo.', playerId)
       sendPrivateChatMessage('src_from_(x/y) - top left corner position to copy from', playerId)
       sendPrivateChatMessage('src_to_(x/y) - bottom right corner position to copy to', playerId)
       sendPrivateChatMessage('dest_to_(x/y) - top left corner position to paste to', playerId)
@@ -858,7 +894,7 @@ async function pasteCommandReceived(args: string[], playerId: number, smartPaste
   botData.smartRepeatEnabled = smartPaste
 
   try {
-    await pasteBlocksAndZones(botData, botData.selectedFromPos)
+    await pasteBlocksLabelsAndZones(botData, botData.selectedFromPos)
     sendPrivateChatMessage(
       `Selection repeated ${repeatX}x${repeatY} times` +
         (spacingX !== 0 && spacingY !== 0 ? ` with spacing ${spacingX}x${spacingY}` : ''),
@@ -1386,7 +1422,7 @@ function filterBySkipAir(allBlocks: WorldBlock[], botData: CopyBotData) {
   })
 }
 
-export async function pasteBlocksAndZones(botData: CopyBotData, blockPos: Point) {
+export async function pasteBlocksLabelsAndZones(botData: CopyBotData, blockPos: Point) {
   let allBlocks: WorldBlock[] = []
 
   const mapWidth = getPwGameWorldHelper().width
@@ -1441,7 +1477,8 @@ export async function pasteBlocksAndZones(botData: CopyBotData, blockPos: Point)
   allBlocks = applyMoveMode(botData, allBlocks)
 
   const { newZones, oldZones } = pasteZones(botData, blockPos)
-  addUndoItem(botData, allBlocks, newZones, oldZones)
+  const { newLabels, oldLabels } = pasteLabels(botData, blockPos)
+  addUndoItem(botData, allBlocks, newZones, oldZones, newLabels, oldLabels)
   await placeMultipleBlocks(allBlocks)
 }
 
@@ -1449,6 +1486,7 @@ function resetMoveModeData(botData: CopyBotData) {
   botData.moveOperationPerformedOnce = false
   botData.replacedByLastMoveOperationBlocks = []
   botData.lastMovedZones = null
+  botData.lastMovedLabels = null
 }
 
 export function selectBlocks(botData: CopyBotData, blockPos: Point, playerId: number) {
@@ -1487,6 +1525,7 @@ export function selectBlocks(botData: CopyBotData, blockPos: Point, playerId: nu
 
     botData.selectedBlocks = getBlocksInArea(botData.selectedFromPos, botData.selectedToPos)
     botData.selectedZones = getZonesInArea(botData.selectedFromPos, botData.selectedToPos)
+    botData.selectedLabels = getLabelsInArea(botData.selectedFromPos, botData.selectedToPos)
 
     resetMoveModeData(botData)
   }
@@ -1620,13 +1659,13 @@ function blueCoinBlockPlaced(
     }
   } else if (botData.moveEnabled) {
     const blockPos = data.positions[data.positions.length - 1]
-    void pasteBlocksAndZones(botData, blockPos)
+    void pasteBlocksLabelsAndZones(botData, blockPos).catch(handleException)
   } else {
     // We want to prevent paste happening when player accidentally uses fill or brush tool
     // But simultaneously, if player drags blue coin across the map, there could be multiple blue coins in single packet
     // This is not ideal, but good enough
     for (const blockPos of data.positions) {
-      void pasteBlocksAndZones(botData, blockPos)
+      void pasteBlocksLabelsAndZones(botData, blockPos).catch(handleException)
     }
   }
 }
@@ -1721,6 +1760,69 @@ function pasteZones(botData: CopyBotData, blockPos: Point): CopyBotUndoRedoZoneI
   return { newZones, oldZones }
 }
 
+function pasteLabels(botData: CopyBotData, blockPos: Point): CopyBotUndoRedoLabelItem {
+  if (!botData.maskLabelEnabled) {
+    return { newLabels: [], oldLabels: [] }
+  }
+
+  if (botData.selectedLabels.length === 0) {
+    return { newLabels: [], oldLabels: [] }
+  }
+
+  const mapWidth = getPwGameWorldHelper().width
+  const mapHeight = getPwGameWorldHelper().height
+
+  const repeatDir = vec2(botData.repeatVec.x < 0 ? -1 : 1, botData.repeatVec.y < 0 ? -1 : 1)
+  const offsetSize = vec2.mul(repeatDir, vec2.add(botData.selectionSize, botData.spacingVec))
+
+  const pastePosBlocksFromPos = vec2.add(blockPos, botData.selectionLocalTopLeftPos)
+  const pastePosBlocksToPos = vec2.add(blockPos, botData.selectionLocalBottomRightPos)
+
+  const labels: ILabel[] = []
+
+  for (let x = 0; x < Math.abs(botData.repeatVec.x); x++) {
+    const pastePosBlocksFromPosOffsetX = pastePosBlocksFromPos.x + x * offsetSize.x
+    const pastePosBlocksToPosOffsetX = pastePosBlocksToPos.x + x * offsetSize.x
+    if (
+      (pastePosBlocksFromPosOffsetX >= mapWidth || pastePosBlocksFromPosOffsetX < 0) &&
+      (pastePosBlocksToPosOffsetX >= mapWidth || pastePosBlocksToPosOffsetX < 0)
+    ) {
+      break
+    }
+    for (let y = 0; y < Math.abs(botData.repeatVec.y); y++) {
+      const pastePosBlocksFromPosOffsetY = pastePosBlocksFromPos.y + y * offsetSize.y
+      const pastePosBlocksToPosOffsetY = pastePosBlocksToPos.y + y * offsetSize.y
+      if (
+        (pastePosBlocksFromPosOffsetY >= mapHeight || pastePosBlocksFromPosOffsetY < 0) &&
+        (pastePosBlocksToPosOffsetY >= mapHeight || pastePosBlocksToPosOffsetY < 0)
+      ) {
+        break
+      }
+
+      const repeatVecOffsetPos = vec2(pastePosBlocksFromPosOffsetX, pastePosBlocksFromPosOffsetY)
+
+      const offsetPos = vec2.sub(
+        repeatVecOffsetPos,
+        vec2.add(botData.selectedFromPos, botData.selectionLocalTopLeftPos),
+      )
+
+      if (!botData.moveEnabled && offsetPos.x === 0 && offsetPos.y === 0) {
+        continue
+      }
+
+      labels.push(...offsetLabels(botData.selectedLabels, offsetPos))
+    }
+  }
+
+  const oldLabels = botData.moveEnabled ? (botData.lastMovedLabels ?? botData.selectedLabels) : []
+  deleteWorldLabels(oldLabels)
+  const newLabels = placeLabels(labels)
+  if (botData.moveEnabled) {
+    botData.lastMovedLabels = newLabels
+  }
+  return { newLabels, oldLabels }
+}
+
 function getBlocksInArea(fromPos: Point, toPos: Point): WorldBlock[] {
   const [minPos, maxPos] = getMinMaxPos(fromPos, toPos)
   const data: WorldBlock[] = []
@@ -1738,6 +1840,36 @@ function getBlocksInArea(fromPos: Point, toPos: Point): WorldBlock[] {
     }
   }
   return data
+}
+
+function getLabelsInArea(
+  fromPos: Point,
+  toPos: Point,
+  labels: Iterable<ILabel> = getPwGameWorldHelper().labels.values(),
+): ILabel[] {
+  const [minPos, maxPos] = getMinMaxPos(fromPos, toPos)
+  return cloneDeep(
+    [...labels].filter(
+      ({ position }) =>
+        position.x >= minPos.x * 16 &&
+        position.x < (maxPos.x + 1) * 16 &&
+        position.y >= minPos.y * 16 &&
+        position.y < (maxPos.y + 1) * 16,
+    ),
+  )
+}
+
+function offsetLabels(labels: ILabel[], tileOffset: Point): ILabel[] {
+  const helper = getPwGameWorldHelper()
+  return cloneDeep(labels)
+    .map((label) => {
+      label.position = vec2.add(label.position, vec2.mul(tileOffset, 16))
+      return label
+    })
+    .filter(
+      ({ position }) =>
+        position.x >= 0 && position.x < helper.width * 16 && position.y >= 0 && position.y < helper.height * 16,
+    )
 }
 
 function getZonesInArea(

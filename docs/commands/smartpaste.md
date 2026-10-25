@@ -14,6 +14,8 @@ The command acts **immediately at the selection's original location**. No blue c
 
 Counts, directions, and spacing are the same as [`.paste`](./paste.md). The current [mask](./mask.md), [skip-air setting](./skipair.md), and [move mode](./move.md) apply.
 
+Labels and fully selected zones repeat just as with `.paste` when their masks are enabled. Label text and styling are copied unchanged; numbers in label text are not incremented.
+
 ## Define a pattern
 
 Place matching blocks **one repetition step away** horizontally and vertically to show how their settings should change between copies. A step is the selected width/height plus the specified spacing, in the direction of the repeat count. Corresponding pattern blocks must have the same block type.
@@ -51,4 +53,4 @@ Not all block settings are supported. Other text, on/off settings, and unsupport
 
 A later blue coin pastes only one copy without advancing the pattern. Run `.paste 1 1` with a valid selection to switch back to ordinary paste mode; this also immediately pastes once at the source.
 
-A failed command may still have changed the world, including zones; check the result before continuing.
+A failed command may still have changed the world, including labels and zones; check the result before continuing.

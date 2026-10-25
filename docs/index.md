@@ -18,9 +18,9 @@ hero:
 
 features:
   - title: Copy with coins
-    details: Select a rectangle with two gold coins, then paste with a blue coin.
+    details: Select blocks, labels and fully contained zones with two gold coins, then paste with a blue coin.
   - title: Transform your builds
     details: Repeat, flip, move, and edit selections without rebuilding them by hand.
   - title: Control what changes
-    details: Choose layers, preserve destination blocks by skipping air, and use undo history.
+    details: Choose block layers, labels or zones, preserve destination blocks by skipping air, and use undo history.
 ---

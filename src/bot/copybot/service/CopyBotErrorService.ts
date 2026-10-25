@@ -3,7 +3,7 @@ import { Colour } from '@/core/type/Colour.ts'
 
 export function createUnrecognisedMaskModeError(arg: string, playerId: number): GameError {
   return new GameError(
-    `Unrecognised mask mode '${arg}'. Valid modes: default, background, foreground, overlay`,
+    `Unrecognised mask mode '${arg}'. Valid modes: default, background, foreground, overlay, zone, label`,
     playerId,
   )
 }

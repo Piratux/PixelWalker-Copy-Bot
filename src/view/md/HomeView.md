@@ -8,10 +8,10 @@ Features accessible via commands:
 
 - Copy/paste selected region
 - Move selected region
-- Mask blocks when pasting (such as only pasting background blocks)
+- Mask blocks, labels and zones when pasting (such as only pasting background blocks or labels)
 - Repeated paste of selected region
   - Smart repeated paste - switches/portals/etc. get auto incremented based on placed pattern (useful for building switch worlds)
-- Undo/redo blocks placed by bot
+- Undo/redo block, label and zone changes made by bot
 - Import PixelWalker worlds via link
 - Replace all selected blocks
 - Perform math operations with selected block parameters (ex.: add 5 to all counters)

@@ -13,6 +13,7 @@
   - When adding new entry, always use current date and bump minor version.
   - Changelog is for non technical people so keep it simple and short. Do not include implementation details that are not visible by end users.
   - If change is purely technical and not visible by end users, then do not add entry in changelog.
+  - When adding new entry, if latest entry is of current date, just add that entry in that group, no need to make new version.
 - Use `bun` commands instead of `npm`, etc.
 - When asked for explanation of code changes, when answering also add a comment next to code which was unclear.
 

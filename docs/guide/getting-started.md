@@ -26,7 +26,11 @@ After pasting, your selection remains available for more blue-coin pastes. The n
 
 By default, all three block layers (**background, foreground, overlay**) are copied, including air. A copied air block clears the corresponding destination block. Use [`.skipair`](../commands/skipair.md) to preserve destination blocks under empty parts of your selection.
 
-Zones are included only when **every tile belonging to the zone is inside your selection**. Partially enclosed zones and labels are not copied by the coin workflow. Use [`.mask`](../commands/mask.md) to restrict the layers or zones pasted.
+Labels are included when their **anchor position is inside the selected tiles**, even if some of the text extends outside. Text, styling, render layer, and the anchor's position within its tile are preserved. Labels whose pasted anchors would be outside the world are skipped.
+
+Commands are not blocked while labels are being placed. For reliable results, let placement finish before moving or undoing newly placed labels, and avoid editing labels manually during placement.
+
+Zones are included only when **every tile belonging to the zone is inside your selection**. Partially enclosed zones are not copied. Use [`.mask`](../commands/mask.md) to restrict the layers, labels or zones pasted; `.mask label` copies only labels.
 
 ## Try a repeated build
 
@@ -40,17 +44,17 @@ The command acts **immediately at the selection's original location**. No blue c
 
 ## Defaults and useful controls
 
-| Setting             | Initial state | Command                                                   |
-| ------------------- | ------------- | --------------------------------------------------------- |
-| Coin handling       | On            | [`.off`](../commands/off.md) / [`.on`](../commands/on.md) |
-| Layer and zone mask | All enabled   | [`.mask`](../commands/mask.md)                            |
-| Skip air            | Off           | [`.skipair`](../commands/skipair.md)                      |
-| Move mode           | Off           | [`.move`](../commands/move.md)                            |
-| Snake mode          | Off           | [`.snake`](../commands/snake.md)                          |
+| Setting                    | Initial state | Command                                                   |
+| -------------------------- | ------------- | --------------------------------------------------------- |
+| Coin handling              | On            | [`.off`](../commands/off.md) / [`.on`](../commands/on.md) |
+| Layer, label and zone mask | All enabled   | [`.mask`](../commands/mask.md)                            |
+| Skip air                   | Off           | [`.skipair`](../commands/skipair.md)                      |
+| Move mode                  | Off           | [`.move`](../commands/move.md)                            |
+| Snake mode                 | Off           | [`.snake`](../commands/snake.md)                          |
 
 Use [`.help`](../commands/help.md) for in-game help.
 
-Block and zone changes from coin pastes are recorded for [`.undo`](../commands/undo.md). See [undo coverage](../commands/undo.md#coverage) for other actions and [undo limitations](../commands/undo.md#important-limits) before relying on history. Undo is not a world backup.
+Block, label and zone changes from coin pastes are recorded together for [`.undo`](../commands/undo.md). See [undo coverage](../commands/undo.md#coverage) for other actions and [undo limitations](../commands/undo.md#important-limits) before relying on history. Undo is not a world backup.
 
 ## Report issues
 

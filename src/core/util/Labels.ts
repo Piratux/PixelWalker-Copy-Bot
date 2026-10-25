@@ -1,7 +1,12 @@
 import { vec2 } from '@basementuniverse/vec'
-import { ILabel, LayerType, TextAlignment } from 'pw-js-world'
+import { ILabel, Label, LayerType, TextAlignment } from 'pw-js-world'
+import { isEqual } from 'lodash-es'
 import { Colours } from '@/core/type/Colour.ts'
 import { colourToUint32 } from '@/core/util/Colours.ts'
+
+export function labelsHaveSameContent(first: ILabel, second: ILabel): boolean {
+  return isEqual({ ...new Label(first).toJSON(), id: undefined }, { ...new Label(second).toJSON(), id: undefined })
+}
 
 export function createLabel(overrides: Partial<ILabel> = {}): ILabel {
   return {

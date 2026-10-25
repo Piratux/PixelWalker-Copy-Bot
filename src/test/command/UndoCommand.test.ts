@@ -5,7 +5,7 @@ import { Block, LayerType } from 'pw-js-world'
 import { vec2 } from '@basementuniverse/vec'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { runSelectCommandTest } from '@/test/RuntimeTestsUtil.ts'
-import { commandReceived, pasteBlocksAndZones } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
+import { commandReceived, pasteBlocksLabelsAndZones } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
 
 describe('.undo', { concurrent: false }, () => {
   test('.undo', async (ctx) => {
@@ -17,7 +17,7 @@ describe('.undo', { concurrent: false }, () => {
       { pos: vec2(0, 0), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
     ]
     await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(0, 0), async (botData) => {
-      await pasteBlocksAndZones(botData, vec2(2, 3))
+      await pasteBlocksLabelsAndZones(botData, vec2(2, 3))
       await commandReceived(ctx.task.name, playerId)
     })
   })
@@ -32,9 +32,9 @@ describe('.undo', { concurrent: false }, () => {
       { pos: vec2(2, 3), layer: LayerType.Foreground, block: new Block(PwBlockName.BASIC_GRAY) },
     ]
     await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(0, 0), async (botData) => {
-      await pasteBlocksAndZones(botData, vec2(2, 3))
-      await pasteBlocksAndZones(botData, vec2(2, 4))
-      await pasteBlocksAndZones(botData, vec2(2, 5))
+      await pasteBlocksLabelsAndZones(botData, vec2(2, 3))
+      await pasteBlocksLabelsAndZones(botData, vec2(2, 4))
+      await pasteBlocksLabelsAndZones(botData, vec2(2, 5))
       await commandReceived(ctx.task.name, playerId)
     })
   })
