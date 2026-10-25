@@ -71,6 +71,7 @@ import { bufferToArrayBuffer } from '@/core/util/Buffers.ts'
 import { colourToUint32, uint32ToColour } from '@/core/util/Colours.ts'
 import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
 import { modulo } from '@/core/util/Modulo.ts'
+import { createZone } from '@/core/util/Zones.ts'
 
 const callbacks: CallbackEntry[] = [
   { name: 'playerInitPacket', fn: commonPlayerInitPacketReceived },
@@ -458,70 +459,11 @@ function visionzonesCommandReceived(args: string[], playerId: number) {
 
       const membership = ZoneMembership.fromPositions(positions)
       zones.push(
-        new Zone(
-          {
-            id: '',
-            name: '',
-            priority: 0,
-            hue: 0,
-            membershipRle: membership,
-            vision: ProtoGen.ZoneVision.ON,
-            visionCombine: ProtoGen.ZoneVision.ON,
-            visionOutside: ProtoGen.ZoneVision.INHERIT,
-            hasVisionColor: false,
-            visionColor: 0,
-            cameraModeX: ProtoGen.ZoneCameraMode.INHERIT,
-            cameraModeY: ProtoGen.ZoneCameraMode.INHERIT,
-            cameraTarget: ProtoGen.ZoneCameraTarget.INHERIT,
-            cameraMovement: ProtoGen.ZoneCameraMovement.INHERIT,
-            cameraFollowMovement: ProtoGen.ZoneCameraMovement.INHERIT,
-            lighting: ProtoGen.ZoneLighting.INHERIT,
-            lightColor: 0xffffff,
-            lightFeatherTop: 0,
-            lightFeatherRight: 0,
-            lightFeatherBottom: 0,
-            lightFeatherLeft: 0,
-            lightMarginTop: 0,
-            lightMarginRight: 0,
-            lightMarginBottom: 0,
-            lightMarginLeft: 0,
-            lightSmoothing: 0,
-            playerLight: ProtoGen.ZonePlayerLight.INHERIT,
-            playerLightRadius: 0,
-            playerLightStrength: 0,
-            playerLightColor: 0xffffff,
-            fog: ProtoGen.ZoneFog.INHERIT,
-            fogColor: 0xffffff,
-            fogOpacity: 0,
-            fogDensity: 0,
-            fogDirection: 0,
-            fogSpeed: 0,
-            fogFeatherTop: 0,
-            fogFeatherRight: 0,
-            fogFeatherBottom: 0,
-            fogFeatherLeft: 0,
-            fogMarginTop: 0,
-            fogMarginRight: 0,
-            fogMarginBottom: 0,
-            fogMarginLeft: 0,
-            fogSmoothing: 0,
-            distortion: ProtoGen.ZoneDistortion.INHERIT,
-            distortionStrength: 0,
-            distortionScale: 0,
-            distortionSpeed: 0,
-            distortionFeatherTop: 0,
-            distortionFeatherRight: 0,
-            distortionFeatherBottom: 0,
-            distortionFeatherLeft: 0,
-            distortionMarginTop: 0,
-            distortionMarginRight: 0,
-            distortionMarginBottom: 0,
-            distortionMarginLeft: 0,
-            distortionSmoothing: 0,
-          },
-          membership._width,
-          membership._height,
-        ),
+        createZone({
+          membershipRle: membership,
+          vision: ProtoGen.ZoneVision.ON,
+          visionCombine: ProtoGen.ZoneVision.ON,
+        }),
       )
     }
   }

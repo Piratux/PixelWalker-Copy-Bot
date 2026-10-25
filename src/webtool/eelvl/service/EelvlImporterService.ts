@@ -20,6 +20,7 @@ import { useEelvlClientStore } from '@/webtool/eelvl/store/EelvlClientStore.ts'
 import { EelvlImportResult } from '@/webtool/eelvl/type/EelvlImportResult.ts'
 import { MissingBlockInfo } from '@/webtool/eelvl/type/MissingBlockInfo.ts'
 import { colourToUint32, hexStringToColour } from '@/core/util/Colours.ts'
+import { createLabel } from '@/core/util/Labels.ts'
 
 export function getImportedFromEelvlData(fileData: ArrayBuffer): EelvlImportResult {
   const bytes = new ByteArray(new Uint8Array(fileData))
@@ -512,23 +513,14 @@ function getEelvlToPwSwitchActivatorBlock(eelvlBlock: EelvlBlock, isLocal: boole
 }
 
 function getEelvlToPwLabel(eelvlBlock: EelvlBlock): ILabel {
-  return {
-    id: '', // TODO: Waiting for fix
+  return createLabel({
     position: vec2(0, 0), // Position set elsewhere
     text: eelvlBlock.labelText!,
     color: colourToUint32({ ...hexStringToColour(eelvlBlock.labelTextColor!), a: 255 }),
-    maxWidth: -1,
-    shadow: true,
     textAlignment: TextAlignment.LEFT,
-    fontSize: 12,
-    characterSpacing: 0,
     lineSpacing: 0,
-    renderLayer: LayerType.Foreground,
     shadowColor: colourToUint32({ r: 0, g: 0, b: 0, a: 50 }),
-    shadowOffsetX: 1,
-    shadowOffsetY: 1,
-    outline: false,
     outlineColor: colourToUint32({ r: 0, g: 0, b: 0, a: 0 }),
     outlineWidth: 0,
-  }
+  })
 }

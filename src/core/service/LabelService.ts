@@ -2,8 +2,8 @@ import { Colour, Colours } from '@/core/type/Colour.ts'
 import { getPwGameClient, getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { colourToUint32 } from '@/core/util/Colours.ts'
-import { TextAlignment } from 'pw-js-world'
 import { LABEL_GLYPH_MAP } from '@/core/type/LabelGlyphMap.ts'
+import { createLabel } from '@/core/util/Labels.ts'
 
 export interface LabelData {
   text: string
@@ -30,24 +30,11 @@ export function placeLabels(pos: vec2, labelData: (string | LabelData)[]) {
     }
 
     getPwGameClient().send('worldLabelUpsertRequestPacket', {
-      label: {
+      label: createLabel({
         position: placePos,
         text: text,
         color: colourToUint32(colour),
-        maxWidth: -1,
-        shadow: true,
-        textAlignment: TextAlignment.CENTER,
-        fontSize: 12,
-        characterSpacing: 0,
-        lineSpacing: 3,
-        renderLayer: 1,
-        shadowColor: colourToUint32({ r: 0, g: 0, b: 0, a: 153 }),
-        shadowOffsetX: 1,
-        shadowOffsetY: 1,
-        outline: false,
-        outlineColor: colourToUint32({ r: 0, g: 0, b: 0, a: 255 }),
-        outlineWidth: 1,
-      },
+      }),
     })
 
     for (const char of text) {
