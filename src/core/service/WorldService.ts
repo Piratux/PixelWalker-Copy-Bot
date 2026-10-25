@@ -518,7 +518,6 @@ export function placeZones(zones: Zone[]) {
     newZone.name = `Zone copy ${useZoneStore().globalZoneCounter}`
 
     useZoneStore().zonePasteQueue.set(newZone.name, newZone)
-    usePwClientStore().placementCompletionPending = true
     usePwClientStore().placementCompletionAnnounced = false
 
     getPwGameClient().send(newZone.toPacket())
