@@ -15,6 +15,7 @@ pids
 # Vitest coverage reports
 coverage
 *.lcov
+.vitest/
 
 # Dependency directories
 node_modules/

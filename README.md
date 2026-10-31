@@ -37,6 +37,10 @@ When `package.json` changes, you need to run dev command again.
 Commit dependency changes together with `bun.lock`. CI and Docker use
 `bun install --frozen-lockfile` to install the locked dependencies.
 
+Keep TypeScript on version 6 until `vue-tsc` and `typescript-eslint` support the
+TypeScript 7 compiler API. To update the other dependencies, use
+`bunx npm-check-updates -u --reject typescript`, followed by `bun install`.
+
 ### Documentation
 
 Documentation lives in `docs/`, with VitePress navigation and search configured in `docs/.vitepress/config.ts`.

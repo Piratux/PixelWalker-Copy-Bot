@@ -17,7 +17,7 @@ export default defineConfig(() => {
         name: 'documentation',
         apply: () => process.env.VITEST === undefined,
         async configureServer(server) {
-          const docsServer = await createDocsServer(path.resolve(__dirname, 'docs'), {
+          const docsServer = await createDocsServer(path.resolve(import.meta.dirname, 'docs'), {
             middlewareMode: true,
             hmr: server.httpServer === null ? undefined : { server: server.httpServer, path: 'docs-hmr' },
           })
@@ -51,8 +51,10 @@ export default defineConfig(() => {
         'vite-plugin-node-polyfills/shims/global',
         'vite-plugin-node-polyfills/shims/process',
       ],
-      esbuildOptions: {
-        target: 'esnext',
+      rolldownOptions: {
+        transform: {
+          target: 'esnext',
+        },
       },
     },
     build: {
@@ -65,7 +67,7 @@ export default defineConfig(() => {
     },
 
     resolve: {
-      alias: [{ find: '@', replacement: path.resolve(__dirname, 'src') }],
+      alias: [{ find: '@', replacement: path.resolve(import.meta.dirname, 'src') }],
     },
     // vitest config
     test: {
