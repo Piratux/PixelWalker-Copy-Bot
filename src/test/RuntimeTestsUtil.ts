@@ -1,18 +1,20 @@
-import { DeserialisedStructure, ILabel } from 'pw-js-world'
-import { AssertionError, deepStrictEqual } from 'node:assert'
+import { DeserialisedStructure, ILabel, Zone } from 'pw-js-world'
+import { AssertionError, deepStrictEqual, ok } from 'node:assert'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { getImportedFromEelvlData } from '@/webtool/eelvl/service/EelvlImporterService.ts'
 import {
   deleteWorldLabels,
+  deleteZones,
   placeLabels,
   placeMultipleBlocks,
   placeWorldDataBlocks,
+  placeZones,
 } from '@/core/service/WorldService.ts'
 import { createEmptyBlocks } from '@/core/service/PwClientService.ts'
 import { getImportedFromPngData } from '@/webtool/png/service/PngImporterService.ts'
 import { getImportedFromMidiData } from '@/webtool/midi/service/MidiImporterService.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
-import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
+import { getPwGameClient, getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { commandReceived, getBotData, selectBlocks } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
 import { Promisable } from '@/core/util/Promise.ts'
@@ -21,7 +23,8 @@ import { expect } from 'vitest'
 import { EelvlImportResult } from '@/webtool/eelvl/type/EelvlImportResult.ts'
 import { useLabelStore } from '@/core/store/LabelStore.ts'
 import { cloneDeep } from 'lodash-es'
-import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
+import { TimeoutError, workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
+import { useZoneStore } from '@/core/store/ZoneStore.ts'
 
 export function compareDeserialisedStructureData(
   receivedData: DeserialisedStructure,
@@ -173,5 +176,114 @@ export async function runSelectLabelCommandTest(
     await workerWaitUntil(() => useLabelStore().totalLabelsLeftToReceive === 0)
     deleteWorldLabels([...getPwGameWorldHelper().labels.values()])
     await placeLabels(originalLabels)
+  }
+}
+
+export function compareZoneData(receivedData: Zone[], expectedData: Zone[]) {
+  const normaliseZones = (zones: Zone[]) =>
+    zones
+      .map((zone) => ({
+        ...zone.toJSON(),
+        // Copies receive generated IDs and names; membership encoding depends on the world's dimensions.
+        id: undefined,
+        name: undefined,
+        membershipRle: zone.membershipRle.toPositions().sort((a, b) => (a.x !== b.x ? a.x - b.x : a.y - b.y)),
+      }))
+      .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)))
+
+  deepStrictEqual(normaliseZones(receivedData), normaliseZones(expectedData))
+}
+
+function getEditableWorldZones() {
+  // The built-in World zone cannot be deleted or recreated.
+  return [...getPwGameWorldHelper().zones.values()].filter((zone) => zone.id !== 'world')
+}
+
+export async function verifyExpectedZones(expectedZones: Zone[]) {
+  try {
+    await workerWaitUntil(
+      () =>
+        useZoneStore().zonePasteQueue.size === 0 &&
+        useZoneStore().pendingZoneAreaEdits.size === 0 &&
+        getEditableWorldZones().length === expectedZones.length,
+    )
+  } catch (error) {
+    if (error instanceof TimeoutError) {
+      console.error('Zone comparison timed out', {
+        expectedCount: expectedZones.length,
+        actualZones: getEditableWorldZones().map((zone) => ({
+          id: zone.id,
+          name: zone.name,
+          positions: zone.membershipRle.toPositions(),
+        })),
+        queuedZones: [...useZoneStore().zonePasteQueue.keys()],
+        pendingAreaEdits: [...useZoneStore().pendingZoneAreaEdits.entries()],
+      })
+    }
+    throw error
+  }
+  compareZoneData(getEditableWorldZones(), expectedZones)
+}
+
+export async function runSelectZoneCommandTest(
+  inputZones: Zone[],
+  expectedOutputZones: Zone[],
+  selectFrom: vec2,
+  selectTo: vec2,
+  command: (botData: CopyBotData) => Promisable<void>,
+) {
+  const originalZones = cloneDeep(getEditableWorldZones())
+  const playerId = getPwGameWorldHelper().botPlayerId
+  const errors: unknown[] = []
+
+  try {
+    deleteZones(originalZones)
+    placeZones(inputZones)
+    await verifyExpectedZones(inputZones)
+    await commandReceived('.mask zone', playerId)
+    selectArea(selectFrom, selectTo)
+
+    const botData = getBotData(playerId)
+    botData.selectedBlocks = []
+    botData.selectedLabels = []
+    await command(botData)
+    await verifyExpectedZones(expectedOutputZones)
+  } catch (error) {
+    errors.push(error)
+  }
+
+  try {
+    await workerWaitUntil(
+      () => useZoneStore().zonePasteQueue.size === 0 && useZoneStore().pendingZoneAreaEdits.size === 0,
+    )
+    deleteZones(getEditableWorldZones())
+    const restoredZones = placeZones(originalZones)
+    await verifyExpectedZones(originalZones)
+    for (let i = 0; i < restoredZones.length; i++) {
+      const restored = getEditableWorldZones().find((zone) => zone.name === restoredZones[i].name)
+      ok(restored, `Cannot find restored zone ${restoredZones[i].name}.`)
+      const renamed = cloneDeep(restored)
+      renamed.name = originalZones[i].name
+      getPwGameClient().send(renamed.toPacket())
+    }
+    const originalNames = originalZones.map((zone) => zone.name).sort()
+    await workerWaitUntil(
+      () =>
+        JSON.stringify(
+          getEditableWorldZones()
+            .map((zone) => zone.name)
+            .sort(),
+        ) === JSON.stringify(originalNames),
+    )
+  } catch (error) {
+    errors.push(error)
+  }
+
+  // A cleanup failure must not hide the original test failure.
+  if (errors.length > 1) {
+    throw new AggregateError(errors, 'Zone test and world restoration both failed.')
+  }
+  if (errors.length === 1) {
+    throw errors[0]
   }
 }

@@ -724,11 +724,13 @@ function helpCommandReceived(args: string[], playerId: number) {
       )
       sendPrivateChatMessage(`Example usage 1: .undo`, playerId)
       sendPrivateChatMessage(`Example usage 2: .undo 3`, playerId)
+      sendPrivateChatMessage('Use count to undo several actions at once.', playerId)
       break
     case CopyBotCommandName.REDO:
       sendPrivateChatMessage('.redo [count] - redoes undone bot actions, blocks, labels and zones together', playerId)
       sendPrivateChatMessage(`Example usage 1: .redo`, playerId)
       sendPrivateChatMessage(`Example usage 2: .redo 3`, playerId)
+      sendPrivateChatMessage('Use count to redo several actions at once.', playerId)
       break
     case CopyBotCommandName.MOVE:
       sendPrivateChatMessage('.move - enables move mode, which moves selected blocks, labels and zones', playerId)

@@ -1,5 +1,9 @@
 ## Changelog
 
+### 2026-10-31 Version 1.33.0
+
+- Bot: Fixed undoing and redoing multiple zone moves leaving extra zones behind.
+
 ### 2026-10-25 Version 1.32.0
 
 - Website: EELVL Export now also converts physics blocks that have similiar physics properties to PixelWalker physics blocks. This includes:

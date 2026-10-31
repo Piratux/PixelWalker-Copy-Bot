@@ -11,6 +11,7 @@ import {
 } from '@/core/service/WorldService.ts'
 import { sendPrivateChatMessage } from '@/core/service/ChatMessageService.ts'
 import { CopyBotUndoRedoLabelItem } from '@/bot/copybot/type/CopyBotUndoRedoLabelItem.ts'
+import { CopyBotUndoRedoZoneItem } from '@/bot/copybot/type/CopyBotUndoRedoZoneItem.ts'
 import { labelsHaveSameContent } from '@/core/util/Labels.ts'
 import { handleException } from '@/core/util/Exception.ts'
 
@@ -91,13 +92,17 @@ export function performRedoBlocks(botData: CopyBotData, count: number) {
 }
 
 export function performUndoZones(botData: CopyBotData, count: number) {
+  const items = [...botData.undoZoneStack].reverse().filter((_, i) => i < count)
+  const { newZones, oldZones } = getUndoRedoZones(
+    items.map((item) => ({ newZones: item.oldZones, oldZones: item.newZones })),
+  )
+  applyUndoRedoZones(newZones, oldZones)
   let i = 0
   for (; i < count; i++) {
     const undoRedoItem = botData.undoZoneStack.pop()
     if (undoRedoItem === undefined) {
       break
     }
-    applyUndoRedoZones(undoRedoItem.oldZones, undoRedoItem.newZones)
     if (botData.lastMovedZones === undoRedoItem.newZones) {
       botData.lastMovedZones = undoRedoItem.oldZones
     }
@@ -107,13 +112,15 @@ export function performUndoZones(botData: CopyBotData, count: number) {
 }
 
 export function performRedoZones(botData: CopyBotData, count: number) {
+  const items = [...botData.redoZoneStack].reverse().filter((_, i) => i < count)
+  const { newZones, oldZones } = getUndoRedoZones(items)
+  applyUndoRedoZones(newZones, oldZones)
   let i = 0
   for (; i < count; i++) {
     const undoRedoItem = botData.redoZoneStack.pop()
     if (undoRedoItem === undefined) {
       break
     }
-    applyUndoRedoZones(undoRedoItem.newZones, undoRedoItem.oldZones)
     if (botData.lastMovedZones === undoRedoItem.oldZones) {
       botData.lastMovedZones = undoRedoItem.newZones
     }
@@ -194,6 +201,24 @@ function applyUndoRedoLabels(oldLabels: ILabel[], newLabels: ILabel[]) {
 
   // Keep shared move-history references pointing at the restored label snapshots.
   void placeLabels(oldLabels).catch(handleException)
+}
+
+function getUndoRedoZones(items: CopyBotUndoRedoZoneItem[]): CopyBotUndoRedoZoneItem {
+  const restoredZones: Zone[] = []
+  const removedZones: Zone[] = []
+  // Cancel intermediate placements before server IDs exist; names distinguish otherwise identical zones.
+  for (const item of items) {
+    for (const zone of item.oldZones) {
+      const restoredIndex = restoredZones.findIndex((restoredZone) => restoredZone.name === zone.name)
+      if (restoredIndex === -1) {
+        removedZones.push(zone)
+      } else {
+        restoredZones.splice(restoredIndex, 1)
+      }
+    }
+    restoredZones.push(...item.newZones)
+  }
+  return { newZones: restoredZones, oldZones: removedZones }
 }
 
 function applyUndoRedoZones(oldZones: Zone[], newZones: Zone[]) {
