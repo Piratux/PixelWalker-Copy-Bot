@@ -109,7 +109,7 @@ describe('.mask', { concurrent: false }, () => {
 
   test('Unknown modes throw error', async () => {
     const playerId = getPwGameWorldHelper().botPlayerId
-    await expect(() => commandReceived(`.mask forground`, playerId)).rejects.toThrowError(
+    await expect(() => commandReceived(`.mask forground`, playerId)).rejects.toThrow(
       createUnrecognisedMaskModeError('forground', playerId),
     )
   })

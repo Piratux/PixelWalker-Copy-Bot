@@ -597,7 +597,7 @@ describe('.smartpaste', { concurrent: false }, () => {
       await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(0, 0), async () => {
         await commandReceived('.smartpaste 2 2', playerId)
       })
-    }).rejects.toThrowError(new GameError(createPortalIdTooLongErrorString('aaaa10'), playerId))
+    }).rejects.toThrow(new GameError(createPortalIdTooLongErrorString('aaaa10'), playerId))
   })
 
   test('.smartpaste 2 2 (colour r: 0x2, g: 0x0f, b: 0xb5)', async () => {
@@ -675,7 +675,7 @@ describe('.smartpaste', { concurrent: false }, () => {
       await runSelectCommandTest(inputBlocks, expectedOutputBlocks, vec2(0, 0), vec2(0, 0), async () => {
         await commandReceived('.smartpaste 2 2', playerId)
       })
-    }).rejects.toThrowError(new GameError(createColourOutOfBoundsErrorString({ r: 0x8, g: 0x10f, b: 0xb2 }), playerId))
+    }).rejects.toThrow(new GameError(createColourOutOfBoundsErrorString({ r: 0x8, g: 0x10f, b: 0xb2 }), playerId))
   })
 
   test('.smartpaste 3 1 (time doors overflow wrap)', async () => {
