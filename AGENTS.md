@@ -2,8 +2,8 @@
 
 ## Do's
 
-- Use `bun run lint` after finishing making code changes.
-- Use `bun run ts-check` after finishing making code changes.
+- Use `bun run lint` after finishing making code changes (unless those changes don't affect linting such as adding comment).
+- Use `bun run ts-check` after finishing making code changes (unless those changes don't affect type checking such as adding comment).
 - Do `git add ...` on all newly created files.
 - When making changes to copy bot, make adjustments to following places if change is related to copy bot commands:
   - documentation in `docs/`.

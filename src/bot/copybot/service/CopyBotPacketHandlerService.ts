@@ -587,7 +587,7 @@ async function importCommandReceived(args: string[], playerId: number) {
         labelsFromAnotherWorld.values(),
       )
       const offsetPos = vec2(destToX - srcFromX, destToY - srcFromY)
-      newLabels = placeLabels(offsetLabels(selectedLabels, offsetPos))
+      newLabels = await placeLabels(offsetLabels(selectedLabels, offsetPos))
     }
   } else {
     const emptyBlocks = createEmptyBlocksFullWorldSize()
@@ -597,7 +597,7 @@ async function importCommandReceived(args: string[], playerId: number) {
 
     oldLabels = cloneDeep([...getPwGameWorldHelper().labels.values()])
     deleteWorldLabels(oldLabels)
-    newLabels = placeLabels(offsetLabels([...labelsFromAnotherWorld.values()], vec2(0, 0)))
+    newLabels = await placeLabels(offsetLabels([...labelsFromAnotherWorld.values()], vec2(0, 0)))
     oldZones = [...getPwGameWorldHelper().zones.values()].map((zone) => cloneDeep(zone))
     newZones = replaceAllZones(Array.from(zonesFromAnotherWorld.values()))
   }
@@ -1479,9 +1479,13 @@ export async function pasteBlocksLabelsAndZones(botData: CopyBotData, blockPos: 
   allBlocks = applyMoveMode(botData, allBlocks)
 
   const { newZones, oldZones } = pasteZones(botData, blockPos)
-  const { newLabels, oldLabels } = pasteLabels(botData, blockPos)
+  const { newLabels, oldLabels } = getLabelsToPaste(botData, blockPos)
+  deleteWorldLabels(oldLabels)
+  if (botData.moveEnabled && botData.maskLabelEnabled && botData.selectedLabels.length > 0) {
+    botData.lastMovedLabels = newLabels
+  }
   addUndoItem(botData, allBlocks, newZones, oldZones, newLabels, oldLabels)
-  await placeMultipleBlocks(allBlocks)
+  await Promise.all([placeLabels(newLabels), placeMultipleBlocks(allBlocks)])
 }
 
 function resetMoveModeData(botData: CopyBotData) {
@@ -1762,7 +1766,7 @@ function pasteZones(botData: CopyBotData, blockPos: Point): CopyBotUndoRedoZoneI
   return { newZones, oldZones }
 }
 
-function pasteLabels(botData: CopyBotData, blockPos: Point): CopyBotUndoRedoLabelItem {
+function getLabelsToPaste(botData: CopyBotData, blockPos: Point): CopyBotUndoRedoLabelItem {
   if (!botData.maskLabelEnabled) {
     return { newLabels: [], oldLabels: [] }
   }
@@ -1817,12 +1821,10 @@ function pasteLabels(botData: CopyBotData, blockPos: Point): CopyBotUndoRedoLabe
   }
 
   const oldLabels = botData.moveEnabled ? (botData.lastMovedLabels ?? botData.selectedLabels) : []
-  deleteWorldLabels(oldLabels)
-  const newLabels = placeLabels(labels)
-  if (botData.moveEnabled) {
-    botData.lastMovedLabels = newLabels
+  for (const label of labels) {
+    label.id = undefined
   }
-  return { newLabels, oldLabels }
+  return { newLabels: labels, oldLabels }
 }
 
 function getBlocksInArea(fromPos: Point, toPos: Point): WorldBlock[] {

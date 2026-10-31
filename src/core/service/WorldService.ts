@@ -33,7 +33,7 @@ import {
 } from '@/core/service/PwClientService.ts'
 import { handleException } from '@/core/util/Exception.ts'
 import { GameError } from '@/core/class/GameError.ts'
-import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
+import { TimeoutError, workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { WorldData } from '@/core/type/WorldData.ts'
 import { useZoneStore } from '@/core/store/ZoneStore.ts'
@@ -452,12 +452,23 @@ export function replaceAllLabels(labels: ILabel[]) {
   }
 }
 
-export function placeLabels(labels: ILabel[]): ILabel[] {
+export async function placeLabels(labels: ILabel[]): Promise<ILabel[]> {
+  if (labels.length === 0) {
+    return []
+  }
   const newLabels = cloneDeep(labels)
   for (const label of newLabels) {
     label.id = undefined
     useLabelStore().totalLabelsLeftToReceive += 1
     getPwGameClient().send('worldLabelUpsertRequestPacket', { label })
+  }
+  try {
+    await workerWaitUntil(() => useLabelStore().totalLabelsLeftToReceive === 0)
+  } catch (error) {
+    if (error instanceof TimeoutError) {
+      throw new GameError('Failed to place all labels.')
+    }
+    throw error
   }
   return newLabels
 }

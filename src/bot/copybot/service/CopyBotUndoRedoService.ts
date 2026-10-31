@@ -12,6 +12,7 @@ import {
 import { sendPrivateChatMessage } from '@/core/service/ChatMessageService.ts'
 import { CopyBotUndoRedoLabelItem } from '@/bot/copybot/type/CopyBotUndoRedoLabelItem.ts'
 import { labelsHaveSameContent } from '@/core/util/Labels.ts'
+import { handleException } from '@/core/util/Exception.ts'
 
 const MAX_UNDO_REDO_STACK_LENGTH = 100
 
@@ -192,7 +193,7 @@ function applyUndoRedoLabels(oldLabels: ILabel[], newLabels: ILabel[]) {
   deleteWorldLabels(newLabels)
 
   // Keep shared move-history references pointing at the restored label snapshots.
-  placeLabels(oldLabels)
+  void placeLabels(oldLabels).catch(handleException)
 }
 
 function applyUndoRedoZones(oldZones: Zone[], newZones: Zone[]) {

@@ -2,18 +2,26 @@ import { DeserialisedStructure, ILabel } from 'pw-js-world'
 import { AssertionError, deepStrictEqual } from 'node:assert'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { getImportedFromEelvlData } from '@/webtool/eelvl/service/EelvlImporterService.ts'
-import { placeMultipleBlocks, placeWorldDataBlocks } from '@/core/service/WorldService.ts'
+import {
+  deleteWorldLabels,
+  placeLabels,
+  placeMultipleBlocks,
+  placeWorldDataBlocks,
+} from '@/core/service/WorldService.ts'
 import { createEmptyBlocks } from '@/core/service/PwClientService.ts'
 import { getImportedFromPngData } from '@/webtool/png/service/PngImporterService.ts'
 import { getImportedFromMidiData } from '@/webtool/midi/service/MidiImporterService.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
 import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { vec2 } from '@basementuniverse/vec'
-import { getBotData, selectBlocks } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
+import { commandReceived, getBotData, selectBlocks } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
 import { Promisable } from '@/core/util/Promise.ts'
 import { CopyBotData } from '@/bot/copybot/type/CopyBotData.ts'
 import { expect } from 'vitest'
 import { EelvlImportResult } from '@/webtool/eelvl/type/EelvlImportResult.ts'
+import { useLabelStore } from '@/core/store/LabelStore.ts'
+import { cloneDeep } from 'lodash-es'
+import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 
 export function compareDeserialisedStructureData(
   receivedData: DeserialisedStructure,
@@ -59,7 +67,9 @@ export function compareLabelData(receivedData: ILabel[], expectedData: ILabel[])
     const expectedLabel = { ...expectedData[i] }
 
     // ... and we are not interested in comparing ids as they're generated
-    receivedLabel.id = expectedLabel.id
+    // Normalize both objects because fixtures may omit id while server labels include it.
+    receivedLabel.id = undefined
+    expectedLabel.id = undefined
 
     deepStrictEqual(
       receivedLabel,
@@ -120,11 +130,48 @@ export async function runSelectCommandTest(
   await expect(placeWorldDataBlocks(clearTestAreaBlocks), 'Failed to place world data blocks').resolves.toBe(true)
 
   await placeMultipleBlocks(inputBlocks)
+  const playerId = getPwGameWorldHelper().botPlayerId
+  // Imports use masks rather than the selection, so disable label and zone imports too.
+  await commandReceived('.mask background foreground overlay', playerId)
   selectArea(selectFrom, selectTo)
 
-  const playerId = getPwGameWorldHelper().botPlayerId
   const botData = getBotData(playerId)
+  // Block-only tests must stay isolated even when a command re-enables the default masks.
+  botData.selectedLabels = []
+  botData.selectedZones = []
   await command(botData)
 
   verifyExpectedBlocks(expectedOutputBlocks, testAreaSize)
+}
+
+export async function runSelectLabelCommandTest(
+  inputLabels: ILabel[],
+  expectedOutputLabels: ILabel[],
+  selectFrom: vec2,
+  selectTo: vec2,
+  command: (botData: CopyBotData) => Promisable<void>,
+) {
+  const originalLabels = cloneDeep([...getPwGameWorldHelper().labels.values()])
+  const playerId = getPwGameWorldHelper().botPlayerId
+
+  try {
+    deleteWorldLabels([...getPwGameWorldHelper().labels.values()])
+    await placeLabels(inputLabels)
+    await commandReceived('.mask label', playerId)
+    selectArea(selectFrom, selectTo)
+
+    const botData = getBotData(playerId)
+    // Default masks may be enabled in a label test without pasting live blocks or zones.
+    botData.selectedBlocks = []
+    botData.selectedZones = []
+    await command(botData)
+    await workerWaitUntil(() => useLabelStore().totalLabelsLeftToReceive === 0)
+
+    compareLabelData([...getPwGameWorldHelper().labels.values()], cloneDeep(expectedOutputLabels))
+  } finally {
+    // Restoring labels must also wait for pending placements after a failed assertion.
+    await workerWaitUntil(() => useLabelStore().totalLabelsLeftToReceive === 0)
+    deleteWorldLabels([...getPwGameWorldHelper().labels.values()])
+    await placeLabels(originalLabels)
+  }
 }
