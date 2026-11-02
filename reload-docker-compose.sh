@@ -1,4 +1,4 @@
-docker compose down
-docker compose build --pull
-docker compose up -d
-docker compose logs -f
+docker compose -f "docker-compose.yml.local" down
+docker compose -f "docker-compose.yml.local" build --pull
+docker compose -f "docker-compose.yml.local" up -d
+docker compose -f "docker-compose.yml.local" logs -f
