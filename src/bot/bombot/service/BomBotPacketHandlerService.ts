@@ -29,6 +29,7 @@ import {
   blockIsPortal,
   convertDeserializedStructureToWorldBlocks,
   getAnotherWorldBlocks,
+  getAnotherWorldData,
   getDeserialisedStructureSectionVec2,
   mergeWorldBlocks,
   placeMultipleBlocks,
@@ -597,8 +598,8 @@ function editCommandReceived(_args: string[], playerId: number) {
 async function placeBomBotWorld() {
   sendGlobalChatMessage('Loading BomBot world')
   const bomBotMapWorldId = 'r3796a7103bb687'
-  const blocks = await getAnotherWorldBlocks(bomBotMapWorldId, getPwApiClient())
-  await placeBotWorld(blocks, 'BomBot')
+  const world = await getAnotherWorldData(bomBotMapWorldId, getPwApiClient())
+  await placeBotWorld(world, 'BomBot')
 }
 
 async function placeBomBotMap(mapEntry: BomBotMapEntry) {

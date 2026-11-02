@@ -14,6 +14,7 @@ import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import {
   convertDeserializedStructureToWorldBlocks,
   getAnotherWorldBlocks,
+  getAnotherWorldData,
   getDeserialisedStructureSectionVec2,
   placeMultipleBlocks,
   placeWorldDataBlocksUsingRandomPositionsPattern,
@@ -333,8 +334,8 @@ function helpCommandReceived(args: string[], playerId: number) {
 async function placeShiftBotWorld() {
   sendGlobalChatMessage('Loading ShiftBot world...')
   const shiftBotMapWorldId = 'ra8b2aaeafc28c0'
-  const blocks = await getAnotherWorldBlocks(shiftBotMapWorldId, getPwApiClient())
-  await placeBotWorld(blocks, 'ShiftBot')
+  const world = await getAnotherWorldData(shiftBotMapWorldId, getPwApiClient())
+  await placeBotWorld(world, 'ShiftBot')
 }
 
 async function placeShiftBotMap(mapEntry: ShiftBotMapEntry) {

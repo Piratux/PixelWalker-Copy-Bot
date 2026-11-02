@@ -13,6 +13,7 @@ import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import {
   getAnotherWorldBlocks,
+  getAnotherWorldData,
   getDeserialisedStructureSectionVec2,
   placeMultipleBlocks,
   placeWorldDataBlocks,
@@ -315,8 +316,8 @@ function helpCommandReceived(args: string[], playerId: number) {
 async function placeCurseBotWorld() {
   sendGlobalChatMessage('Loading CurseBot world...')
   const curseBotMapWorldId = 'ra252b9f970bc53'
-  const blocks = await getAnotherWorldBlocks(curseBotMapWorldId, getPwApiClient())
-  await placeBotWorld(blocks, 'CurseBot')
+  const world = await getAnotherWorldData(curseBotMapWorldId, getPwApiClient())
+  await placeBotWorld(world, 'CurseBot')
 }
 
 async function placeCurseBotMap(mapEntry: CurseBotMapEntry) {

@@ -46,6 +46,14 @@ import { handleException } from '@/core/util/Exception.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { resetLabelStore } from '@/core/store/LabelStore.ts'
 import { resetZoneStore } from '@/core/store/ZoneStore.ts'
+import {
+  registerPWaintMeBotCallbacks,
+  startManagedPWaintMeBot,
+  stopPWaintMeBot,
+} from '@/bot/pwaintmebot/service/PWaintMeBotPacketHandlerService.ts'
+import { PWaintMeBotState } from '@/bot/pwaintmebot/enum/PWaintMeBotState.ts'
+import { usePWaintMeBotWorldStore } from '@/bot/pwaintmebot/store/PWaintMeBotWorldStore.ts'
+import { resetPWaintMeBotRoundStore } from '@/bot/pwaintmebot/store/PWaintMeBotRoundStore.ts'
 
 interface ScheduledBot {
   type: BotType
@@ -57,7 +65,14 @@ interface ScheduledBot {
   canSwitch: () => boolean
 }
 
-export const DEFAULT_BOT_ORDER = [BotType.BOM_BOT, BotType.CURSE_BOT, BotType.SHIFT_BOT, BotType.BARENA_BOT]
+export const DEFAULT_BOT_ORDER = [
+  BotType.PWAINTME_BOT, // TODO: TEMPORARy
+  BotType.BOM_BOT,
+  BotType.CURSE_BOT,
+  BotType.SHIFT_BOT,
+  BotType.BARENA_BOT,
+  BotType.PWAINTME_BOT,
+]
 
 let enabled = false
 let rotationRequested = false
@@ -135,6 +150,18 @@ function getScheduledBot(): ScheduledBot {
           BArenaBotState.COUNTING_DOWN_FOR_ROUND_START,
           BArenaBotState.CELEBRATING_VICTORY,
         ].includes(useBArenaBotWorldStore().currentState),
+    },
+    {
+      type: BotType.PWAINTME_BOT,
+      name: 'PWaintMe',
+      register: registerPWaintMeBotCallbacks,
+      start: startManagedPWaintMeBot,
+      stop: stopPWaintMeBot,
+      isRunning: () => usePWaintMeBotWorldStore().everySecondUpdateIsRunning,
+      canSwitch: () =>
+        [PWaintMeBotState.STOPPED, PWaintMeBotState.AWAITING_PLAYERS, PWaintMeBotState.COUNTING_DOWN].includes(
+          usePWaintMeBotWorldStore().currentState,
+        ),
     },
   ]
   const bot = bots.find((entry) => entry.type === DEFAULT_BOT_ORDER[currentIndex])
@@ -268,6 +295,7 @@ async function startCurrentBot(): Promise<void> {
   resetCurseBotRoundStore()
   resetShiftBotRoundStore()
   resetBArenaBotRoundStore()
+  resetPWaintMeBotRoundStore()
 
   const bot = getScheduledBot()
   usePwClientStore().botType = bot.type

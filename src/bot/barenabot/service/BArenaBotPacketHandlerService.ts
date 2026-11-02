@@ -16,7 +16,7 @@ import { isDeveloper, isWorldOwner, requireWorldOwner } from '@/core/util/Enviro
 import { vec2 } from '@basementuniverse/vec'
 import { Block, KeyStates, LayerType } from 'pw-js-world'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
-import { getAnotherWorldBlocks, placeMultipleBlocks } from '@/core/service/WorldService.ts'
+import { getAnotherWorldBlocks, getAnotherWorldData, placeMultipleBlocks } from '@/core/service/WorldService.ts'
 import { placeBotWorld } from '@/core/service/BotWorldService.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { setCustomTimeout } from '@/core/util/Sleep.ts'
@@ -419,8 +419,8 @@ function helpCommandReceived(args: string[], playerId: number) {
 async function placeBArenaBotWorld() {
   sendGlobalChatMessage('Loading BArenaBot world...')
   const bArenaBotMapWorldId = 'r5a443b1170851c'
-  const blocks = await getAnotherWorldBlocks(bArenaBotMapWorldId, getPwApiClient())
-  await placeBotWorld(blocks, 'BArenaBot')
+  const world = await getAnotherWorldData(bArenaBotMapWorldId, getPwApiClient())
+  await placeBotWorld(world, 'BArenaBot')
 }
 
 async function loadBArenaBotData() {

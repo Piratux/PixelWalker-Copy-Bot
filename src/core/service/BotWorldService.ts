@@ -1,14 +1,26 @@
 import { vec2 } from '@basementuniverse/vec'
-import { Block, DeserialisedStructure, LayerType } from 'pw-js-world'
+import { ProtoGen } from 'pw-js-api'
+import { Block, LayerType } from 'pw-js-world'
 import { GameError } from '@/core/class/GameError.ts'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
 import { getPwGameClient, getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { WorldBlock } from '@/core/type/WorldBlock.ts'
-import { placeMultipleBlocks, placeWorldDataBlocks } from '@/core/service/WorldService.ts'
+import { WorldData } from '@/core/type/WorldData.ts'
+import {
+  commonWorldLabelUpsertPacketReceived,
+  commonWorldZoneAreaEditPacketReceived,
+  commonWorldZoneUpsertPacketReceived,
+  deleteWorldLabels,
+  placeLabels,
+  placeMultipleBlocks,
+  placeWorldDataBlocks,
+  replaceAllZones,
+} from '@/core/service/WorldService.ts'
+import { useZoneStore } from '@/core/store/ZoneStore.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 
 // Maps retain their original coordinates; padding only fills the area outside their bounds.
-export async function placeBotWorld(blocks: DeserialisedStructure, botName: string): Promise<void> {
+export async function placeBotWorld({ blocks, labels, zones }: WorldData, botName: string): Promise<void> {
   const helper = getPwGameWorldHelper()
   if (blocks.width > helper.width || blocks.height > helper.height) {
     throw new GameError(`Bot map (${blocks.width}x${blocks.height}) is larger than the world.`)
@@ -25,6 +37,29 @@ export async function placeBotWorld(blocks: DeserialisedStructure, botName: stri
   }
   if (!(await placeWorldDataBlocks(blocks))) {
     throw new GameError('Failed to place the bot map.')
+  }
+  const client = getPwGameClient()
+  const onLabelUpsert = (data: ProtoGen.WorldLabelUpsertPacket, states?: unknown): void => {
+    if (typeof states === 'object' && states !== null && 'oldLabel' in states && states.oldLabel != null) {
+      return
+    }
+    commonWorldLabelUpsertPacketReceived(data)
+  }
+  client.addCallback('worldLabelUpsertPacket', onLabelUpsert)
+  client.addCallback('worldZoneUpsertPacket', commonWorldZoneUpsertPacketReceived)
+  client.addCallback('worldZoneAreaEditPacket', commonWorldZoneAreaEditPacketReceived)
+  try {
+    deleteWorldLabels([...helper.labels.values()])
+    await placeLabels([...labels.values()].map((label) => label.toJSON()))
+    replaceAllZones([...zones.values()])
+    await workerWaitUntil(
+      () => useZoneStore().zonePasteQueue.size === 0 && useZoneStore().pendingZoneAreaEdits.size === 0,
+      { timeout: 15000, intervalBetweenAttempts: 100 },
+    )
+  } finally {
+    client.removeCallback('worldLabelUpsertPacket', onLabelUpsert)
+    client.removeCallback('worldZoneUpsertPacket', commonWorldZoneUpsertPacketReceived)
+    client.removeCallback('worldZoneAreaEditPacket', commonWorldZoneAreaEditPacketReceived)
   }
   const meta = helper.meta
   if (meta === null) {

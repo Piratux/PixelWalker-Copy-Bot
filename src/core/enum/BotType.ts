@@ -4,4 +4,5 @@ export enum BotType {
   CURSE_BOT,
   SHIFT_BOT,
   BARENA_BOT,
+  PWAINTME_BOT,
 }
