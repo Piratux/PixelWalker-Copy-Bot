@@ -23,21 +23,11 @@ const email = ref('')
 const password = ref('')
 const worldId = ref('')
 const secretEditKey = ref('')
-const botType = ref(BotType.COPY_BOT)
-const botTypeItems = [
-  { title: 'Copy Bot', value: BotType.COPY_BOT },
-  { title: 'Bom Bot', value: BotType.BOM_BOT },
-  { title: 'Curse Bot', value: BotType.CURSE_BOT },
-  { title: 'Shift Bot', value: BotType.SHIFT_BOT },
-  { title: 'BArena Bot', value: BotType.BARENA_BOT },
-]
 const form = ref<VForm>()
 
 const router = useRouter()
 
 const devViewEnabled = computed(() => import.meta.env.VITE_DEV_VIEW === 'TRUE')
-// const adminViewEnabled = computed(() => devViewEnabled.value || usePwClientStore().isAdminModeOn)
-const adminViewEnabled = true
 
 watch(worldId, () => {
   worldId.value = getWorldIdIfUrl(worldId.value)
@@ -48,7 +38,7 @@ async function onConnectButtonClick() {
     return
   }
   await withLoading(loadingOverlay, async () => {
-    await initPwClasses(worldId.value, email.value, password.value, secretEditKey.value, botType.value)
+    await initPwClasses(worldId.value, email.value, password.value, secretEditKey.value, BotType.COPY_BOT)
 
     await router.push({ name: RouteName.HOME })
   })
@@ -88,9 +78,6 @@ function setDefaultWorldIdButtonClicked() {
         </v-row>
         <v-row>
           <PiTextField v-model="secretEditKey" label="Secret Edit Key (Optional)"></PiTextField>
-        </v-row>
-        <v-row v-if="adminViewEnabled">
-          <v-select v-model="botType" :items="botTypeItems" label="Bot type"></v-select>
         </v-row>
         <v-row>
           <PiMarkdown :markdown-raw="loginViewMarkdown" />
