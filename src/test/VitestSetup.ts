@@ -1,6 +1,5 @@
 import { createPinia, getActivePinia, setActivePinia } from 'pinia'
 import { initPwClasses } from '@/core/service/PwClientService.ts'
-import { BotType } from '@/core/enum/BotType.ts'
 import { getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
 import { afterEach } from 'vitest'
 import { useCopyBotStore } from '@/bot/copybot/store/CopyBotStore.ts'
@@ -14,7 +13,6 @@ if (getActivePinia() === undefined) {
     import.meta.env.VITE_TEST_RUN_PW_ACCOUNT_EMAIL!.toLowerCase(), // Login page in PW lowercases email before sending to server
     import.meta.env.VITE_TEST_RUN_PW_ACCOUNT_PASSWORD!,
     '',
-    BotType.COPY_BOT,
   )
 
   if (getPwGameWorldHelper().width !== 200 || getPwGameWorldHelper().height !== 200) {

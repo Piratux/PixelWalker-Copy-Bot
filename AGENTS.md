@@ -14,6 +14,7 @@
   - Changelog is for non technical people so keep it simple and short. Do not include implementation details that are not visible by end users.
   - If change is purely technical and not visible by end users, then do not add entry in changelog.
   - When adding new entry, if latest entry is of current date, just add that entry in that group, no need to make new version.
+  - If the change was not committed yet before the prompt, and then you changed/reverted it, do not add it to changelog.
 - Use `bun` commands instead of `npm`, etc.
 - When asked for explanation of code changes, when answering also add a comment next to code which was unclear.
 
@@ -26,3 +27,4 @@
 - Do not modify existing dependencies in the project.
 - Do not run `bun run build`
 - Do not commit or push code.
+- Do not re export/import functions/types/etc. under different names.

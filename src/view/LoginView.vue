@@ -10,7 +10,6 @@ import { initPwClasses } from '@/core/service/PwClientService.ts'
 import { withLoading } from '@/core/util/LoaderProxy.ts'
 import PiOverlay from '@/component/PiOverlay.vue'
 import { getEnvDefaultWorldId } from '@/core/util/Environment.ts'
-import { BotType } from '@/core/enum/BotType.ts'
 import { RouteName } from '@/router/RouteName.ts'
 import PiMarkdown from '@/component/PiMarkdown.vue'
 import loginViewMarkdown from '@/view/md/LoginView.md?raw'
@@ -38,7 +37,7 @@ async function onConnectButtonClick() {
     return
   }
   await withLoading(loadingOverlay, async () => {
-    await initPwClasses(worldId.value, email.value, password.value, secretEditKey.value, BotType.COPY_BOT)
+    await initPwClasses(worldId.value, email.value, password.value, secretEditKey.value)
 
     await router.push({ name: RouteName.HOME })
   })

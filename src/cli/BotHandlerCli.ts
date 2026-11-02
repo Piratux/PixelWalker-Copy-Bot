@@ -1,6 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { initPwClasses } from '@/core/service/PwClientService.ts'
-import { BotType } from '@/core/enum/BotType.ts'
+import { startBotHandler } from '@/core/service/BotHandlerService.ts'
 
 setActivePinia(createPinia())
 
@@ -9,7 +8,7 @@ const password = import.meta.env.VITE_BAL_ACCOUNT_PASSWORD ?? ''
 const worldId = import.meta.env.VITE_BAL_WORLD_ID ?? ''
 
 if (email === '' || password === '' || worldId === '') {
-  console.error('BomBot CLI — missing required environment variables.')
+  console.error('Bot handler CLI — missing required environment variables.')
   console.error('')
   console.error('Required:')
   console.error('  VITE_BAL_ACCOUNT_EMAIL=<email>')
@@ -18,6 +17,6 @@ if (email === '' || password === '' || worldId === '') {
   process.exit(1)
 }
 
-await initPwClasses(worldId, email, password, '', BotType.BOM_BOT)
+await startBotHandler(worldId, email, password)
 
-console.log('BomBot is running! Press Ctrl+C to stop.')
+console.log('Bot handler is running! Press Ctrl+C to stop.')

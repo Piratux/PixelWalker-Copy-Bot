@@ -8,7 +8,6 @@ import {
 import { ProtoGen } from 'pw-js-api'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import {
-  commonPlayerInitPacketReceived,
   hotReloadCallbacks,
   requirePlayerAndBotEditPermission,
   updateAwaitedWorldBlockPlacedPackets,
@@ -17,9 +16,11 @@ import { isDeveloper, isWorldOwner, requireWorldOwner } from '@/core/util/Enviro
 import { vec2 } from '@basementuniverse/vec'
 import { Block, KeyStates, LayerType } from 'pw-js-world'
 import { PwBlockName } from '@/core/gen/PwBlockName.ts'
-import { getAnotherWorldBlocks, placeMultipleBlocks, placeWorldDataBlocks } from '@/core/service/WorldService.ts'
+import { getAnotherWorldBlocks, placeMultipleBlocks } from '@/core/service/WorldService.ts'
+import { placeBotWorld } from '@/core/service/BotWorldService.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { setCustomTimeout } from '@/core/util/Sleep.ts'
+import { isBotStarting, shouldPauseForBotRotation } from '@/core/service/BotHandlerService.ts'
 import { handleException } from '@/core/util/Exception.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
@@ -107,7 +108,6 @@ const GUN_RELOAD_SPEED_SECONDS = 1
 const GUN_RELOAD_COOLDOWN_TICKS = TICK_RATE * GUN_RELOAD_SPEED_SECONDS
 
 const callbacks: CallbackEntry[] = [
-  { name: 'playerInitPacket', fn: playerInitPacketReceived },
   { name: 'playerJoinedPacket', fn: playerJoinedPacketReceived },
   { name: 'playerChatPacket', fn: playerChatPacketReceived },
   { name: 'playerGodModePacket', fn: playerGodModePacketReceived },
@@ -119,12 +119,14 @@ const callbacks: CallbackEntry[] = [
 
 export function registerBArenaBotCallbacks() {
   const client = getPwGameClient()
-  const helper = getPwGameWorldHelper()
-  client.addHook(helper.receiveHook)
   // client.addCallback('debug', console.log) // Too laggy to enable it by default
-  client.addCallback('error', handleBArenaBotError)
   for (const cb of callbacks) {
     client.addCallback(cb.name, cb.fn)
+  }
+  return () => {
+    for (const cb of callbacks) {
+      client.removeCallback(cb.name, cb.fn)
+    }
   }
 }
 
@@ -139,22 +141,8 @@ if (import.meta.hot) {
   })
 }
 
-function playerInitPacketReceived() {
-  commonPlayerInitPacketReceived()
-
-  getPwGameClient().send('playerGodModePacket', {
-    enabled: true,
-  })
-
-  sendRawMessage(`/team #${getPwGameWorldHelper().botPlayerId} ${TEAM_RED}`)
-}
-
 function removePlayerFromPlayersInGame(playerId: number) {
   useBArenaBotRoundStore().playerBArenaBotRoundData.delete(playerId)
-}
-
-function handleBArenaBotError(e: unknown) {
-  handleException(e)
 }
 
 function disqualifyPlayerFromRound(playerId: number) {
@@ -348,10 +336,10 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       sendPrivateChatMessage('pong', playerId)
       break
     case BArenaBotCommandName.START:
-      await startCommandReceived(commandArgs, playerId, true)
+      await startManagedBArenaBot(commandArgs, playerId, true)
       break
     case BArenaBotCommandName.QUICK_START:
-      await startCommandReceived(commandArgs, playerId, false)
+      await startManagedBArenaBot(commandArgs, playerId, false)
       break
     case BArenaBotCommandName.STOP:
       await stopCommandReceived(commandArgs, playerId)
@@ -432,7 +420,7 @@ async function placeBArenaBotWorld() {
   sendGlobalChatMessage('Loading BArenaBot world...')
   const bArenaBotMapWorldId = 'r5a443b1170851c'
   const blocks = await getAnotherWorldBlocks(bArenaBotMapWorldId, getPwApiClient())
-  await placeWorldDataBlocks(blocks)
+  await placeBotWorld(blocks, 'BArenaBot')
 }
 
 async function loadBArenaBotData() {
@@ -473,7 +461,7 @@ async function stopCommandReceived(_args: string[], playerId: number) {
   await stopBArenaBot()
 }
 
-async function stopBArenaBot() {
+export async function stopBArenaBot() {
   sendGlobalChatMessage('Stopping BArenaBot...')
   useBArenaBotWorldStore().currentState = BArenaBotState.STOPPED
   await workerWaitUntil(() => !useBArenaBotWorldStore().everyTickUpdateIsRunning, {
@@ -483,7 +471,7 @@ async function stopBArenaBot() {
   sendGlobalChatMessage('BArenaBot stopped!')
 }
 
-async function startCommandReceived(_args: string[], playerId: number, loadWorld: boolean) {
+export async function startManagedBArenaBot(_args: string[], playerId: number, loadWorld: boolean) {
   requireWorldOwner(playerId)
   requirePlayerAndBotEditPermission(playerId)
 
@@ -702,13 +690,18 @@ function everyTickBArenaBotUpdate(): void {
 }
 
 async function everyTickUpdate(): Promise<void> {
-  if (useBArenaBotWorldStore().currentState === BArenaBotState.STOPPED) {
+  if (
+    shouldPauseForBotRotation(BotType.BARENA_BOT) ||
+    useBArenaBotWorldStore().currentState === BArenaBotState.STOPPED
+  ) {
     useBArenaBotWorldStore().everyTickUpdateIsRunning = false
     return
   }
 
   try {
-    everyTickBArenaBotUpdate()
+    if (!isBotStarting(BotType.BARENA_BOT)) {
+      everyTickBArenaBotUpdate()
+    }
   } catch (e) {
     handleException(e)
     await autoRestartBArenaBot()

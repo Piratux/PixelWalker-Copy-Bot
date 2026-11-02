@@ -14,7 +14,6 @@ import {
 import { ProtoGen } from 'pw-js-api'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import {
-  commonPlayerInitPacketReceived,
   handlePlaceBlocksResult,
   hotReloadCallbacks,
   requirePlayerAndBotEditPermission,
@@ -33,15 +32,15 @@ import {
   getDeserialisedStructureSectionVec2,
   mergeWorldBlocks,
   placeMultipleBlocks,
-  placeWorldDataBlocks,
   placeWorldDataBlocksUsingColumnsLeftToRightPattern,
 } from '@/core/service/WorldService.ts'
+import { placeBotWorld } from '@/core/service/BotWorldService.ts'
 import { TOTAL_PW_LAYERS } from '@/core/constant/General.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { resetBomBotWorldStore, useBomBotWorldStore } from '@/bot/bombot/store/BomBotWorldStore.ts'
 import { BomBotState } from '@/bot/bombot/enum/BomBotState.ts'
 import { BomBotMapEntry } from '@/bot/bombot/type/BomBotMapEntry.ts'
-import { setCustomTimeout, sleep } from '@/core/util/Sleep.ts'
+import { setCustomTimeout } from '@/core/util/Sleep.ts'
 import { BomBotBlockType } from '@/bot/bombot/enum/BomBotBlockType.ts'
 import { handleException } from '@/core/util/Exception.ts'
 import { resetBomBotRoundStore, useBomBotRoundStore } from '@/bot/bombot/store/BomBotRoundStore.ts'
@@ -60,6 +59,7 @@ import { BomBotCommandName } from '@/bot/bombot/enum/BomBotCommandName.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { mapGetOrInsert } from '@/core/util/MapGetOrInsert.ts'
 import { isPosInsideArea } from '@/core/util/Geometry.ts'
+import { isBotStarting, shouldPauseForBotRotation } from '@/core/service/BotHandlerService.ts'
 
 const blockTypeDataStartPos = vec2(20, 361) // inclusive x
 const blockTypeDataEndPos = vec2(389, 361) // exclusive x
@@ -75,7 +75,6 @@ const TEAM_RED = 1
 const TEAM_GREEN = 2
 
 const callbacks: CallbackEntry[] = [
-  { name: 'playerInitPacket', fn: playerInitPacketReceived },
   { name: 'playerJoinedPacket', fn: playerJoinedPacketReceived },
   { name: 'playerChatPacket', fn: playerChatPacketReceived },
   { name: 'playerTeamUpdatePacket', fn: playerTeamUpdatePacketReceived },
@@ -89,12 +88,14 @@ const callbacks: CallbackEntry[] = [
 
 export function registerBomBotCallbacks() {
   const client = getPwGameClient()
-  const helper = getPwGameWorldHelper()
-  client.addHook(helper.receiveHook)
   // client.addCallback('debug', console.log) // Too laggy to enable it by default
-  client.addCallback('error', handleBomBotError)
   for (const cb of callbacks) {
     client.addCallback(cb.name, cb.fn)
+  }
+  return () => {
+    for (const cb of callbacks) {
+      client.removeCallback(cb.name, cb.fn)
+    }
   }
 }
 
@@ -109,21 +110,6 @@ if (import.meta.hot) {
   })
 }
 
-async function playerInitPacketReceived() {
-  commonPlayerInitPacketReceived()
-
-  getPwGameClient().send('playerGodModePacket', {
-    enabled: true,
-  })
-
-  sendRawMessage(`/team #${getPwGameWorldHelper().botPlayerId} ${TEAM_RED}`)
-
-  const playerId = getPwGameWorldHelper().botPlayerId
-
-  await sleep(5000) // TODO: figure out why sleep is needed.
-  await startCommandReceived([], playerId, true)
-}
-
 function removePlayerFromPlayersInGame(playerId: number) {
   useBomBotRoundStore().playersInGame = useBomBotRoundStore().playersInGame.filter((p) => p.playerId !== playerId)
   useBomBotRoundStore().playerIdsBomberQueueOriginal = useBomBotRoundStore().playerIdsBomberQueueOriginal.filter(
@@ -132,11 +118,6 @@ function removePlayerFromPlayersInGame(playerId: number) {
   useBomBotRoundStore().playerIdsBomberQueueRemainder = useBomBotRoundStore().playerIdsBomberQueueRemainder.filter(
     (pId) => pId !== playerId,
   )
-}
-
-function handleBomBotError(e: unknown) {
-  handleException(e)
-  // await autoRestartBomBot() // TODO FIX
 }
 
 function convertFromPixelPosToBlockPos(pixelPos: vec2): vec2 {
@@ -479,10 +460,10 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       sendPrivateChatMessage('pong', playerId)
       break
     case BomBotCommandName.START:
-      await startCommandReceived(commandArgs, playerId, true)
+      await startManagedBomBot(commandArgs, playerId, true)
       break
     case BomBotCommandName.QUICK_START:
-      await startCommandReceived(commandArgs, playerId, false)
+      await startManagedBomBot(commandArgs, playerId, false)
       break
     case BomBotCommandName.STOP:
       await stopCommandReceived(commandArgs, playerId)
@@ -617,7 +598,7 @@ async function placeBomBotWorld() {
   sendGlobalChatMessage('Loading BomBot world')
   const bomBotMapWorldId = 'r3796a7103bb687'
   const blocks = await getAnotherWorldBlocks(bomBotMapWorldId, getPwApiClient())
-  await placeWorldDataBlocks(blocks)
+  await placeBotWorld(blocks, 'BomBot')
 }
 
 async function placeBomBotMap(mapEntry: BomBotMapEntry) {
@@ -804,7 +785,7 @@ async function stopCommandReceived(_args: string[], playerId: number) {
   await stopBomBot()
 }
 
-async function stopBomBot() {
+export async function stopBomBot() {
   sendGlobalChatMessage('Stopping BomBot...')
   useBomBotWorldStore().currentState = BomBotState.STOPPED
   await workerWaitUntil(() => !useBomBotWorldStore().everySecondUpdateIsRunning, {
@@ -814,7 +795,7 @@ async function stopBomBot() {
   sendGlobalChatMessage('BomBot stopped!')
 }
 
-async function startCommandReceived(_args: string[], playerId: number, loadWorld: boolean) {
+export async function startManagedBomBot(_args: string[], playerId: number, loadWorld: boolean) {
   requireWorldOwner(playerId)
   requirePlayerAndBotEditPermission(playerId)
 
@@ -854,13 +835,15 @@ async function startBomBot(loadWorld: boolean) {
 }
 
 async function everySecondUpdate(): Promise<void> {
-  if (useBomBotWorldStore().currentState === BomBotState.STOPPED) {
+  if (shouldPauseForBotRotation(BotType.BOM_BOT) || useBomBotWorldStore().currentState === BomBotState.STOPPED) {
     useBomBotWorldStore().everySecondUpdateIsRunning = false
     return
   }
 
   try {
-    await everySecondBomBotUpdate()
+    if (!isBotStarting(BotType.BOM_BOT)) {
+      await everySecondBomBotUpdate()
+    }
   } catch (e) {
     handleException(e)
     await autoRestartBomBot()

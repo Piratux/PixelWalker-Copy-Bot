@@ -41,6 +41,26 @@ Keep TypeScript on version 6 until `vue-tsc` and `typescript-eslint` support the
 TypeScript 7 compiler API. To update the other dependencies, use
 `bunx npm-check-updates -u --reject typescript`, followed by `bun install`.
 
+### Rotating game bots
+
+Run `bun run bot-handler` to start the bot handler. Set `VITE_BAL_ACCOUNT_EMAIL`,
+`VITE_BAL_ACCOUNT_PASSWORD`, and `VITE_BAL_WORLD_ID` in your local environment file
+or runtime environment. The account must own the world, which must be at least 200x200.
+
+The handler starts BomBot, then cycles through CurseBot, ShiftBot, and BArenaBot,
+returning to BomBot after the last bot. Copy Bot is not included.
+Bots switch at midnight in the server's local time. If a round is ongoing, the
+switch waits for it to finish. The world owner or bot developer can use `.nextbot`
+to request the same switch immediately, or `.help nextbot` for help.
+
+Each switch clears the world and automatically loads and starts the next bot.
+Loading a bot's world updates its name to `BotName [ON]`, for example `BomBot [ON]`,
+without changing the other world settings.
+Maps are placed in the top-left corner, with unused
+space filled with black transparent foreground blocks. Only after the new bot
+has fully started are all player counters and bot statistics reset and all players killed.
+Restarting the handler starts the rotation from BomBot again.
+
 ### Documentation
 
 Documentation lives in `docs/`, with VitePress navigation and search configured in `docs/.vitepress/config.ts`.

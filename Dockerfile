@@ -1,5 +1,5 @@
-# ── BomBot CLI ────────────────────────────────────────────────────────────────
-# Runs the BomBot command-line bot via vite-node.
+# ── Bot handler CLI ───────────────────────────────────────────────────────────
+# Runs the rotating game bots via vite-node.
 # Credentials are supplied at runtime through environment variables —
 # never bake them into the image.
 # ──────────────────────────────────────────────────────────────────────────────
@@ -19,4 +19,4 @@ RUN bun install --frozen-lockfile
 # Copy the rest of the source
 COPY . .
 
-CMD ["bun", "run", "bombot"]
+CMD ["bun", "run", "bot-handler"]

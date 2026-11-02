@@ -12,8 +12,6 @@ import {
 import { sendGlobalChatMessage, sendRawMessage } from '@/core/service/ChatMessageService.ts'
 import { registerCopyBotCallbacks } from '@/bot/copybot/service/CopyBotPacketHandlerService.ts'
 import { EER_MAPPINGS, EerListBlockResult } from '@/webtool/eer/block/EerMappings.ts'
-import { BotType } from '@/core/enum/BotType.ts'
-import { registerBomBotCallbacks } from '@/bot/bombot/service/BomBotPacketHandlerService.ts'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import { useAlertStore } from '@/core/store/AlertStore.ts'
 import { GameError } from '@/core/class/GameError.ts'
@@ -22,9 +20,6 @@ import { resetEerClientStore, useEerClientStore } from '@/webtool/eer/store/EerC
 import { vec2 } from '@basementuniverse/vec'
 import { TimeoutError, workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
 import { createFailedToJoinWorldErrorString } from '@/bot/copybot/service/CopyBotErrorService.ts'
-import { registerCurseBotCallbacks } from '@/bot/cursebot/service/CurseBotPacketHandlerService.ts'
-import { registerShiftBotCallbacks } from '@/bot/shiftbot/service/ShiftBotPacketHandlerService.ts'
-import { registerBArenaBotCallbacks } from '@/bot/barenabot/service/BArenaBotPacketHandlerService.ts'
 import { resetCopyBotStore } from '@/bot/copybot/store/CopyBotStore.ts'
 import { resetZoneStore, useZoneStore } from '@/core/store/ZoneStore.ts'
 import { resetLabelStore, useLabelStore } from '@/core/store/LabelStore.ts'
@@ -99,13 +94,22 @@ function initEerBlocks(eerBlocks: EerListBlockResult[]) {
   })
 }
 
-export async function initPwClasses(
+export async function initPwClasses(worldId: string, email: string, password: string, secretEditKey: string) {
+  const pwBlocks = await initPwConnection(worldId, email, password, secretEditKey, () => {
+    resetCopyBotStore()
+    registerCopyBotCallbacks()
+  })
+  initEelvlBlocks(pwBlocks)
+  initEerBlocks(EER_MAPPINGS)
+}
+
+export async function initPwConnection(
   worldId: string,
   email: string,
   password: string,
   secretEditKey: string,
-  botType: BotType,
-) {
+  registerCallbacks: () => void,
+): Promise<ListBlockResult[]> {
   resetPwClientStore()
   resetZoneStore()
   resetLabelStore()
@@ -114,7 +118,6 @@ export async function initPwClasses(
   usePwClientStore().email = email.toLowerCase() // Login page in PW lowercases email before sending to server
   usePwClientStore().password = password
   usePwClientStore().secretEditKey = secretEditKey
-  usePwClientStore().botType = botType
 
   usePwClientStore().pwApiClient = new PWApiClient(usePwClientStore().email, usePwClientStore().password, {
     endpoints: {
@@ -129,31 +132,19 @@ export async function initPwClasses(
   usePwClientStore().pwGameClient = new PWGameClient(getPwApiClient())
   usePwClientStore().pwGameWorldHelper = new PWGameWorldHelper()
 
-  if (botType === BotType.COPY_BOT) {
-    resetCopyBotStore()
-    registerCopyBotCallbacks()
-  } else if (botType === BotType.BOM_BOT) {
-    registerBomBotCallbacks()
-  } else if (botType === BotType.CURSE_BOT) {
-    registerCurseBotCallbacks()
-  } else if (botType === BotType.SHIFT_BOT) {
-    registerShiftBotCallbacks()
-  } else if (botType === BotType.BARENA_BOT) {
-    registerBArenaBotCallbacks()
-  }
+  registerCallbacks()
 
   await joinWorld(getPwGameClient(), usePwClientStore().worldId)
 
   const pwBlocks = await getPwBlocks()
   const pwCatallogedBlocks = await PWCatalog.getBlocks()
   initPwBlocks(pwBlocks, pwCatallogedBlocks)
-  initEelvlBlocks(pwBlocks)
-  initEerBlocks(EER_MAPPINGS)
 
   await workerWaitUntil(() => usePwClientStore().isConnected, {
     timeout: 5000,
     intervalBetweenAttempts: 1000,
   })
+  return pwBlocks
 }
 
 async function getPwBlocks(): Promise<ListBlockResult[]> {

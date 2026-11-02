@@ -20,7 +20,7 @@
     "update-dependencies-interactive": "bunx npm-check-updates -i",
     "gen-files": "bunx tsx src/script/GenerateBlockEnumFiles.ts",
     "gen-tests": "bunx tsx src/script/GenerateTests.ts",
-    "bombot": "vite-node --config vite.config.cli.ts src/cli/BomBotCli.ts"
+    "bot-handler": "vite-node --config vite.config.cli.ts src/cli/BotHandlerCli.ts"
   },
   "dependencies": {
     "@basementuniverse/vec": "^2.5.1",

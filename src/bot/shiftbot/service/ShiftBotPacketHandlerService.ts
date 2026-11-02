@@ -3,7 +3,6 @@ import { sendGlobalChatMessage, sendPrivateChatMessage, sendRawMessage } from '@
 import { ProtoGen } from 'pw-js-api'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import {
-  commonPlayerInitPacketReceived,
   hotReloadCallbacks,
   requirePlayerAndBotEditPermission,
   updateAwaitedWorldBlockPlacedPackets,
@@ -17,11 +16,12 @@ import {
   getAnotherWorldBlocks,
   getDeserialisedStructureSectionVec2,
   placeMultipleBlocks,
-  placeWorldDataBlocks,
   placeWorldDataBlocksUsingRandomPositionsPattern,
 } from '@/core/service/WorldService.ts'
+import { placeBotWorld } from '@/core/service/BotWorldService.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { setCustomTimeout, sleep } from '@/core/util/Sleep.ts'
+import { isBotStarting, shouldPauseForBotRotation } from '@/core/service/BotHandlerService.ts'
 import { handleException } from '@/core/util/Exception.ts'
 import { GameError } from '@/core/class/GameError.ts'
 import { workerWaitUntil } from '@/core/util/WorkerWaitUntil.ts'
@@ -61,7 +61,6 @@ const TEAM_GREEN = 2
 const TEAM_YELLOW = 6
 
 const callbacks: CallbackEntry[] = [
-  { name: 'playerInitPacket', fn: playerInitPacketReceived },
   { name: 'playerJoinedPacket', fn: playerJoinedPacketReceived },
   { name: 'playerChatPacket', fn: playerChatPacketReceived },
   { name: 'playerTeamUpdatePacket', fn: playerTeamUpdatePacketReceived },
@@ -73,12 +72,14 @@ const callbacks: CallbackEntry[] = [
 
 export function registerShiftBotCallbacks() {
   const client = getPwGameClient()
-  const helper = getPwGameWorldHelper()
-  client.addHook(helper.receiveHook)
   // client.addCallback('debug', console.log) // Too laggy to enable it by default
-  client.addCallback('error', handleShiftBotError)
   for (const cb of callbacks) {
     client.addCallback(cb.name, cb.fn)
+  }
+  return () => {
+    for (const cb of callbacks) {
+      client.removeCallback(cb.name, cb.fn)
+    }
   }
 }
 
@@ -93,22 +94,8 @@ if (import.meta.hot) {
   })
 }
 
-function playerInitPacketReceived() {
-  commonPlayerInitPacketReceived()
-
-  getPwGameClient().send('playerGodModePacket', {
-    enabled: true,
-  })
-
-  sendRawMessage(`/team #${getPwGameWorldHelper().botPlayerId} ${TEAM_RED}`)
-}
-
 function removePlayerFromPlayersInGame(playerId: number) {
   useShiftBotRoundStore().playersInGame = useShiftBotRoundStore().playersInGame.filter((p) => p.playerId !== playerId)
-}
-
-function handleShiftBotError(e: unknown) {
-  handleException(e)
 }
 
 function disqualifyPlayerFromRound(playerId: number) {
@@ -263,10 +250,10 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       sendPrivateChatMessage('pong', playerId)
       break
     case ShiftBotCommandName.START:
-      await startCommandReceived(commandArgs, playerId, true)
+      await startManagedShiftBot(commandArgs, playerId, true)
       break
     case ShiftBotCommandName.QUICK_START:
-      await startCommandReceived(commandArgs, playerId, false)
+      await startManagedShiftBot(commandArgs, playerId, false)
       break
     case ShiftBotCommandName.STOP:
       await stopCommandReceived(commandArgs, playerId)
@@ -347,7 +334,7 @@ async function placeShiftBotWorld() {
   sendGlobalChatMessage('Loading ShiftBot world...')
   const shiftBotMapWorldId = 'ra8b2aaeafc28c0'
   const blocks = await getAnotherWorldBlocks(shiftBotMapWorldId, getPwApiClient())
-  await placeWorldDataBlocks(blocks)
+  await placeBotWorld(blocks, 'ShiftBot')
 }
 
 async function placeShiftBotMap(mapEntry: ShiftBotMapEntry) {
@@ -485,7 +472,7 @@ async function stopCommandReceived(_args: string[], playerId: number) {
   await stopShiftBot()
 }
 
-async function stopShiftBot() {
+export async function stopShiftBot() {
   sendGlobalChatMessage('Stopping ShiftBot...')
   useShiftBotWorldStore().currentState = ShiftBotState.STOPPED
   await workerWaitUntil(() => !useShiftBotWorldStore().everySecondUpdateIsRunning, {
@@ -495,7 +482,7 @@ async function stopShiftBot() {
   sendGlobalChatMessage('ShiftBot stopped!')
 }
 
-async function startCommandReceived(_args: string[], playerId: number, loadWorld: boolean) {
+export async function startManagedShiftBot(_args: string[], playerId: number, loadWorld: boolean) {
   requireWorldOwner(playerId)
   requirePlayerAndBotEditPermission(playerId)
 
@@ -535,13 +522,15 @@ async function startShiftBot(loadWorld: boolean) {
 }
 
 async function everySecondUpdate(): Promise<void> {
-  if (useShiftBotWorldStore().currentState === ShiftBotState.STOPPED) {
+  if (shouldPauseForBotRotation(BotType.SHIFT_BOT) || useShiftBotWorldStore().currentState === ShiftBotState.STOPPED) {
     useShiftBotWorldStore().everySecondUpdateIsRunning = false
     return
   }
 
   try {
-    await everySecondShiftBotUpdate()
+    if (!isBotStarting(BotType.SHIFT_BOT)) {
+      await everySecondShiftBotUpdate()
+    }
   } catch (e) {
     handleException(e)
     await autoRestartShiftBot()
@@ -1004,13 +993,10 @@ async function everySecondShiftBotUpdate() {
     }
     case ShiftBotState.PAUSE_AFTER_ROUND: {
       useShiftBotRoundStore().secondsPassedInPauseAfterRoundState++
-      if (
-        useShiftBotRoundStore().secondsPassedInPauseAfterRoundState === 2 &&
-        useShiftBotRoundStore().winnerPlayerId !== null
-      ) {
+      const winnerPlayerId = useShiftBotRoundStore().winnerPlayerId
+      if (useShiftBotRoundStore().secondsPassedInPauseAfterRoundState === 2 && winnerPlayerId !== null) {
         const winPos = vec2(59, 79)
-        const playerId = useShiftBotRoundStore().winnerPlayerId
-        sendRawMessage(`/tp #${playerId} ${winPos.x} ${winPos.y}`)
+        sendRawMessage(`/tp #${winnerPlayerId} ${winPos.x} ${winPos.y}`)
       }
 
       if (useShiftBotRoundStore().secondsPassedInPauseAfterRoundState > 5) {

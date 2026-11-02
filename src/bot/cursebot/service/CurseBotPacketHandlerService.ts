@@ -3,7 +3,6 @@ import { sendGlobalChatMessage, sendPrivateChatMessage, sendRawMessage } from '@
 import { ProtoGen } from 'pw-js-api'
 import { CallbackEntry } from '@/core/type/CallbackEntry.ts'
 import {
-  commonPlayerInitPacketReceived,
   hotReloadCallbacks,
   requirePlayerAndBotEditPermission,
   updateAwaitedWorldBlockPlacedPackets,
@@ -18,8 +17,10 @@ import {
   placeMultipleBlocks,
   placeWorldDataBlocks,
 } from '@/core/service/WorldService.ts'
+import { placeBotWorld } from '@/core/service/BotWorldService.ts'
 import { BotType } from '@/core/enum/BotType.ts'
 import { setCustomTimeout } from '@/core/util/Sleep.ts'
+import { isBotStarting, shouldPauseForBotRotation } from '@/core/service/BotHandlerService.ts'
 import { handleException } from '@/core/util/Exception.ts'
 import { getRandomArrayElement } from '@/core/util/Random.ts'
 import { GameError } from '@/core/class/GameError.ts'
@@ -47,7 +48,6 @@ const EFFECT_CURSE = 4
 const CURSE_LENGTH_MS = 60_000
 
 const callbacks: CallbackEntry[] = [
-  { name: 'playerInitPacket', fn: playerInitPacketReceived },
   { name: 'playerJoinedPacket', fn: playerJoinedPacketReceived },
   { name: 'playerChatPacket', fn: playerChatPacketReceived },
   { name: 'playerTeamUpdatePacket', fn: playerTeamUpdatePacketReceived },
@@ -61,12 +61,14 @@ const callbacks: CallbackEntry[] = [
 
 export function registerCurseBotCallbacks() {
   const client = getPwGameClient()
-  const helper = getPwGameWorldHelper()
-  client.addHook(helper.receiveHook)
   // client.addCallback('debug', console.log) // Too laggy to enable it by default
-  client.addCallback('error', handleCurseBotError)
   for (const cb of callbacks) {
     client.addCallback(cb.name, cb.fn)
+  }
+  return () => {
+    for (const cb of callbacks) {
+      client.removeCallback(cb.name, cb.fn)
+    }
   }
 }
 
@@ -81,22 +83,8 @@ if (import.meta.hot) {
   })
 }
 
-function playerInitPacketReceived() {
-  commonPlayerInitPacketReceived()
-
-  getPwGameClient().send('playerGodModePacket', {
-    enabled: true,
-  })
-
-  sendRawMessage(`/team #${getPwGameWorldHelper().botPlayerId} ${TEAM_RED}`)
-}
-
 function removePlayerFromPlayersInGame(playerId: number) {
   useCurseBotRoundStore().playersInGame = useCurseBotRoundStore().playersInGame.filter((p) => p.playerId !== playerId)
-}
-
-function handleCurseBotError(e: unknown) {
-  handleException(e)
 }
 
 function giveAnotherPlayerCurseIfNeeded(playerId: number) {
@@ -173,6 +161,9 @@ function checkIfPlayerTeleportedToMap(data: ProtoGen.PlayerTeamUpdatePacket) {
 }
 
 function checkIfPlayerJustWon(data: ProtoGen.PlayerCountersUpdatePacket) {
+  if (useCurseBotWorldStore().currentState !== CurseBotState.PLAYING) {
+    return
+  }
   const playerId = data.playerId!
   if (useCurseBotRoundStore().lastPlayerIdWithCurseEffect === playerId) {
     playerWinRound(playerId)
@@ -241,10 +232,10 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket) {
       sendPrivateChatMessage('pong', playerId)
       break
     case CurseBotCommandName.START:
-      await startCommandReceived(commandArgs, playerId, true)
+      await startManagedCurseBot(commandArgs, playerId, true)
       break
     case CurseBotCommandName.QUICK_START:
-      await startCommandReceived(commandArgs, playerId, false)
+      await startManagedCurseBot(commandArgs, playerId, false)
       break
     case CurseBotCommandName.STOP:
       await stopCommandReceived(commandArgs, playerId)
@@ -325,7 +316,7 @@ async function placeCurseBotWorld() {
   sendGlobalChatMessage('Loading CurseBot world...')
   const curseBotMapWorldId = 'ra252b9f970bc53'
   const blocks = await getAnotherWorldBlocks(curseBotMapWorldId, getPwApiClient())
-  await placeWorldDataBlocks(blocks)
+  await placeBotWorld(blocks, 'CurseBot')
 }
 
 async function placeCurseBotMap(mapEntry: CurseBotMapEntry) {
@@ -402,7 +393,7 @@ async function stopCommandReceived(_args: string[], playerId: number) {
   await stopCurseBot()
 }
 
-async function stopCurseBot() {
+export async function stopCurseBot() {
   sendGlobalChatMessage('Stopping CurseBot...')
   useCurseBotWorldStore().currentState = CurseBotState.STOPPED
   await workerWaitUntil(() => !useCurseBotWorldStore().everySecondUpdateIsRunning, {
@@ -412,7 +403,7 @@ async function stopCurseBot() {
   sendGlobalChatMessage('CurseBot stopped!')
 }
 
-async function startCommandReceived(_args: string[], playerId: number, loadWorld: boolean) {
+export async function startManagedCurseBot(_args: string[], playerId: number, loadWorld: boolean) {
   requireWorldOwner(playerId)
   requirePlayerAndBotEditPermission(playerId)
 
@@ -452,13 +443,15 @@ async function startCurseBot(loadWorld: boolean) {
 }
 
 async function everySecondUpdate(): Promise<void> {
-  if (useCurseBotWorldStore().currentState === CurseBotState.STOPPED) {
+  if (shouldPauseForBotRotation(BotType.CURSE_BOT) || useCurseBotWorldStore().currentState === CurseBotState.STOPPED) {
     useCurseBotWorldStore().everySecondUpdateIsRunning = false
     return
   }
 
   try {
-    await everySecondCurseBotUpdate()
+    if (!isBotStarting(BotType.CURSE_BOT)) {
+      await everySecondCurseBotUpdate()
+    }
   } catch (e) {
     handleException(e)
     await autoRestartCurseBot()
