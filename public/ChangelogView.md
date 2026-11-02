@@ -3,6 +3,7 @@
 ### 2026-11-02 Version 1.34.0
 
 - Website: Removed bot selection from login. Connecting now always starts Copy Bot.
+- Minigame bots: Greet the active player by name when waiting for a second player.
 
 ### 2026-10-31 Version 1.33.0
 

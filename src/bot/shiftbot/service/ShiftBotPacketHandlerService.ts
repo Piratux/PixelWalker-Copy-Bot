@@ -825,7 +825,7 @@ async function everySecondShiftBotUpdate() {
         useShiftBotWorldStore().lastActivePlayerCount < activePlayerCount
       ) {
         sendGlobalChatMessage(
-          `${activePlayerCount} active player(s) found. Minimum of ${MINIMUM_PLAYER_COUNT_REQUIRED_TO_START_GAME} active players are required to start the game`,
+          `Hi ${getActivePlayers()[0].username}! Minimum of ${MINIMUM_PLAYER_COUNT_REQUIRED_TO_START_GAME} active players are required to start the game`,
         )
       }
 
