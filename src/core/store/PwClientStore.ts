@@ -15,6 +15,7 @@ interface PwClientStore {
   unsuccessfullyPlacedBlockPackets: Map<string, SendableBlockPacket>
   placementCompletionPending: boolean
   placementCompletionAnnounced: boolean
+  labelOwnershipWarningPrinted: boolean
   blocks: ListBlockResult[]
   blocksByPwId: Map<number, ListBlockResult>
   blocksByPwName: Map<string, ListBlockResult>
@@ -39,6 +40,7 @@ function createPwClientStore(): PwClientStore {
     unsuccessfullyPlacedBlockPackets: new Map(),
     placementCompletionPending: false,
     placementCompletionAnnounced: false,
+    labelOwnershipWarningPrinted: false,
     blocks: [],
     blocksByPwId: new Map(),
     blocksByPwName: new Map(),

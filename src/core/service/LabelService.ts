@@ -1,9 +1,27 @@
 import { Colour, Colours } from '@/core/type/Colour.ts'
-import { getPwGameClient, getPwGameWorldHelper } from '@/core/store/PwClientStore.ts'
+import { getPwGameClient, getPwGameWorldHelper, usePwClientStore } from '@/core/store/PwClientStore.ts'
 import { vec2 } from '@basementuniverse/vec'
 import { colourToUint32 } from '@/core/util/Colours.ts'
 import { LABEL_GLYPH_MAP } from '@/core/type/LabelGlyphMap.ts'
 import { createLabel } from '@/core/util/Labels.ts'
+import { isWorldOwner } from '@/core/util/Environment.ts'
+import { sendGlobalChatMessage } from '@/core/service/ChatMessageService.ts'
+
+export function canBotPlaceLabels(): boolean {
+  if (isWorldOwner(getPwGameWorldHelper().botPlayerId)) {
+    return true
+  }
+  const store = usePwClientStore()
+  if (store.labelOwnershipWarningPrinted) {
+    return false
+  }
+  store.labelOwnershipWarningPrinted = true
+  const warning =
+    'Warning: Bot is not the world owner and cannot place labels in this world. This warning will not be printed anymore.'
+  console.warn(warning)
+  sendGlobalChatMessage(warning)
+  return false
+}
 
 export interface LabelData {
   text: string
@@ -12,6 +30,10 @@ export interface LabelData {
 
 // Automatically adds spaces between labels, so you can just pass in an array of strings or LabelData and it will handle the spacing for you
 export function placeLabels(pos: vec2, labelData: (string | LabelData)[]) {
+  if (labelData.length > 0 && !canBotPlaceLabels()) {
+    return
+  }
+
   const placePos = vec2(pos.x, pos.y)
   for (let i = 0; i < labelData.length; i++) {
     const labelEntry = labelData[i]

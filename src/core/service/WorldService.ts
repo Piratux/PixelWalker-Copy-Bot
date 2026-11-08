@@ -40,6 +40,7 @@ import { useZoneStore } from '@/core/store/ZoneStore.ts'
 import { getGridRectangles } from '@/core/util/Geometry.ts'
 import { useLabelStore } from '@/core/store/LabelStore.ts'
 import { labelsHaveSameContent } from '@/core/util/Labels.ts'
+import { canBotPlaceLabels } from '@/core/service/LabelService.ts'
 
 export function getBlockAt(pos: Point, layer: number): Block {
   try {
@@ -439,6 +440,10 @@ export function mergeWorldBlocks(blocksBottom: WorldBlock[], blocksTop: WorldBlo
 }
 
 export function replaceAllLabels(labels: ILabel[]) {
+  if ((labels.length > 0 || getPwGameWorldHelper().labels.size > 0) && !canBotPlaceLabels()) {
+    return
+  }
+
   for (const label of getPwGameWorldHelper().labels.values()) {
     getPwGameClient().send('worldLabelDeleteRequestPacket', {
       id: label.id!,
@@ -456,12 +461,18 @@ export async function placeLabels(labels: ILabel[]): Promise<ILabel[]> {
   if (labels.length === 0) {
     return []
   }
+
+  if (!canBotPlaceLabels()) {
+    return []
+  }
+
   const newLabels = cloneDeep(labels)
   for (const label of newLabels) {
     label.id = undefined
     useLabelStore().totalLabelsLeftToReceive += 1
     getPwGameClient().send('worldLabelUpsertRequestPacket', { label })
   }
+
   try {
     await workerWaitUntil(() => useLabelStore().totalLabelsLeftToReceive === 0)
   } catch (error) {

@@ -1,5 +1,9 @@
 ## Changelog
 
+### 2026-11-08 Version 1.35.0
+
+- Bot: When the bot is not the world owner, and it is trying to place labels, warning is printed (only world owner can place labels).
+
 ### 2026-11-02 Version 1.34.0
 
 - Website: Removed bot selection from login. Connecting now always starts Copy Bot.
@@ -48,7 +52,7 @@
     - All zone positions must be within selected area, to select the zone.
     - Multiple zones can be selected at a time.
   - .import
-  - .mask (you can do ".mask zone" to select only zones)
+  - .mask (you can do `.mask zone` to select only zones)
   - .move
   - .paste
   - .smartpaste (equivalent to .paste for zones)
@@ -111,7 +115,7 @@
 
 ### 2026-01-19 Version 1.18.0
 
-- Bot: Added command ".snake [off | on time offset hideclock]" - placing blue coins automatically increments time door offset".
+- Bot: Added command `.snake [off | on time offset hideclock]` - placing blue coins automatically increments time door offset.
 - Bot: Add .smartpaste support for portal_world and tool_portal_world_spawn block spawn_id arguments.
 - Website: Add minimap teleporter tool.
 
@@ -177,7 +181,7 @@
 
 ### 2025-11-08 Version 1.12.1
 
-- Bot: When bot or player joins the world, "[BOT] Copy Bot is here! Type .help to show usage!" is now only sent to world owner.
+- Bot: When bot or player joins the world, `[BOT] Copy Bot is here! Type .help to show usage!` is now only sent to world owner.
 
 ### 2025-11-07 Version 1.12.0
 
@@ -195,7 +199,7 @@
 
 ### 2025-10-19 Version 1.9.0
 
-- Bot: Added command ".flip [h | v]" - flips selected blocks horizontally or vertically.
+- Bot: Added command `.flip [h | v]` - flips selected blocks horizontally or vertically.
 
 ### 2025-10-19 Version 1.8.4
 
@@ -272,15 +276,15 @@
 
 ### 2025-07-19 Version 1.5.0
 
-- Bot: Added command ".edit id find_id replace_id" - edits selected block ids from "find_id" to "replace_id".
+- Bot: Added command `.edit id find_id replace_id` - edits selected block ids from "find_id" to "replace_id".
 - Bot: .move mode now does not get disabled anymore when new area is selected.
 - Bot: Improved .move mode block placement speed a little.
 - Bot: Fixed an issue where bot would not place blocks when they were pasted not within bounds of world.
 
 ### 2025-07-09 Version 1.4.0
 
-- Bot: Added command ".edit name find replace" - edits selected block name substrings from "find" to "replace". Thanks Bluecloud!
-- Bot: Added command ".edit math_op number [name_find]" - edits selected block number arguments. Thanks Bluecloud!
+- Bot: Added command `.edit name find replace` - edits selected block name substrings from "find" to "replace". Thanks Bluecloud!
+- Bot: Added command `.edit math_op number [name_find]` - edits selected block number arguments. Thanks Bluecloud!
 - Bot: Made .smartpaste command work with portals again. It only works if portal IDs are integers.
 - Website: Added loading overlay when navigating between menu pages.
 
