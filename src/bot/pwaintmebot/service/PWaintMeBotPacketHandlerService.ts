@@ -1,17 +1,10 @@
 import { ProtoGen } from 'pw-js-api'
-import { PWAINTME_ARENA, PWAINTME_TEAMS } from '@/bot/pwaintmebot/constant/General.ts'
+import { PWAINTME_TEAMS } from '@/bot/pwaintmebot/constant/General.ts'
 import { PWaintMeBotCommandName } from '@/bot/pwaintmebot/enum/PWaintMeBotCommandName.ts'
 import { PWaintMeBotState } from '@/bot/pwaintmebot/enum/PWaintMeBotState.ts'
 import { resetPWaintMeBotRoundStore, usePWaintMeBotRoundStore } from '@/bot/pwaintmebot/store/PWaintMeBotRoundStore.ts'
 import { usePWaintMeBotWorldStore } from '@/bot/pwaintmebot/store/PWaintMeBotWorldStore.ts'
-import {
-  capturePWaintMeMap,
-  createPWaintMeMap,
-  getPWaintMeMapKey,
-  loadPWaintMeMapWorld,
-  placePWaintMeMap,
-  placePWaintMeWorld,
-} from '@/bot/pwaintmebot/service/PWaintMeMapService.ts'
+import { loadPWaintMeMapWorld, placePWaintMeWorld } from '@/bot/pwaintmebot/service/PWaintMeMapService.ts'
 import { initPWaintMePalette } from '@/bot/pwaintmebot/service/PWaintMePaletteService.ts'
 import { collectPWaintMeCoins, movePWaintMePlayer } from '@/bot/pwaintmebot/service/PWaintMePaintingService.ts'
 import {
@@ -157,20 +150,12 @@ const help = new Map<string, string>([
   ['start', '.start: Load the PWaintMe lobby and start automatic matches. Owner/developer only.'],
   ['quickstart', '.quickstart: Start without replacing the lobby. Arena: (75,75)-(124,124). Owner/developer only.'],
   ['stop', '.stop: Stop matches, clear player effects and teams, and restore the arena. Owner/developer only.'],
-  ['map', '.map: List the available 50x50 arenas from the map world and custom saves.'],
-  [
-    'save',
-    '.save <name> <author> <x> <y>: Save a 50x50 arena until restart. No spaces in name/author. Stop first. Owner/developer only.',
-  ],
-  ['load', '.load <name> [x y]: Load a saved arena; defaults to (75,75). Stop first. Owner/developer only.'],
+  ['map', '.map: List the available 50x50 arenas from the map world.'],
 ])
 
 function helpCommandReceived(args: string[], playerId: number): void {
   if (args.length === 0) {
-    sendPrivateChatMessage(
-      'PWaintMe: .help .ping .play .afk .win .map | Owner: .start .quickstart .stop .save .load',
-      playerId,
-    )
+    sendPrivateChatMessage('PWaintMe: .help .ping .play .afk .win .map | Owner: .start .quickstart .stop', playerId)
     sendPrivateChatMessage(
       'Use .help [command] for details. Original //play, //afk and //win commands also work.',
       playerId,
@@ -218,14 +203,6 @@ function winCommandReceived(playerId: number): void {
   )
 }
 
-function requirePWaintMeBuilder(playerId: number): void {
-  requireWorldOwner(playerId)
-  requirePlayerAndBotEditPermission(playerId)
-  if (usePWaintMeBotWorldStore().currentState !== PWaintMeBotState.STOPPED) {
-    throw new GameError('Stop PWaintMe with .stop before saving or loading maps.', playerId)
-  }
-}
-
 async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket): Promise<void> {
   const [rawCommand, ...args] = data.message.trim().split(/\s+/)
   if (!rawCommand.startsWith('.') && !rawCommand.startsWith('//')) {
@@ -266,41 +243,6 @@ async function playerChatPacketReceived(data: ProtoGen.PlayerChatPacket): Promis
         sendPrivateChatMessage(`${key} by ${map.author}`, playerId)
       }
       break
-    case PWaintMeBotCommandName.SAVE: {
-      requirePWaintMeBuilder(playerId)
-      if (args.length !== 4) {
-        throw new GameError(help.get('save')!, playerId)
-      }
-      const map = capturePWaintMeMap(args[0], args[1], { x: Number(args[2]), y: Number(args[3]) })
-      const entry = createPWaintMeMap(map)
-      store.savedMaps.set(getPWaintMeMapKey(map.name), map)
-      store.maps.set(getPWaintMeMapKey(map.name), entry)
-      sendPrivateChatMessage(`Saved "${map.name}" by ${map.author}.`, playerId)
-      break
-    }
-    case PWaintMeBotCommandName.LOAD: {
-      requirePWaintMeBuilder(playerId)
-      if (args.length !== 1 && args.length !== 3) {
-        throw new GameError(help.get('load')!, playerId)
-      }
-      const map = store.maps.get(getPWaintMeMapKey(args[0]))
-      if (map === undefined) {
-        throw new GameError('Map not found. Type .map to list arenas.', playerId)
-      }
-      store.currentState = PWaintMeBotState.LOADING
-      try {
-        await placePWaintMeMap(
-          map,
-          args.length === 1
-            ? { x: PWAINTME_ARENA.minX, y: PWAINTME_ARENA.minY }
-            : { x: Number(args[1]), y: Number(args[2]) },
-        )
-      } finally {
-        store.currentState = PWaintMeBotState.STOPPED
-      }
-      sendPrivateChatMessage(`Loaded "${map.name}".`, playerId)
-      break
-    }
     default:
       throw new GameError('Unrecognised PWaintMe command. Type .help.', playerId)
   }
@@ -418,7 +360,7 @@ export async function startPWaintMeBotConnection(
   if (mapOnly) {
     await loadPWaintMeMapWorld()
     initPWaintMePalette()
-    sendGlobalChatMessage('PWaintMe builder mode. Use .map, .save, .load, or .help.')
+    sendGlobalChatMessage('PWaintMe builder mode. Use .map or .help.')
   } else {
     await startManagedPWaintMeBot([], getPwGameWorldHelper().botPlayerId, true)
   }

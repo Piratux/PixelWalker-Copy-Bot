@@ -8,6 +8,4 @@ export enum PWaintMeBotCommandName {
   AFK = 'afk',
   WIN = 'win',
   MAP = 'map',
-  SAVE = 'save',
-  LOAD = 'load',
 }

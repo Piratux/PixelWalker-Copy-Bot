@@ -1,5 +1,9 @@
 ## Changelog
 
+### 2026-11-14 Version 1.36.0
+
+- PWaintMe: Removed the `.load` and `.save` commands.
+
 ### 2026-11-08 Version 1.35.0
 
 - Bot: When the bot is not the world owner, and it is trying to place labels, warning is printed (only world owner can place labels).

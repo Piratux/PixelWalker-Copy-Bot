@@ -168,10 +168,6 @@ export function loadPWaintMeMaps(world: DeserialisedStructure): void {
   if (maps.size === 0) {
     throw new GameError('No PWaintMe maps found in world mtpisfgitt9pd6a.')
   }
-  for (const value of store.savedMaps.values()) {
-    const data = parsePWaintMeMap(value)
-    maps.set(getPWaintMeMapKey(data.name), createPWaintMeMap(data))
-  }
   store.maps = maps
 }
 
@@ -180,17 +176,6 @@ export function getPWaintMeMapKey(name: string): string {
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '_')
-}
-
-export function capturePWaintMeMap(name: string, author: string, position: Point): PWaintMeMapData {
-  requireMapPosition(position)
-  const blocks = getPwGameWorldHelper().sectionArea(
-    position.x,
-    position.y,
-    position.x + PWAINTME_MAP_SIZE - 1,
-    position.y + PWAINTME_MAP_SIZE - 1,
-  )
-  return serialisePWaintMeMap(name, author, blocks)
 }
 
 function serialisePWaintMeMap(name: string, author: string, blocks: DeserialisedStructure): PWaintMeMapData {
