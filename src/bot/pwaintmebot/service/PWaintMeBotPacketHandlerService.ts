@@ -1,5 +1,5 @@
 import { ProtoGen } from 'pw-js-api'
-import { PWAINTME_TEAMS } from '@/bot/pwaintmebot/constant/General.ts'
+import { PWAINTME_SPAWN, PWAINTME_TEAMS } from '@/bot/pwaintmebot/constant/General.ts'
 import { PWaintMeBotCommandName } from '@/bot/pwaintmebot/enum/PWaintMeBotCommandName.ts'
 import { PWaintMeBotState } from '@/bot/pwaintmebot/enum/PWaintMeBotState.ts'
 import { resetPWaintMeBotRoundStore, usePWaintMeBotRoundStore } from '@/bot/pwaintmebot/store/PWaintMeBotRoundStore.ts'
@@ -144,8 +144,8 @@ function respawnPWaintMePlayer(playerId: number): void {
 const help = new Map<string, string>([
   ['help', '.help [command]: Show PWaintMe commands or help for one command.'],
   ['ping', '.ping: Check whether PWaintMe is responding.'],
-  ['play', '.play (.p, //play, //p): Toggle joining upcoming rounds. Players join automatically on arrival.'],
-  ['afk', '.afk (//afk): Toggle sitting out. During a match, this takes effect next round.'],
+  ['play', '.play (.p, //play, //p): Same as .afk. Players join automatically on arrival.'],
+  ['afk', '.afk (//afk): Leave the match immediately and sit out future rounds. Type .afk again to rejoin.'],
   ['win', '.win (.w, //win, //w): Show wins, rounds played, painted blocks, and wins by color.'],
   ['start', '.start: Load the PWaintMe lobby and start automatic matches. Owner/developer only.'],
   ['quickstart', '.quickstart: Start without replacing the lobby. Arena: (75,75)-(124,124). Owner/developer only.'],
@@ -176,14 +176,15 @@ function togglePWaintMeParticipation(playerId: number): void {
   if (player === undefined || player.isMe) {
     throw new GameError('The bot cannot join PWaintMe matches.', playerId)
   }
-  if (player.states.godmode || player.states.modmode) {
-    throw new GameError('Leave god/mod mode before joining PWaintMe.', playerId)
-  }
-  if (store.queuedPlayers.has(playerId)) {
-    store.queuedPlayers.delete(playerId)
+  if (!store.afkPlayers.has(playerId)) {
     store.afkPlayers.add(playerId)
-    sendPrivateChatMessage('You will sit out upcoming rounds. Use .play or .afk to rejoin.', playerId)
+    removePWaintMePlayer(playerId)
+    sendRawMessage(`/tp #${playerId} ${PWAINTME_SPAWN.x} ${PWAINTME_SPAWN.y}`)
+    sendPrivateChatMessage('You are now AFK and will sit out future rounds. Use .afk or .play to rejoin.', playerId)
   } else {
+    if (player.states.godmode || player.states.modmode) {
+      throw new GameError('Leave god/mod mode before joining PWaintMe.', playerId)
+    }
     store.afkPlayers.delete(playerId)
     queuePWaintMePlayer(playerId)
     sendPrivateChatMessage('You are queued for the next PWaintMe round!', playerId)

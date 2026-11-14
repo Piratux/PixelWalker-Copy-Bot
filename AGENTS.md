@@ -15,6 +15,7 @@
   - If change is purely technical and not visible by end users, then do not add entry in changelog.
   - When adding new entry, if latest entry is of current date, just add that entry in that group, no need to make new version.
   - If the change was not committed yet before the prompt, and then you changed/reverted it, do not add it to changelog.
+  - Only add changes in changelog for copy bot.
 - Use `bun` commands instead of `npm`, etc.
 - When asked for explanation of code changes, when answering also add a comment next to code which was unclear.
 
