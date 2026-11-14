@@ -8,6 +8,5 @@ coverage/
 *.log
 
 # Local env files that may contain credentials
-.env.local
-.env.docker
+*.local
 
