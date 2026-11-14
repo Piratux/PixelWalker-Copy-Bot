@@ -66,7 +66,6 @@ interface ScheduledBot {
 }
 
 export const DEFAULT_BOT_ORDER = [
-  BotType.PWAINTME_BOT, // TODO: TEMPORARy
   BotType.BOM_BOT,
   BotType.CURSE_BOT,
   BotType.SHIFT_BOT,
